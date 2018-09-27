@@ -1,0 +1,326 @@
+# Sequencer64 0.95.1 (and above) rc configuration file
+#
+# /home/ahlstrom/.config/sequencer64/seq64cli.rc
+# Written on 2018-09-27 05:44:27
+#
+# This file holds the main configuration options for Sequencer64.
+# It follows the format of the legacy seq24 'rc' configuration
+# file, but adds some new options, such as LASH, Mod4 interaction
+# support, an auto-save-on-exit option, and more.  Also provided
+# is a legacy mode.
+#
+# The [comments] section can document this file.  Lines starting
+# with '#' and '[' are ignored.  Blank lines are ignored.  Show a
+# blank line by adding a space character to the line.
+
+[comments]
+
+(Comments added to this section are preserved.  Lines starting with
+ a '#' or '[', or that are blank, are ignored.  Start lines that must
+ be blank with a space.)
+
+[midi-control-file]
+
+nanomap.rc    # (/home/ahlstrom/.config/sequencer64/nanomap.rc)
+
+
+[mute-group]
+
+# All mute-group values are saved in this 'rc' file, even if they
+# all are zero; but if all are zero, they will be stripped out from
+# the MIDI file by the new strip-empty-mutes functionality (a build
+# option).  This is less confusing to the user, who expects that
+# section to be intact.
+
+1024       # group mute count
+0 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+1 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+2 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+3 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+4 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+5 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+6 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+7 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+8 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+9 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+10 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+11 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+12 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+13 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+14 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+15 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+16 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+17 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+18 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+19 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+20 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+21 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+22 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+23 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+24 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+25 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+26 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+27 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+28 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+29 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+30 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+31 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+
+# Handling of mute-groups.  If set to 0, a legacy value, then
+# any mute-groups read from the MIDI file (whether modified or
+# not) are saved to the 'rc' file as well.  If set to 1, the
+# 'rc' mute-groups are overwritten only if they were not read
+# from the MIDI file.
+
+1     # preserve 'rc' mute-groups from MIDI mute groups
+
+[midi-clock]
+
+# The first line indicates the number of MIDI busses defined.
+# Each buss line contains the buss (re 0) and the clock status of
+# that buss.  0 = MIDI Clock is off; 1 = MIDI Clock on, and Song
+# Position and MIDI Continue will be sent, if needed; 2 = MIDI
+# Clock Modulo, where MIDI clocking will not begin until the song
+# position reaches the start modulo value [midi-clock-mod-ticks].
+# A value of -1 indicates that the output port is totally
+# disabled.  One can set this value manually for devices that are
+# present, but not available, perhaps because another application
+# has exclusive access to the device (e.g. on Windows).
+
+3    # number of MIDI clocks/busses
+
+# Output buss name: [0] 14:0 Midi Through Port-0
+0 0    # buss number, clock status
+# Output buss name: [1] 24:0 nanoKEY2 MIDI 1
+1 0    # buss number, clock status
+# Output buss name: [2] 128:0 yoshimi:input
+2 0    # buss number, clock status
+
+[midi-clock-mod-ticks]
+
+# The Song Position (in 16th notes) at which clocking will begin
+# if the buss is set to MIDI Clock mod setting.
+
+64
+
+[midi-meta-events]
+
+# This section defines some features of MIDI meta-event handling.
+# Normally, tempo events are supposed to occur in the first track
+# (pattern 0).  But one can move this track elsewhere to accomodate
+# one's existing body of tunes.  If affects where tempo events are
+# recorded.  The default value is 0, the maximum is 1023.
+# A pattern must exist at this number for it to work.
+
+0    # tempo_track_number
+
+[midi-input]
+
+3   # number of input MIDI busses
+
+# The first number is the port number, and the second number
+# indicates whether it is disabled (0), or enabled (1).
+
+# Input buss name: [0] 0:1 system:announce
+0 1  # buss number, input status
+# Input buss name: [1] 14:0 Midi Through Port-0
+1 0  # buss number, input status
+# Input buss name: [2] 24:0 nanoKEY2 MIDI 1
+2 1  # buss number, input status
+
+# If set to 1, this option allows the master MIDI bus to record
+# (filter) incoming MIDI data by channel, allocating each incoming
+# MIDI event to the sequence that is set to that channel.
+# This is an option adopted from the Seq32 project at GitHub.
+
+0   # flag to record incoming data by channel
+
+[manual-alsa-ports]
+
+# Set to 1 to have sequencer64 create its own ALSA ports and not
+# connect to other clients.  Use 1 to expose all 16 MIDI ports to
+# JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports
+# already running on one's computer, or to use the autoconnect
+# feature (Sequencer64 connects to existing JACK ports on startup.
+
+0   # flag for manual ALSA ports
+
+[reveal-alsa-ports]
+
+# Set to 1 to have sequencer64 ignore any system port names
+# declared in the 'user' configuration file.  Use this option if
+# you want to be able to see the port names as detected by ALSA.
+
+0   # flag for reveal ALSA ports
+
+[interaction-method]
+
+# Sets the mouse handling style for drawing and editing a pattern
+# This feature is current NOT supported in the Qt version of
+# Sequencer64 (qpseq64).
+
+# 0 - 'seq24' (original seq24 method)
+# 1 - 'fruity' (similar to a certain fruity sequencer we like)
+
+0   # interaction_method
+
+# Set to 1 to allow Sequencer64 to stay in note-adding mode when
+# the right-click is released while holding the Mod4 (Super or
+# Windows) key.
+
+0   # allow_mod4_mode
+
+# Set to 1 to allow Sequencer64 to split performance editor
+# triggers at the closest snap position, instead of splitting the
+# trigger exactly in its middle.  Remember that the split is
+# activated by a middle click.
+
+0   # allow_snap_split
+
+# Set to 1 to allow a double-click on a slot to bring it up in
+# the pattern editor.  This is the default.  Set it to 0 if
+# it interferes with muting/unmuting a pattern.
+
+1   # allow_click_edit
+
+[keyboard-control]
+
+# Defines the keys that toggle the state of each of up to 32
+# patterns in the pattern/sequence window.  These keys are normally
+# shown in each box.  The first number below specifies the key
+# code, and the second number specifies the pattern number.
+
+0     # number of keys
+
+# Key-No.  Sequence-No.  Key-Name
+
+
+[keyboard-group]
+
+# This section actually defines the mute-group keys for the group
+# learn function.  Pressing the 'L' button and then pressing one
+# of the keys in this list will cause the current set of armed
+# patterns to be memorized and associated with that key.
+
+0     # number of group-learn keys (key groups)
+
+# Key #  group # Key name
+
+
+# bpm up and bpm down:
+39 59          # Key 0x27 Key 0x3B
+# screen set up, screen set down, play:
+39 59 65360    # Key 0x27 Key 0x3B Key 0xFF50
+# group on, group off, group learn:
+39 59 65360   # Key 0x27 Key 0x3B Key 0xFF50
+# replace, queue, snapshot_1, snapshot 2, keep queue:
+39 59 65360 65514 92   # Key 0x27 Key 0x3B Key 0xFF50 Key 0xFFEA Key 0x5C
+1     # show_ui_sequence_key and seq measures (1 = true / 0 = false)
+1    # Key 0x1 start sequencer
+1    # Key 0x1 stop sequencer
+46    # Key 0x2E pause sequencer
+1     # show sequence numbers (1 = true / 0 = false); ignored in legacy mode
+46    # Key 0x2E is the shortcut key to bring up the pattern editor
+1    # Key 0x1 is the shortcut key to bring up the event editor
+46    # Key 0x2E shifts the hot-key so that it toggles pattern + 32
+
+[extended-keys]
+
+# The user interface for this section is Options / Ext Keys.
+
+65470    # Key 0xFFBE handles the Song/Live mode
+65471    # Key 0xFFBF handles the JACK mode
+65472    # Key 0xFFC0 handles the menu mode
+65473    # Key 0xFFC1 handles the following of JACK transport
+65475    # Key 0xFFC3 handles the Fast-Forward function
+65474    # Key 0xFFC2 handles Rewind function
+65476    # Key 0xFFC4 handles song pointer-position function
+65478    # Key 0xFFC6 emulates clicking the Tap (BPM) button
+65477    # Key 0xFFC5 handles the toggling-all-pattern-mutes function
+80    # Key 0x50 toggles the song-record function
+112    # Key 0x70 toggles the one-shot queue function
+
+[jack-transport]
+
+# jack_transport - Enable slave synchronization with JACK Transport.
+# Also contains the new flag to use JACK MIDI.
+
+0   # with_jack_transport
+
+# jack_master - Sequencer64 attempts to serve as JACK Master.
+# Also must enable jack_transport (the user interface forces this,
+# and also disables jack_master_cond).
+
+0   # with_jack_master
+
+# jack_master_cond - Sequencer64 is JACK master if no other JACK
+# master exists. Also must enable jack_transport (the user interface
+# forces this, and disables jack_master).
+
+0   # with_jack_master_cond
+
+# song_start_mode (applies mainly if JACK is enabled).
+
+# 0 = Playback in live mode. Allows muting and unmuting of loops.
+#     from the main (patterns) window.  Disables both manual and
+#     automatic muting and unmuting from the performance window.
+# 1 = Playback uses the song (performance) editor's data and mute
+#     controls, regardless of which window was used to start the
+#     playback.
+
+0   # song_start_mode
+
+# jack_midi - Enable JACK MIDI, which is a separate option from
+# JACK Transport.
+
+0   # with_jack_midi
+
+[lash-session]
+
+# Set the following value to 0 to disable LASH session management.
+# Set the following value to 1 to enable LASH session management.
+# This value will have no effect if LASH support is not built into
+# the application.  Use --help option to see if LASH is part of
+# the options list.
+
+0     # LASH session management support flag
+
+[auto-option-save]
+
+# Set the following value to 0 to disable the automatic saving of the
+# current configuration to the 'rc' and 'user' files.  Set it to 1 to
+# follow legacy seq24 behavior of saving the configuration at exit.
+# Note that, if auto-save is set, many of the command-line settings,
+# such as the JACK/ALSA settings, are then saved to the configuration,
+# which can confuse one at first.  Also note that one currently needs
+# this option set to 1 to save the configuration, as there is not a
+# user-interface control for it at present.
+
+1     # auto-save-options-on-exit support flag
+
+[last-used-dir]
+
+# Last-used and currently-active directory:
+
+
+
+[recent-files]
+
+# Holds a list of the last few recently-loaded MIDI files.
+
+0
+
+[playlist]
+
+# Provides a configured play-list and a flag to activate it.
+
+1     # playlist_active, 1 = active, 0 = do not use it
+
+# Provides the name of a play-list.  If there is none, use '""'.
+# Or set the flag above to 0.
+
+data/sample.playlist
+
+# End of /home/ahlstrom/.config/sequencer64/seq64cli.rc
+#
+# vim: sw=4 ts=4 wm=4 et ft=sh

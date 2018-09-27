@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-25
+ * \updates       2018-09-26
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -425,9 +425,21 @@ optionsfile::parse (perform & p)
     line_after(file, "[keyboard-control]");
     long keys = 0;
     sscanf(m_line, "%ld", &keys);
-    ok = next_data_line(file) && keys > 0 && keys <= c_max_keys;
-    if (! ok)
+    ok = keys >= 0 && keys <= c_max_keys;
+    if (ok && keys > 0)
+        ok = next_data_line(file);
+
+    if (ok)
+    {
+        if (keys == 0)
+        {
+            warnprint("[keyboard-control] keys = 0!");
+        }
+    }
+    else
+    {
         (void) make_error_message("keyboard-control");   // allowed to continue
+    }
 
     /*
      * Bug involving the optionsfile and perform modules:  At the 4th or 5th
@@ -461,9 +473,21 @@ optionsfile::parse (perform & p)
     line_after(file, "[keyboard-group]");
     long groups = 0;
     sscanf(m_line, "%ld", &groups);
-    ok = next_data_line(file) && groups > 0 && groups <= c_max_keys;
-    if (! ok)
+    ok = groups >= 0 && groups <= c_max_keys;
+    if (ok && groups > 0)
+        ok = next_data_line(file);
+
+    if (ok)
+    {
+        if (groups == 0)
+        {
+            warnprint("[keyboard-group] groups = 0!");
+        }
+    }
+    else
+    {
         (void) make_error_message("keyboard-group");     // allowed to continue
+    }
 
     p.get_key_groups().clear();
     p.get_key_groups_rev().clear();

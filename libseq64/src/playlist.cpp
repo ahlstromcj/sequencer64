@@ -96,6 +96,7 @@ playlist::playlist
     m_mode                      (false),
     m_current_list              (),                 // play-list iterator
     m_current_song              (),                 // song-list iterator
+    m_unmute_set_now            (false),
     m_show_on_stdout            (show_on_stdout)
 {
     // No code needed
@@ -218,6 +219,17 @@ playlist::parse (perform & p)
                 m_comments += std::string("\n");
 
             } while (next_data_line(file));
+        }
+
+        /*
+         * [playlist-options]
+         */
+
+        if (line_after(file, "[playlist-options]"))
+        {
+            int unmute = 0;
+            sscanf(m_line, "%d", &unmute);
+            unmute_set_now(unmute != 0);
         }
 
         /*
@@ -467,6 +479,17 @@ playlist::write (const perform & /*p*/)
     file << "\n" << "[comments]\n" << "\n" << m_comments << "\n";
 
     /*
+     * [playlist-options]
+     */
+
+    file
+        << "\n" << "[playlist-options]\n" << "\n"
+        << (unmute_set_now() ? "1" : "0")
+        << "     # If set to 1, when a new song is selected, "
+        "immediately unmute it.\n"
+        ;
+
+    /*
      * [playlist] sections
      */
 
@@ -559,6 +582,11 @@ playlist::open_song (const std::string & fname, bool verifymode)
         }
         if (verifymode)
             (void) m_perform.clear_all();
+        else
+        {
+            if (unmute_set_now())
+                m_perform.toggle_playing_tracks();
+        }
     }
     return result;
 }

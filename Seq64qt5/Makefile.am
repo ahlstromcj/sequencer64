@@ -6,7 +6,7 @@
 # \library    	seq64qt5 application
 # \author     	Chris Ahlstrom
 # \date       	2017-09-05
-# \update      2018-09-16
+# \update      2018-09-26
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -144,7 +144,7 @@ libraries = \
 # Project-specific dependency files
 #----------------------------------------------------------------------------
 #
-#  Provdies the specific list of dependencies, to assure that the make
+#  Provides the specific list of dependencies, to assure that the make
 #  detects all changes, if they are available.
 #
 #----------------------------------------------------------------------------
@@ -158,15 +158,15 @@ dependencies = \
 # The programs to build
 #------------------------------------------------------------------------------
 
-bin_PROGRAMS = qrseq64
+bin_PROGRAMS = qseq64
 
 #******************************************************************************
 # seq64
 #----------------------------------------------------------------------------
 
-qrseq64_SOURCES = seq64qt5.cpp
-qrseq64_DEPENDENCIES = $(dependencies)
-qrseq64_LDADD = $(libraries) $(QT_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
+qseq64_SOURCES = seq64qt5.cpp
+qseq64_DEPENDENCIES = $(dependencies)
+qseq64_LDADD = $(libraries) $(QT_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
 
 #******************************************************************************
 # Testing

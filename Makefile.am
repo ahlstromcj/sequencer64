@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2018-09-16
+# \updates     2018-09-26
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -157,44 +157,24 @@ libtool: $(LIBTOOL_DEPS)
 
 SUBDIRS = resources/pixmaps libseq64
 
-if NEED_GTKMM
-SUBDIRS += seq_gtkmm2
-endif
-
-if NEED_QT
-SUBDIRS += seq_qt5
+if BUILD_ALSAMIDI
+SUBDIRS += seq_alsamidi seq_gtkmm2 Sequencer64
 endif
 
 if BUILD_PORTMIDI
-SUBDIRS += seq_portmidi
-endif
-
-if BUILD_ALSAMIDI
-SUBDIRS += seq_alsamidi
-endif
-
-if BUILD_RTMIDI
-SUBDIRS += seq_rtmidi
-endif
-
-if BUILD_ALSAMIDI
-SUBDIRS += Sequencer64
-endif
-
-if BUILD_RTMIDI
-SUBDIRS += Seq64rtmidi Midiclocker64
+SUBDIRS += seq_portmidi seq_gtkmm2 Seq64portmidi
 endif
 
 if BUILD_QTMIDI
-SUBDIRS += Seq64qt5
-endif
-
-if BUILD_PORTMIDI
-SUBDIRS += Seq64portmidi
+SUBDIRS += seq_rtmidi seq_qt5 Seq64qt5
 endif
 
 if BUILD_RTCLI
-SUBDIRS += Seq64cli
+SUBDIRS += seq_rtmidi Seq64cli
+endif
+
+if BUILD_RTMIDI
+SUBDIRS += seq_rtmidi seq_gtkmm2 Seq64rtmidi Midiclocker64
 endif
 
 # Not supported.  Use the Qt project file and qmake+mingw to build the

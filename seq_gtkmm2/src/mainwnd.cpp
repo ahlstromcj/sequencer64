@@ -3311,10 +3311,9 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             {
                 tap();
             }
-#ifdef SEQ64_STAZED_MENU_BUTTONS
             else if (k.is(PREFKEY(toggle_mutes)))
             {
-                perf().toggle_playing_tracks(); // m_main_wid->toggle_playing_tracks();
+                perf().toggle_playing_tracks();
             }
             else if (k.is(PREFKEY(song_mode)))
             {
@@ -3324,7 +3323,6 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             {
                 toggle_menu_mode();
             }
-#endif
 #ifdef SEQ64_SONG_RECORDING
             else if (k.is(PREFKEY(song_record)))
             {

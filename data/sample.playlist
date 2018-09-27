@@ -36,6 +36,10 @@ are found in the contrib/midi directory.  You may need to
 change that directory name for both of the playlists if you
 have a different setup than the developers.
 
+[playlist-options]
+
+1   # If set to 1, when a new song is select, unmute all its patterns
+
 [playlist]
 
 # Playlist number, arbitrary but unique. 0 to 127 recommended

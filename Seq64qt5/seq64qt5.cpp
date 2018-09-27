@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-09-12
+ * \updates       2018-09-26
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -159,7 +159,7 @@ main (int argc, char * argv [])
             std::string playlistname = seq64::rc().playlist_filespec();
             if (seq64::rc().playlist_active() && ! playlistname.empty())
             {
-                ok = p.open_playlist(playlistname);
+                ok = p.open_playlist(playlistname, seq64::rc().verbose_option());
                 if (ok)
                 {
                     /*

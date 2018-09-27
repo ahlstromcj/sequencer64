@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-09-14
+dnl \update        2018-09-26
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -25,7 +25,7 @@ dnl
 dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
-AC_REVISION($Revision: 0.96$)dnl
+AC_REVISION($Revision: 0.96$)
 AC_INIT(Sequencer64, [0.96.0], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 AC_CONFIG_MACRO_DIR([m4])
@@ -49,9 +49,8 @@ dnl Is AC_CANONICAL_TARGET better?
 AC_CANONICAL_HOST
 
 dnl AC_CANONICAL_TARGET
-dnl
 dnl m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
-
+dnl
 dnl See http://www.delorie.com/gnu/docs/automake/automake_24.html
 
 AM_INIT_AUTOMAKE([dist-bzip2])
@@ -67,19 +66,15 @@ dnl gcc support.
 AC_GCC_VERSION
 
 dnl C++ support.  Run tests in C++.  Note the order; avoids messy warnings.
-dnl AC_LANG([C++])
 
 AC_LANG([C])
 AC_LANG([C++])
-
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CXXCPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MKDIR_P
-
-dnl     [AC_DEFINE(HAVE_SYSLOG_H) LIBS="$LIBS $lib"; break]
 
 dnl 5.c. Mingw support.
 dnl
@@ -134,6 +129,8 @@ dnl Flaky, the AR macro is set well after this test, but the GCC macro
 dnl is set before it, so that is what we use.  Odd.
 dnl
 dnl AC_MSG_RESULT([TESTING HOST OS])
+dnl
+dnl Untested.  Currently, qmake and mingw is used for Windows code.
 
 if test "x$windows_host" = "xyes" ; then
     if test "x$CC" = "xgcc" ; then
@@ -141,6 +138,7 @@ if test "x$windows_host" = "xyes" ; then
     else
         build_windows="yes"
         need_qt="yes"
+        need_gtkmm="no"
         AC_DEFINE(WINDOWS_SUPPORT, 1, [Indicates limited Windows support])
         AC_MSG_RESULT([MingW Windows (Qt) build enabled.])
     fi
@@ -175,7 +173,7 @@ dnl GIT_VERSION="0.9.11-9-gc9ee500"
 dnl AC_DEFINE_UNQUOTED(GIT_VERSION, "$GIT_VERSION")
 dnl AC_DEFINE(GIT_VERSION, "$GIT_VERSION")
 dnl AC_SUBST(GIT_VERSION)
-
+dnl
 dnl 1.a. Set up version information for this project.
 dnl
 dnl      This versioning is the libtool version.
@@ -225,7 +223,7 @@ SEQ64_LIBTOOL_VERSION="$SEQ64_LT_CURRENT.$SEQ64_LT_REVISION.$SEQ64_LT_AGE"
 
 dnl 1.b. Set up the version strings.  The primary version string of interest
 dnl      is SEQ64_API_VERSION.
-
+dnl
 dnl API_VERSION="$SEQ64_API_MAJOR.$SEQ64_API_MINOR"
 dnl AC_SUBST([API_VERSION])
 
@@ -377,8 +375,6 @@ dnl 4. Get external flags, if any.
 
 CFLAGS="${CFLAGS}"
 
-dnl Checks for libraries.
-
 dnl Checks for header files.  Added some more to support daemonization.
 
 AC_HEADER_STDC
@@ -398,13 +394,11 @@ dnl has been moved to the new seq_alsamidi directory, to distinguish it from
 dnl the new rtmidi code.
 dnl
 dnl AM_PATH_ALSA(0.9.0)
-
+dnl
 dnl Check for the presence of Doxygen.  Not an error to be missing, but
 dnl we don't want to try to build documentation if it is not present.
 dnl See http://www.gnu.org/software/autoconf-archive/ax_prog_doxygen.html
 dnl Note the building the documentation also requires graphviz to be installed.
-dnl
-dnl AC_PROG_DOXYGEN
 
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN"; then
@@ -413,10 +407,9 @@ fi
 
 dnl Checks for the Cygwin environment. If present, sets shell variable
 dnl CYGWIN to 'yes'; if not present, sets CYGWIN to the empty string.
-dnl
 dnl Commented out, use AC_CANONICAL_HOST instead.
 dnl Obsolete: AC_CYGWIN
-
+dnl
 dnl Windows support in Linux.  Might be unnecessary though, though.
 
 AC_ARG_ENABLE(mingw,
@@ -510,6 +503,7 @@ if test "$rtmidi" != "no"; then
     build_rtmidi="yes"
     build_portmidi="no"
     need_gtkmm="yes"
+    need_qt="no"
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
     AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
@@ -517,10 +511,11 @@ if test "$rtmidi" != "no"; then
     AC_MSG_RESULT([rtmidi engine build enabled.]);
 fi
 
-dnl "QtMidi" support.  This is support for the "RtMidi" configuration plus
-dnl using the Qt5 API.  It will be supported for Windows (MingW) or Linux, but
-dnl is currently only vestigially implemented.  The AX_HAVE_QT macro exports
-dnl QT_CXXFLAGS, QT_LIBS, QT_MOC, QT_UIC, QT_LRELEASE, QT_LUPDATE, QT_DIR.
+dnl "QtMidi" support.  This is support for the "RtMidi" configuration, which
+dnl is hardwired in the Seq64qt Makefile.am, plus using the Qt5 API.
+dnl The AX_HAVE_QT macro exports QT_CXXFLAGS, QT_LIBS, QT_MOC, QT_UIC,
+dnl QT_LRELEASE, QT_LUPDATE, QT_DIR.
+dnl
 dnl Our local version, in the m4 directory, also adds QT_RCC.
 dnl
 dnl If this does not work on Debian (empty QT macros are shown in config.log
@@ -540,10 +535,11 @@ AC_ARG_ENABLE(qt,
 
 if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
+    build_rtmidi="no"
     need_qt="yes"
     need_gtkmm="no"
-    AC_DEFINE(APP_NAME, ["qrseq64"], [Names the Qt/rtmidi version of application])
-    AC_DEFINE(CONFIG_NAME, ["qrseq64"], [Configuration file name for Qt/rtmidi])
+    AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/rtmidi version of application])
+    AC_DEFINE(CONFIG_NAME, ["qseq64"], [Configuration file name for Qt/rtmidi])
     AM_PATH_ALSA(0.9.0)
     AX_HAVE_QT
     AC_MSG_RESULT([qt user-interface build enabled.]);
@@ -566,10 +562,12 @@ if test "$cli" != "no"; then
         AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
         AM_PATH_ALSA(0.9.0)
     fi
+    need_gktmm="no"
     need_qt="no"
 fi
 
-dnl ALSA MIDI (legacy) support.
+dnl ALSA MIDI (legacy) support.  This is deprecated, but will likely hang
+dnl around for a few more years.
 
 AC_ARG_ENABLE(alsamidi,
     [AS_HELP_STRING(--enable-alsamidi, [Enable legacy ALSA build (deprecated)])],
@@ -672,8 +670,7 @@ else
     AC_MSG_NOTICE([Pausing sequences and pause-button disabled.]);
 fi
 
-dnl Support for multiple main windows. If enabled, the
-dnl macro SEQ64_MULTI_MAINWID macro is defined.
+dnl Support for multiple main windows. If enabled, SEQ64_MULTI_MAINWID defined.
 
 AC_ARG_ENABLE(multiwid,
     [AS_HELP_STRING(--disable-multiwid, [Disable multiple main window support])],
@@ -707,7 +704,7 @@ dnl No need to mention it, because we might disable JACK entirely
 dnl during configuration.
 dnl
 dnl AC_MSG_RESULT([Seq32 JACK support permanently enabled, if JACK is enabled.]);
-
+dnl
 dnl Support for using the stazed LFO window support.  Now enabled by default.
 
 AC_ARG_ENABLE(lfo,
@@ -758,8 +755,6 @@ AM_CONDITIONAL([BUILD_RTMIDI], [test "$build_rtmidi" = "yes"])
 AM_CONDITIONAL([BUILD_RTCLI], [test "$build_rtcli" = "yes"])
 AM_CONDITIONAL([BUILD_PORTMIDI], [test "$build_portmidi" = "yes"])
 AM_CONDITIONAL([BUILD_WINDOWS], [test "$build_windows" = "yes"])
-AM_CONDITIONAL([NEED_GTKMM], [test "$need_gtkmm" = "yes"])
-AM_CONDITIONAL([NEED_QT], [test "$need_qt" = "yes"])
 
 dnl 6.0  Top portion of the config.h/seq64-config.h header files.  The
 dnl      seq64-config.h header file has "SEQ64_" prepended to these
@@ -772,7 +767,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-09-14"
+#define VERSION_DATE_SHORT "2018-09-26"
 #define VERSION "0.96.0"
 
 )

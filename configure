@@ -651,10 +651,6 @@ DOPROFILE_TRUE
 COVFLAGS
 DOCOVERAGE_FALSE
 DOCOVERAGE_TRUE
-NEED_QT_FALSE
-NEED_QT_TRUE
-NEED_GTKMM_FALSE
-NEED_GTKMM_TRUE
 BUILD_WINDOWS_FALSE
 BUILD_WINDOWS_TRUE
 BUILD_PORTMIDI_FALSE
@@ -2733,7 +2729,6 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 
 
-
 am__api_version='1.16'
 
 # Find a good install program.  We prefer a C program (faster),
@@ -3353,7 +3348,6 @@ ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -4928,7 +4922,6 @@ fi
 
 
 
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to build with mingw32 for a Windows host" >&5
 $as_echo_n "checking whether to build with mingw32 for a Windows host... " >&6; }
 
@@ -4956,6 +4949,7 @@ if test "x$windows_host" = "xyes" ; then
     else
         build_windows="yes"
         need_qt="yes"
+        need_gtkmm="no"
 
 $as_echo "#define WINDOWS_SUPPORT 1" >>confdefs.h
 
@@ -4991,7 +4985,6 @@ SEQ64_SUITE_NAME="SEQ64"
 
 
 
-
 SEQ64_API_MAJOR="0"
 
 
@@ -5014,7 +5007,6 @@ SEQ64_LT_AGE="0"
 
 
 SEQ64_LIBTOOL_VERSION="$SEQ64_LT_CURRENT.$SEQ64_LT_REVISION.$SEQ64_LT_AGE"
-
 
 
 SEQ64_API_VERSION="$SEQ64_API_MAJOR.$SEQ64_API_MINOR"
@@ -16763,7 +16755,6 @@ CFLAGS="${CFLAGS}"
 
 
 
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
 $as_echo_n "checking for ANSI C header files... " >&6; }
 if ${ac_cv_header_stdc+:} false; then :
@@ -17037,7 +17028,6 @@ fi
 
 
 
-
 for ac_prog in doxygen
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -17084,7 +17074,6 @@ if test -z "$DOXYGEN"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Doxygen not found, FYI only, not to worry" >&5
 $as_echo "$as_me: WARNING: Doxygen not found, FYI only, not to worry" >&2;}
 fi
-
 
 
 # Check whether --enable-mingw was given.
@@ -17457,6 +17446,7 @@ if test "$rtmidi" != "no"; then
     build_rtmidi="yes"
     build_portmidi="no"
     need_gtkmm="yes"
+    need_qt="no"
 
 $as_echo "#define APP_NAME \"seq64\"" >>confdefs.h
 
@@ -17686,13 +17676,14 @@ fi
 
 if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
+    build_rtmidi="no"
     need_qt="yes"
     need_gtkmm="no"
 
-$as_echo "#define APP_NAME \"qrseq64\"" >>confdefs.h
+$as_echo "#define APP_NAME \"qseq64\"" >>confdefs.h
 
 
-$as_echo "#define CONFIG_NAME \"qrseq64\"" >>confdefs.h
+$as_echo "#define CONFIG_NAME \"qseq64\"" >>confdefs.h
 
     alsa_save_CFLAGS="$CFLAGS"
 alsa_save_LDFLAGS="$LDFLAGS"
@@ -19018,6 +19009,7 @@ fi
 
 
     fi
+    need_gktmm="no"
     need_qt="no"
 fi
 
@@ -19774,7 +19766,6 @@ $as_echo "$as_me: Statistics gathering disabled." >&6;};
 fi
 
 
-
 # Check whether --enable-lfo was given.
 if test "${enable_lfo+set}" = set; then :
   enableval=$enable_lfo; lfo=$enableval
@@ -19880,22 +19871,6 @@ fi
 else
   BUILD_WINDOWS_TRUE='#'
   BUILD_WINDOWS_FALSE=
-fi
-
- if test "$need_gtkmm" = "yes"; then
-  NEED_GTKMM_TRUE=
-  NEED_GTKMM_FALSE='#'
-else
-  NEED_GTKMM_TRUE='#'
-  NEED_GTKMM_FALSE=
-fi
-
- if test "$need_qt" = "yes"; then
-  NEED_QT_TRUE=
-  NEED_QT_FALSE='#'
-else
-  NEED_QT_TRUE='#'
-  NEED_QT_FALSE=
 fi
 
 
@@ -21580,14 +21555,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_WINDOWS_TRUE}" && test -z "${BUILD_WINDOWS_FALSE}"; then
   as_fn_error $? "conditional \"BUILD_WINDOWS\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${NEED_GTKMM_TRUE}" && test -z "${NEED_GTKMM_FALSE}"; then
-  as_fn_error $? "conditional \"NEED_GTKMM\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${NEED_QT_TRUE}" && test -z "${NEED_QT_FALSE}"; then
-  as_fn_error $? "conditional \"NEED_QT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DOCOVERAGE_TRUE}" && test -z "${DOCOVERAGE_FALSE}"; then

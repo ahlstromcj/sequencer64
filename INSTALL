@@ -1,20 +1,21 @@
 INSTALL for Sequencer64 v. 0.96.0 and above
 Chris Ahlstrom
-2015-09-10 to 2018-09-14
+2015-09-10 to 2018-09-26
 
-The current packaging for Sequencer64 requires building the code.  The
-bootstrapping setup is primarily aimed at developers.  Starting with version
-0.90.4, five different versions of the program can be built:
+Getting Sequencer64 requires building the code or going to the
+sequencer64-packages site on GitHub.  The bootstrapping setup is primarily
+aimed at developers.  Starting with version 0.90.4, six different versions of
+the program can be built:
 
     -   seq64. Native JACK; the default build after a simple bootstrap
         command. JACK MIDI with optional JACK transport; fall-back to ALSA;
         Better support for Meta events (specifically Set Tempo and Time
         Signature).  Now the most official version of Sequencer64.  Also
         builds a test application, midiclocker64.
-    -   qrseq64.  The RtMidi version of the application, with a Qt5
-        user interface based on Kepler34.  Built via GNU automake, Linux only.
+    -   qseq64.  RtMidi version, with a Qt5 user-interface a la Kepler34.
+        Built via GNU automake, Linux only.
     -   qpseq64.  The PortMidi version of the application, with a Qt5 user
-        interface based on Kepler34.  Useable, but still lacks some
+        interface based on Kepler34.  Useable, but lacks some
         user-interface elements of the Gtkmm 2.4 version.  Built via qmake and
         suitable for loading in QtCreator installed with mingw32 tools.  This
         version supports both Linux and (wait for it...) Windows.  If you want
@@ -23,9 +24,9 @@ bootstrapping setup is primarily aimed at developers.  Starting with version
     -   seq64cli.  An in-progress version of a GUI-less version of Sequencer64,
         which can run from the console or as a daemon.  Also builds a test
         application, midiclocker64.
-    -   sequencer64. ALSA w/JACK transport; the original version. Deprecated.
+    -   sequencer64. ALSA w/JACK transport; the original version. DEPRECATED.
     -   seq64portmidi. PortMIDI implementation; has issues, a less effective
-        option for Linux. Deprecated.
+        option for Linux. DEPRECATED.
 
     We provide a portable Windows Zip package and a Windows installer in
     the "sequencer64-packages" project in GitHub.  It is also fairly easy to
@@ -36,11 +37,11 @@ from source code:
 
     -   Quick Install
     -   Advanced Steps
-    -   Qmake-based Install
+    -   Qmake-based Install (Linux and Windows)
 
 Quick Install:
 
-    The quick install is meant for for those who do no want to install a lot
+    The quick install is meant for for those who do not want to install a lot
     of extra developer packages, and want to use the standard "./configure ;
     make ; make install" mantra.  These steps build the default version of
     Sequencer64, "seq64".
@@ -86,12 +87,13 @@ Advanced Steps:
 
        1.   Seq64rtmidi/seq64:           ./bootstrap [ -er | -ed] -rm
        2.   Seq64cli/seq64cli:           ./bootstrap -er -cli
-       3.   Sequencer64/sequencer64:     ./bootstrap -er -am
-       4.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm (fewer features)
-       5.   Seq64qt5/qseq64:             ./bootstrap -er -qt (in progress)
+       3.   Seq64qt5/qseq64:             ./bootstrap -er -qt
+       4.   Sequencer64/sequencer64:     ./bootstrap -er -am (deprecated)
+       5.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm (deprecated)
 
        (Currently, one can use "-cli" and "-rm" together to build both
-       versions in one pass.
+       versions in one pass.  However, there are issues still to resolve,
+       so do not do it!)
    
        From the top project directory, run one of the commands above (they
        auto-configure) or run the following commands, which set up a release
@@ -104,8 +106,8 @@ Advanced Steps:
        option "--enable-silent-rules" can be added to the ./configure command.
        Otherwise:
 
-       $ ./bootstrap --enable-release [ -rm | -cli | -am | -pm ]
-       $ ./bootstrap -er [ -rm | -cli | -am | -pm ]
+       $ ./bootstrap --enable-release [ -rm | -cli | -am | -pm  | -qt ]
+       $ ./bootstrap -er [ -rm | -cli | -am | -pm  | -qt ]
 
        Note that the options in brackets are optional.  The additional options
        select the kind of Sequencer64 to build.  There is now no default, but
@@ -115,8 +117,14 @@ Advanced Steps:
        following command, which will add the --enable-debug and
        --disable-shared options to a configure run:
 
-       $ ./bootstrap --enable-debug [ -rm | -cli | -am | -pm ]
-       $ ./bootstrap -ed [ -rm | -cli | -am | -pm ]
+       $ ./bootstrap --enable-debug [ -rm | -cli | -am | -pm  | -qt ]
+       $ ./bootstrap -ed [ -rm | -cli | -am | -pm  | -qt ]
+
+       Other combinations can work.  For example, the following bootstrap
+       sets up for debugging and to build both the command-line and
+       Qt5/rtmidi application:
+
+       $ ./bootstrap -ed -cli -qt
 
        There are also configure options as described below, and conditional
        macros in the header files.  The configure options can be supplied to

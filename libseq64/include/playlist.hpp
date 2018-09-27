@@ -223,6 +223,14 @@ private:
     song_iterator m_current_song;
 
     /**
+     *  If true, indicates that the current set (or all via "F8"?) be turned
+     *  on immediately, rather than depending on the musician to unmute the
+     *  various patterns.  This is an option stored in the playlist file.
+     */
+
+    bool m_unmute_set_now;
+
+    /**
      *  If true, write the lists/songs to standard output.  This is
      *  useful to test the CLI/daemon version of Sequencer64.
      */
@@ -269,6 +277,16 @@ public:
     void mode (bool m)
     {
         m_mode = m;
+    }
+
+    bool unmute_set_now () const
+    {
+        return m_unmute_set_now;
+    }
+
+    void unmute_set_now (bool u)
+    {
+        m_unmute_set_now = u;
     }
 
     int list_midi_number () const

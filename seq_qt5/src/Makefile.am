@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2018-01-01
-# \update      2018-09-16
+# \update      2018-09-26
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -267,6 +267,7 @@ moc_sources = $(moc_qt_headers:.hpp=.moc.cpp)
 
 uic_qt_forms = \
  $(formsdir)/qlfoframe.ui \
+ $(formsdir)/qliveframeex.ui \
  $(formsdir)/qperfeditex.ui \
  $(formsdir)/qperfeditframe64.ui \
  $(formsdir)/qplaylistframe.ui \
@@ -343,6 +344,7 @@ libseq_qt5_la_SOURCES = \
  qclocklayout.cpp \
  qinputcheckbox.cpp \
  qlfoframe.cpp \
+ qliveframeex.cpp \
  qperfbase.cpp \
  qperfeditex.cpp \
  qperfeditframe64.cpp \

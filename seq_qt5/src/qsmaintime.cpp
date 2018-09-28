@@ -17,7 +17,7 @@
  */
 
 /**
- * \file          qsmaintime.hpp
+ * \file          qsmaintime.cpp
  *
  *  This module declares/defines the base class for the "time" progress
  *  window.
@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-31
+ * \updates       2018-09-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -174,7 +174,7 @@ qsmaintime::sizeHint () const
 }           // namespace seq64
 
 /*
- * qsmaintime.hpp
+ * qsmaintime.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

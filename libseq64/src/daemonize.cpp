@@ -3,7 +3,7 @@
  * \library       sequencer64 application (from PSXC library)
  * \author        Chris Ahlstrom
  * \date          2005-07-03 to 2007-08-21 (pre-Sequencer24/64)
- * \updates       2018-09-27
+ * \updates       2018-09-28
  * \license       GNU GPLv2 or above
  *
  *  Daemonization module of the POSIX C Wrapper (PSXC) library
@@ -387,7 +387,8 @@ reroute_stdio (const std::string & logfile, bool closem)
             printf
             (
                 "\n%s \n%s \n%s \n",
-                seq_app_name(), normedpath.c_str(), current_date_time().c_str()
+                seq_app_name().c_str(), normedpath.c_str(),
+                current_date_time().c_str()
             );
         }
     }

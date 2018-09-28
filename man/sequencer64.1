@@ -1,4 +1,4 @@
-.TH Sequencer64 "August 20 2018" "Version 0.95.2" "Sequencer64 Manual Page"
+.TH Sequencer64 "September 27 2018" "Version 0.96.0" "Seq64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real-time live MIDI sequencer refactored from Seq24
@@ -9,6 +9,8 @@ Sequencer64 - Real-time live MIDI sequencer refactored from Seq24
 .B seq64
 [\fIOPTIONS\fP] [\fIFILENAME\fP]
 .B seq64cli
+[\fIOPTIONS\fP] [\fIFILENAME\fP]
+.B qseq64
 [\fIOPTIONS\fP] [\fIFILENAME\fP]
 
 .SH DESCRIPTION
@@ -41,6 +43,11 @@ is not saved to the "rc" configuration file.
 .B  \-H, \-\-home dir
 Set the directory that holds the configuration files.  It is always
 relative to the user's HOME directory.  The default is ./config/sequencer64.
+
+.TP 8
+.B  \-X, \-\-playlist filename
+Load the given play-list from the HOME directory.  The conventional name for
+this file is, for example, "live-sets.playlist".
 
 .TP 8
 .B  \-l, \-\-legacy

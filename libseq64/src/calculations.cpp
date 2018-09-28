@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2018-08-05
+ * \updates       2018-09-28
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -315,23 +315,33 @@ pulses_to_midi_measures
     midi_measures & measures
 )
 {
-    static const double s_epsilon = 0.000001;   /* HMMMMMMMMMMMMMMMMMMMMMMM */
     int W = seqparms.beat_width();
     int P = seqparms.ppqn();
     int B = seqparms.beats_per_measure();
     bool result = (W > 0) && (P > 0) && (B > 0);
     if (result)
     {
+#ifdef USE_OLD_PULSES_TO_MIDI_MEASURES
+        static const double s_epsilon = 0.0001; /* HMMMMMMMMMMMMMMMMMMMMMMM */
         double m = p * W / (4.0 * P * B);       /* measures, whole.frac     */
         double m_whole = floor(m);              /* holds integral measures  */
         m -= m_whole;                           /* get fractional measure   */
         double b = m * B;                       /* beats, whole.frac        */
         double b_whole = floor(b);              /* get integral beats       */
         b -= b_whole;                           /* get fractional beat      */
-        double pulses_per_beat = 4 * P / W;     /* pulses/qn * qn/beat      */
+        double Lp = 4 * P / W;                  /* pulses/qn * qn/beat      */
         measures.measures(int(m_whole + s_epsilon) + 1);
         measures.beats(int(b_whole + s_epsilon) + 1);
-        measures.divisions(int(b * pulses_per_beat + s_epsilon));
+        measures.divisions(int(b * Lp + s_epsilon));
+#else
+        double tbc = p * W / (4.0 * P);         /* total beat-count for p   */
+        midipulse Lp = 4 * P / W;               /* beat length in pulses    */
+        int beatticks = int(tbc) * Lp;          /* pulses in total beats    */
+        int b = int(tbc) % B;                   /* beat within measure re 0 */
+        measures.measures(int(tbc / B) + 1);    /* number of measures       */
+        measures.beats(b + 1);                  /* beats within the measure */
+        measures.divisions(int(p - beatticks)); /* leftover pulses / ticks  */
+#endif
     }
     return result;
 }

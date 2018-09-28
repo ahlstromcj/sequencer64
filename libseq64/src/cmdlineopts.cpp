@@ -204,7 +204,7 @@ static const char * const s_help_1a =
 "   -H, --home dir           Set the directory to hold the configuration files,\n"
 "                            always relative to $HOME.  The default is\n"
 "                            .config/sequencer64.\n"
-"   -X, --playlist filename  Load the give playlist from the home directory.\n"
+"   -X, --playlist filename  Load the given playlist from the $HOME directory.\n"
 "   -l, --legacy             Write MIDI file in strict Seq24 format.  Same if\n"
 "                            Sequencer64 is run as 'seq24'.  Affects some other\n"
 "                            options as well.\n"

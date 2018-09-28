@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-19
+ * \updates       2018-09-28
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -1485,8 +1485,8 @@ qsmainwnd::remove_qperfedit ()
     {
         delete m_perfedit;
         m_perfedit = nullptr;
+        ui->btnPerfEdit->setEnabled(true);
     }
-    ui->btnPerfEdit->setEnabled(true);
 }
 
 /**
@@ -1626,18 +1626,19 @@ qsmainwnd::update_beat_length (int blIndex)
  */
 
 void
-qsmainwnd::updatebeats_per_measure(int bmIndex)
+qsmainwnd::updatebeats_per_measure(int bmindex)
 {
-    int bm = bmIndex + 1;
+    int bm = bmindex + 1;
     if (not_nullptr(m_beat_ind))
         m_beat_ind->set_beats_per_measure(bm);
 
-    for (int i = 0; i < c_max_sequence; i++)
+    perf().set_beats_per_bar(bmindex + 1);
+    for (int i = 0; i < c_max_sequence; ++i)
     {
         if (perf().is_active(i))
         {
-            sequence *seq = perf().get_sequence(i);
-            seq->set_beats_per_bar(bmIndex + 1);
+            sequence * seq = perf().get_sequence(i);
+            seq->set_beats_per_bar(bmindex + 1);
             seq->set_measures(seq->get_measures());
         }
     }

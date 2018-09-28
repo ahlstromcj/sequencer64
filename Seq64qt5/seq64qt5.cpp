@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-09-26
+ * \updates       2018-09-27
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -237,15 +237,17 @@ main (int argc, char * argv [])
             {
                 ok = false;
                 errmsg = std::string(Pm_hosterror_message());
+                seq24_window.show_message_box(errmsg);
             }
         }
 #endif
 
-#ifdef PLATFORM_LINUX
         if (ok)
         {
+#ifdef PLATFORM_LINUX
             if (seq64::rc().lash_support())
                 seq64::create_lash_driver(p, argc, argv);
+#endif
 
         exit_status = app.exec();               /* run main window loop */
         p.finish();                             /* tear down performer  */
@@ -265,7 +267,6 @@ main (int argc, char * argv [])
             else
                 seq24_window.show_message_box(errmessage);
         }
-#endif
     }
     return exit_status;
 }

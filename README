@@ -1,15 +1,13 @@
 README for Sequencer64 0.96.0 (Native JACK, CLI, tempo, Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2018-09-28
+2015-09-10 to 2018-09-29
 
 Sequencer64 is a reboot of seq24, extending it with many new features.
 The heart of seq24 remains intact.  It is an old friend with a whole lot
-of added equipment.  An extensive manual:
+of added equipment.  It has an extensive manual and prebuilt Debian packages,
+source tarballs, and Windows installers:
 
     https://github.com/ahlstromcj/sequencer64-doc.git
-    
-Prebuilt Debian packages, source tarballs, and Windows installers:
-
     https://github.com/ahlstromcj/sequencer64-packages.git
 
 Sequencer64 has builds providing support for ALSA, PortMidi, JACK, and Gtkmm
@@ -30,16 +28,16 @@ GUI-less application: Seq64rtmidi/seq64cli
     loaded via play-lists (see data/nanomap.rc and data/seq64cli.rc).  Seq64cli
     supports a "daemonize" option and log-files.
 
-Windows support (derived from PortMidi):
+Windows support derived from PortMidi: Seq64qt5/qpseq64.exe
 
-    Qpseq64uses a Qt 5 user-interface based on Kepler34 and the Sequencer64
+    Qpseq64 uses a Qt 5 user-interface based on Kepler34 and the Sequencer64
     PortMidi engine.  Windows built-in MIDI devices are detected, inaccessible
     devices are ignored, and playback (e.g. to the built-in Windows wavetable
     synthesizer) work. It is built easily via Qt Creator or qmake, using the
     MingW support of Qt.  The Qt 5 GUI is still a little behind the Gtkmm 2.4
     GUI, but will eventually be the main GUI of Seq64.  Some configuration can
     be done manually in the "rc" and "usr" files.  See README.windows for more
-    information.
+    information, as it can be tricky to get the Windows configuration right.
 
 See the INSTALL file for build-from-source instructions or using a
 conventional source tarball.

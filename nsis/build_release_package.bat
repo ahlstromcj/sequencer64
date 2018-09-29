@@ -8,7 +8,7 @@
 :: \library     Sequencer64 for Windows
 :: \author      Chris Ahlstrom
 :: \date        2018-05-26
-:: \update      2018-08-27
+:: \update      2018-09-29
 :: \license     $XPC_SUITE_GPL_LICENSE$
 ::
 ::      This script sets up and creates a release build of Sequencer64 for
@@ -45,28 +45,30 @@
 ::       5. Use 7zip to extract this file; it will unpack the contents into
 ::          the 'release' directory.  Then move it out of the way.
 ::
-::          $ 7x x qpseq64-release-package-0.95.2.7z
+::          $ 7z x qpseq64-release-package-0.95.2.7z
 ::          $ mv qpseq64-release-package-0.95.2.7z ..
 ::
 ::       6. Change to the sequencer64/nsis directory and run:
 ::
-::          $ makensis Seq64Setup_V0.95.nsi
+::          $ makensis Seq64Setup.nsi
 ::
 ::       7. The installer is sequencer64/release/sequencer64_setup_0.95.1.exe.
 ::          Move it out of this directory to a safe place for transport.
 ::          For example:
 ::
-::          $ mv sequencer64_setup_0.95.1.exe ../../sequencer64-packages/0.95
+::          $ mv sequencer64_setup_0.95.1.exe ../../sequencer64-packages/latest
 ::
 ::       8. Make a portable Zip package:
 ::
 ::          $ mv release/ qpseq64
 ::          $ zip -u -r qpseq64-portable-0.95.1-0.zip qpseq64/
-::          $ mv qpseq64-portable-0.95.1-0.zip ../sequencer64-packages/0.95
+::          $ mv qpseq64-portable-0.95.1-0.zip ../sequencer64-packages/latest
 ::
 ::       9. Make a standard Linux source/configure tarball:
 ::
-::          $ ./pack --release rtmidi 0.95.3
+::          $ ./pack --release rtmidi 0.95.1
+::          $ mv ../sequencer64-master-rtmidi-0.95.1.tar.xz \
+::                  ../sequencer64-packages/latest
 ::
 ::          where "rtmidi" can be replaced with whatever the current build
 ::          is, such as "cli" or "portmidi" or "qt".

@@ -1,0 +1,104 @@
+#!/bin/bash
+#
+#******************************************************************************
+# packages (Sequencer64)
+#------------------------------------------------------------------------------
+##
+# \file       	packages
+# \library    	Sequencer64
+# \author     	Chris Ahlstrom
+# \date       	2018-09-29
+# \update     	2018-09-29
+# \version    	$Revision$
+# \license    	$XPC_SUITE_GPL_LICENSE$
+#
+#  Packs up the current project directory, makes an NSIS package installer.
+#  Written solely to automate some tedious stuff needed for an official
+#  Sequencer64 release.
+#
+#-----------------------------------------------------------------------------
+
+RELEASEMAJOR="0.96"
+RELEASEMINOR="0"
+RELEASENUMBER="$RELEASEMAJOR.$RELEASEMINOR"
+REVNUMBER="0"
+DODRYRUN="no"
+DORELEASE="no"
+
+if [ "$1" == "--help" ] || [ "$1" == "help" ] ; then
+
+   cat << E_O_F
+
+packages 0.1 2018-09-29
+
+Usage:  ./pack [--dry-run] [--release 0.96.0]
+
+This script packs the contents of the current directory into the following
+packages:
+
+E_O_F
+
+else
+
+   while [ "$1" != "" ] ; do
+
+      case "$1" in
+
+        --dry-run)
+            DODRYRUN="yes"
+            ;;
+
+        --clean)
+            DOCLEAN="yes"
+            ;;
+
+        --no-clean)
+            DOCLEAN="no"
+            ;;
+
+        --release)
+            shift
+            DORELEASE="yes"
+            RELEASENUMBER="0.96.0"
+            ;;
+
+        *)
+            ;;
+
+      esac
+      shift
+   done
+
+fi
+
+PACKAGENAME="qpseq64-release-package-$RELEASENUMBER-$REVNUMBER.7z"
+INSTALLERNAME="sequencer64_setup_$RELEASENUMBER-$REVNUMBER.exe"
+ZIPNAME="qpseq64-portable-$RELEASENUMBER-$REVNUMBER.zip"
+TARNAME="sequencer64-master-rtmidi-$RELEASENUMBER.xz"
+
+if [ "$DODRYRUN" == "yes" ] ; then
+   echo "Extracting Windows deployment package..."
+   echo "$ 7z x $PACKAGENAME"
+   echo "$ mv $PACKAGENAME .."
+   echo "$ pushd nsis"
+   echo "Building NSIS installer for release $RELEASENUMBER..."
+   echo "$ makensis Seq64Setup.nsi"
+   echo "$ popd"
+   echo "$ cp release/$INSTALLERNAME.exe ../sequencer64-packages/latest"
+   echo "Making a portable Zip package..."
+   echo "$ mv release/ qpseq64"
+   echo "$ zip -u -r $ZIPNAME qpseq64/"
+   echo "$ mv $ZIPNAME ../sequencer64-packages/latest"
+   echo "Making a standard Linux source/configure tarball..."
+   echo "$ ./pack --release rtmidi 0.96.0"
+   echo "$ mv $TARNAME ../sequencer64-packages/latest"
+   echo "$ ls -lrt ../sequencer64-packages/latest"
+else
+   echo "TODO"
+fi
+
+#******************************************************************************
+# packages (Sequencer64)
+#------------------------------------------------------------------------------
+# vim: ts=3 sw=3 et ft=sh
+#------------------------------------------------------------------------------

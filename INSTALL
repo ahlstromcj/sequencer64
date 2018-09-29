@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.96.0 and above
 Chris Ahlstrom
-2015-09-10 to 2018-09-27
+2015-09-10 to 2018-09-29
 
 Getting Sequencer64 requires building the code or going to the
 sequencer64-packages site on GitHub.  The bootstrapping setup is primarily
@@ -219,7 +219,7 @@ Qmake-based Install:
     debugging interface.
 
     To create an installer package for Windows, see the instructions at the
-    top of the "nsis/Seq64Setup_V0.95.nsi" file. One can build the Sequencer64
+    top of the "nsis/Seq64Setup.nsi" file. One can build the Sequencer64
     application in Windows, and then build the installer for it in Windows or
     Linux!
 

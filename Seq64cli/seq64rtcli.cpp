@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2018-09-25
+ * \updates       2018-09-29
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -262,6 +262,8 @@ main (int argc, char * argv [])
                 errprint(extant_errmsg.c_str());
             else
                 errprint(errmessage.c_str());
+
+            (void) seq64::write_options_files(p, "erroneous");
         }
 
 #ifdef PLATFORM_LINUX

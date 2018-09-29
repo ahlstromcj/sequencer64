@@ -25,7 +25,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2018-09-27
+ * \updates       2018-09-29
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -252,6 +252,8 @@ main (int argc, char * argv [])
                 seq24_window.show_message_box(extant_errmsg, "Start-up Error");
             else
                 seq24_window.rc_error_dialog(errmessage);
+
+            (void) seq64::write_options_files(p, "erroneous");
         }
     }
     return ok ? EXIT_SUCCESS : EXIT_FAILURE ;

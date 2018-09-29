@@ -398,6 +398,34 @@ rc_settings::config_filespec () const
 }
 
 /**
+ *  Constructs an alternate full path and file specification for the "rc"
+ *  file.  It does not use the legacy option.  This function is useful in
+ *  writing to an alternate "rc" file when a fatal error occurs.
+ *
+ * \param altname
+ *      Provides the base-name of the alternate file, including the extension.
+ *      Example:  "erroneous.rc".
+ *
+ * \return
+ *      If home_config_directory() returns a non-empty string, alternate
+ *      normal "rc" configuration file-name is appended to that result, and
+ *      returned.  Otherwise, an empty string is returned.
+ */
+
+std::string
+rc_settings::config_filespec (const std::string & altname) const
+{
+    std::string result;
+    if (! altname.empty())
+    {
+        result = home_config_directory();
+        if (! result.empty())
+            result += altname;
+    }
+    return result;
+}
+
+/**
  *  Constructs the full path and file specification for the "user" file
  *  based on whether or not the legacy Seq24 filenames are being used.
  *
@@ -417,6 +445,34 @@ rc_settings::user_filespec () const
             result += user_filename_alt();
         else
             result += user_filename();
+    }
+    return result;
+}
+
+/**
+ *  Constructs an alternate full path and file specification for the "usr"
+ *  file.  It does not use the legacy option.  This function is useful in
+ *  writing to an alternate "usr" file when a fatal error occurs.
+ *
+ * \param altname
+ *      Provides the base-name of the alternate file, including the extension.
+ *      Example:  "erroneous.usr".
+ *
+ * \return
+ *      If home_config_directory() returns a non-empty string, alternate
+ *      normal "usr" configuration file-name is appended to that result, and
+ *      returned.  Otherwise, an empty string is returned.
+ */
+
+std::string
+rc_settings::user_filespec (const std::string & altname) const
+{
+    std::string result;
+    if (! altname.empty())
+    {
+        result = home_config_directory();
+        if (! result.empty())
+            result += altname;
     }
     return result;
 }

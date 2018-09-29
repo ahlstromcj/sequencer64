@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-09-27
+ * \updates       2018-09-29
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -1060,13 +1060,20 @@ parse_command_line_options (perform & p, int argc, char * argv [])
  *      Provides the perform object that may provide new values for the
  *      parameters.
  *
+ * \param errrcname
+ *      This value, if not empty, provides an altername base name for the
+ *      writing of the "rc" and "user" files.  Normally empty, it can be
+ *      specified in order to write alternate files without overwriting the
+ *      existing ones, when a serious error occurs.  It should not include the
+ *      extension; the proper one will be added.
+ *
  * \return
  *      Returns true if both files were saved successfully.  Otherwise returns
  *      false.  But even if one write failed, the other might have succeeded.
  */
 
 bool
-write_options_files (const perform & p)
+write_options_files (const perform & p, const std::string & errrcname)
 {
     bool result = true;
 
@@ -1075,8 +1082,19 @@ write_options_files (const perform & p)
      * --legacy option is in force.
      */
 
-    std::string rcname = seq64::rc().config_filespec();
+    std::string rcname;
+    if (errrcname.empty())
+    {
+        rcname = seq64::rc().config_filespec();
+    }
+    else
+    {
+        std::string name = errrcname;
+        name += ".rc";
+        rcname = rc().config_filespec(name);
+    }
     printf("[Writing rc configuration %s]\n", rcname.c_str());
+
     seq64::optionsfile options(rcname);
     if (options.write(p))
     {
@@ -1086,9 +1104,19 @@ write_options_files (const perform & p)
         result = false;
 
     bool cansave = usr().save_user_config();
-    rcname = seq64::rc().user_filespec();
-    if (! cansave)
-        cansave = ! file_exists(rcname);
+    if (errrcname.empty())
+    {
+        rcname = seq64::rc().user_filespec();
+        if (! cansave)
+            cansave = ! file_exists(rcname);
+    }
+    else
+    {
+        std::string name = errrcname;
+        name += ".usr";
+        rcname = rc().user_filespec(name);
+        cansave = true;
+    }
 
     if (cansave)
     {

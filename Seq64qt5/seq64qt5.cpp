@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-09-27
+ * \updates       2018-09-29
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -266,6 +266,8 @@ main (int argc, char * argv [])
                 seq24_window.show_message_box(extant_errmsg);
             else
                 seq24_window.show_message_box(errmessage);
+
+            (void) seq64::write_options_files(p, "erroneous");
         }
     }
     return exit_status;

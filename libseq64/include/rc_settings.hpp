@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-09-15
+ * \updates       2018-09-29
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -279,7 +279,9 @@ public:
     rc_settings & operator = (const rc_settings & rhs);
 
     std::string config_filespec () const;
+    std::string config_filespec (const std::string & altname) const;
     std::string user_filespec () const;
+    std::string user_filespec (const std::string & altname) const;
     std::string playlist_filespec () const;
     void clear_playlist ();
     void set_defaults ();

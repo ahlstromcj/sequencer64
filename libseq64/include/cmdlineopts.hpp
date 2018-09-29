@@ -9,7 +9,7 @@
  *
  * \author  Chris Ahlstrom
  * \date    2015-11-20
- * \updates 2017-08-27
+ * \updates 2018-09-29
  * \version $Revision$
  *
  *    Also see the file_functions.cpp module.  These modules together simplify
@@ -48,7 +48,10 @@ extern bool parse_mute_groups (perform & p, std::string & errmessage);
 extern bool parse_o_options (int argc, char * argv []);
 extern bool parse_log_option (int argc, char * argv []);
 extern int parse_command_line_options (perform & p, int argc, char * argv []);
-extern bool write_options_files (const perform & p);
+extern bool write_options_files
+(
+    const perform & p, const std::string & errrcname = ""
+);
 extern std::string build_details ();
 
 #endif      // SEQ64_CMDLINEOPTS_HPP

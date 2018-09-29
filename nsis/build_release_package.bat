@@ -78,7 +78,7 @@
 ::
 ::---------------------------------------------------------------------------
  
-set PROJECT_VERSION=0.95.2
+set PROJECT_VERSION=0.96.0
 set PROJECT_DRIVE=C:
 set PROJECT_BASE=\Users\Chris\Documents\Home
 set PROJECT_ROOT=..\sequencer64

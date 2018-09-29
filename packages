@@ -71,10 +71,10 @@ else
 
 fi
 
-PACKAGENAME="qpseq64-release-package-$RELEASENUMBER-$REVNUMBER.7z"
+PACKAGENAME="qpseq64-release-package-$RELEASENUMBER.7z"
 INSTALLERNAME="sequencer64_setup_$RELEASENUMBER-$REVNUMBER.exe"
 ZIPNAME="qpseq64-portable-$RELEASENUMBER-$REVNUMBER.zip"
-TARNAME="sequencer64-master-rtmidi-$RELEASENUMBER.xz"
+TARNAME="sequencer64-master-rtmidi-$RELEASENUMBER.tar.xz"
 
 if [ "$DODRYRUN" == "yes" ] ; then
    echo "Extracting Windows deployment package..."
@@ -84,17 +84,36 @@ if [ "$DODRYRUN" == "yes" ] ; then
    echo "Building NSIS installer for release $RELEASENUMBER..."
    echo "$ makensis Seq64Setup.nsi"
    echo "$ popd"
-   echo "$ cp release/$INSTALLERNAME.exe ../sequencer64-packages/latest"
+   echo "$ cp release/$INSTALLERNAME ../sequencer64-packages/latest"
    echo "Making a portable Zip package..."
    echo "$ mv release/ qpseq64"
-   echo "$ zip -u -r $ZIPNAME qpseq64/"
+   echo "$ zip -q -u -r $ZIPNAME qpseq64/"
    echo "$ mv $ZIPNAME ../sequencer64-packages/latest"
    echo "Making a standard Linux source/configure tarball..."
+#  echo "$ ./bootstrap --full-clean"
    echo "$ ./pack --release rtmidi 0.96.0"
-   echo "$ mv $TARNAME ../sequencer64-packages/latest"
+   echo "$ mv ../$TARNAME ../sequencer64-packages/latest"
+#  echo "$ rm -rf qpseq64/"
    echo "$ ls -lrt ../sequencer64-packages/latest"
 else
-   echo "TODO"
+   echo "Extracting Windows deployment package..."
+   7z x $PACKAGENAME
+   mv $PACKAGENAME ..
+   pushd nsis
+   echo "Building NSIS installer for release $RELEASENUMBER..."
+   makensis Seq64Setup.nsi
+   popd
+   cp release/$INSTALLERNAME ../sequencer64-packages/latest
+   echo "Making a portable Zip package..."
+   mv release/ qpseq64
+   zip -u -r $ZIPNAME qpseq64/
+   mv $ZIPNAME ../sequencer64-packages/latest
+   echo "Making a standard Linux source/configure tarball..."
+#  ./bootstrap --full-clean
+   ./pack --release rtmidi 0.96.0
+   mv ../$TARNAME ../sequencer64-packages/latest
+#  rm -rf qpseq64/
+   ls -lrt ../sequencer64-packages/latest
 fi
 
 #******************************************************************************

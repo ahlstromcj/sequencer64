@@ -1,6 +1,6 @@
 readme.windows for Sequencer64
 Chris Ahlstrom
-2018-05-13 to 2018-05-27
+2018-05-13 to 2018-09-29
 
 This README file provides the things you need to know to run the new native
 Windows implmentation of sequencer64, an executable called qpseq64.exe.  It
@@ -17,6 +17,10 @@ Inaccessible Devices:
     Windows 8 and beyond, is still detected by the PortMidi library used in
     qpseq64.  Another issue is that the built-in Microsoft wave-table
     synthesizer is not accessible.
+
+    When an error occurs, the files "erroneous.rc" and "erroneous.usr"
+    are created.  They can be inspected, fixed, and renamed to
+    "qpseq64.rc" and "qpseq64.usr", and with luck the startup will work.
 
     We installed the CoolSoft MIDIMapper and VirtualMIDISYnth to try to get
     around these issues, and tried to turn off the system setup of "Allow

@@ -1,6 +1,6 @@
-Sequencer64 Licensing 0.95.2
+Sequencer64 Licensing 0.96.0
 Chris Ahlstrom
-2015-09-10 to 2018-08-20
+2015-09-10 to 2018-09-29
 
 Applications:
 

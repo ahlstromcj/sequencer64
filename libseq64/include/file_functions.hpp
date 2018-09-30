@@ -9,7 +9,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-09-03
+ * \updates       2018-09-30
  * \version       $Revision$
  *
  *    Also see the file_functions.cpp module.
@@ -60,6 +60,7 @@ extern void filename_split
     std::string & path,
     std::string & filebase
 );
+extern std::string strip_comments (const std::string & item);
 extern std::string strip_quotes (const std::string & item);
 extern std::string add_quotes (const std::string & item);
 extern std::string file_extension (const std::string & path);

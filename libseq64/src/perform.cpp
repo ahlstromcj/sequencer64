@@ -4481,7 +4481,6 @@ perform::handle_midi_control (int ctl, bool state)
     return result;
 }
 
-
 /**
  *  Provides operation of the new MIDI controls.
  *
@@ -5355,7 +5354,6 @@ perform::input_func ()
                         return;
                     }
 #endif
-
                     /*
                      * Send out the current event, if "dumping".
                      */

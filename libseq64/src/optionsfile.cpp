@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-26
+ * \updates       2018-09-30
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -315,7 +315,8 @@ optionsfile::parse (perform & p)
     {
         std::string fullpath;
         std::string line = m_line;
-        std::string filename = strip_quotes(line);
+        std::string filename = strip_comments(line);
+        filename = strip_quotes(filename);
         bool ok = ! filename.empty();
         if (ok)
         {
@@ -1171,7 +1172,6 @@ optionsfile::write (const perform & p)
             file
                 << "\n[midi-control-file]\n\n" << fname
                 << "    # (" << fspec << ")\n"
-                << "\n"
                 ;
         }
         else

@@ -7,7 +7,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-09-03
+ * \updates       2018-09-30
  * \version       $Revision$
  *
  *    We basically include only the functions we need for Sequencer64, not
@@ -522,6 +522,31 @@ filename_split
 #endif
 }
 
+/**
+ *  Strips the comments from a string.
+ *
+ *  The algorithm moves to the "#" character, backs up to the first non-space
+ *  before that character, and removes all characters after that character.
+ *
+ * \param item
+ *      Provides the string to be comment-stripped.
+ *
+ * \return
+ *      Returns the string data from the first non-space to the last
+ *      non-space before the hash-tag.
+ */
+
+std::string
+strip_comments (const std::string & item)
+{
+    std::string result = item;
+    std::string::size_type fpos = result.find_first_of("#");
+    if (fpos != std::string::npos)
+        result = result.substr(0, fpos);
+
+    result = trim(result, SEQ64_TRIM_CHARS);
+    return result;
+}
 
 /**
  *  Strips single- or double-quotes from a string.  Meant mainly for removing

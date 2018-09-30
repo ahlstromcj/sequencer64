@@ -192,10 +192,11 @@ main (int argc, char * argv [])
             std::string playlistname = seq64::rc().playlist_filespec();
             if (seq64::rc().playlist_active() && ! playlistname.empty())
             {
-                ok = p.open_playlist
-                (
-                    playlistname, ! seq64::usr().option_daemonize()
-                );
+//              ok = p.open_playlist
+//              (
+//                  playlistname, ! seq64::usr().option_daemonize()
+//              );
+                ok = p.open_playlist(playlistname, seq64::rc().verbose_option());
                 if (ok)
                 {
                     ok = p.open_current_song();

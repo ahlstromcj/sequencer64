@@ -1,0 +1,86 @@
+# Sequencer64 0.96.0 (and above) playlist file
+#
+# data/ca-sample.playlist
+# Written on 2018-10-02 00:00:00
+#
+# This file holds a playlist for Sequencer64. It consists of one
+# or more '[playlist]' sections.  Each section has a user-specified
+# number.  This number should range from 0 to 127, but it can go
+# higher if the user doesn't need to use MIDI control to select
+# a playlist. Ultimately, the playlists are sorted by this number.
+#
+# Next comes a display name for this list, with or without quotes.
+#
+# Next comes the name of the directory, always using the UNIX-style
+# separator, a forward slash (solidus).  It can optionally be
+# terminated with a slash.
+#
+# The last item is a line containing the MIDI song-control number,
+# followed by the name of the MIDI files.  They are sorted by the
+# control number, starting from 0.  They can be simple 'base.ext'
+# file-names; the playlist directory will be prepended before the
+# song is accessed.
+#
+# If the MIDI file-name already has a directory name, that will be
+# used instead.
+#
+# The [comments] section can document this file.  Lines starting
+# with '#' are ignored.  Blank lines are ignored.  Show a
+# blank line by adding a space character to the line.
+
+[comments]
+
+This sample play-list file contains two playlists.  One for
+demo ditties, and one for more realistic songs.  These songs
+are found in the contrib/midi directory.  You may need to
+change that directory name for both of the playlists if you
+have a different setup than the developers.
+
+[playlist-options]
+
+1   # If set to 1, when a new song is select, unmute all its patterns
+
+[playlist]
+
+# Playlist number, arbitrary but unique. 0 to 127 recommended
+# for use with MIDI playlist control.
+126
+
+# Display name of this play list.
+"Music for Serious Dogs"
+
+# Storage directory for the song-files in this play list.
+/home/ahlstrom/Home/ca/mls/git/sequencer64/contrib/midi/
+
+# Provides the MIDI song-control number, and also the
+# base file-name (tune.midi) of each song in this playlist.
+# The playlist directory is used, unless the file-name contains its
+# own path.
+70 allofarow.mid
+71 CountryStrum.midi
+72 /home/ahlstrom/Home/ca/mls/git/sequencer64/contrib/wrk/longhair.wrk
+
+[playlist]
+
+# Playlist number, arbitrary but unique. 0 to 127 recommended
+# for use with MIDI playlist control.
+127
+
+# Display name of this play list.
+"Demo Ditties"
+
+# Storage directory for the song-files in this play list.
+/home/ahlstrom/Home/ca/mls/git/sequencer64/contrib/midi/
+
+# Provides the MIDI song-control number, and also the
+# base file-name (tune.midi) of each song in this playlist.
+# The playlist directory is used, unless the file-name contains its
+# own path.
+64 1Bar.midi
+65 2Bars.midi
+66 click_4_4.midi
+67 colours.midi
+
+# End of data/sample.playlist
+#
+# vim: sw=4 ts=4 wm=4 et ft=sh

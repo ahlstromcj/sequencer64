@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2018-09-29
+ * \updates       2018-10-02
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -192,10 +192,6 @@ main (int argc, char * argv [])
             std::string playlistname = seq64::rc().playlist_filespec();
             if (seq64::rc().playlist_active() && ! playlistname.empty())
             {
-//              ok = p.open_playlist
-//              (
-//                  playlistname, ! seq64::usr().option_daemonize()
-//              );
                 ok = p.open_playlist(playlistname, seq64::rc().verbose_option());
                 if (ok)
                 {

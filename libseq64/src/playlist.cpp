@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-26
+ * \updates       2018-10-02
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -154,7 +154,12 @@ playlist::open (bool verify_it)
     if (result)
     {
         if (verify_it)
+        {
+            if (m_show_on_stdout)
+                printf("Verifying playlist %s\n", name().c_str());
+
             result = verify();
+        }
     }
     mode(result);
     return result;
@@ -248,11 +253,17 @@ playlist::parse (perform & p)
             int songcount = 0;
             play_list_t plist;                          /* current playlist */
             sscanf(m_line, "%d", &listnumber);          /* playlist number  */
+            if (m_show_on_stdout)
+                printf("Processing playlist %d\n", listnumber);
+
             if (next_data_line(file))
             {
                 std::string line = m_line;
                 song_list slist;
                 plist.ls_list_name = strip_quotes(line);
+                if (m_show_on_stdout)
+                    printf("Playlist name %s\n", line.c_str());
+
                 if (next_data_line(file))
                 {
                     /*
@@ -267,6 +278,9 @@ playlist::parse (perform & p)
                     line = m_line;
                     plist.ls_file_directory = clean_path(line);
                     slist.clear();
+                    if (m_show_on_stdout)
+                        printf("Playlist directory %s\n", line.c_str());
+
                     while (next_data_line(file))
                     {
                         int songnumber = -1;
@@ -294,7 +308,13 @@ playlist::parse (perform & p)
                             ++songcount;
                         }
                         else
+                        {
+                            std::string msg = "scanning song file '";
+                            msg += fname;
+                            msg += "' failed";
+                            result = make_error_message(msg);
                             break;
+                        }
                     }
 
                     /*
@@ -1475,15 +1495,18 @@ playlist::show_list (const play_list_t & pl) const
     std::cout
         << "    Playlist MIDI #" << pl.ls_midi_number
         << ", slot " << pl.ls_index
-        << ": '" << pl.ls_list_name
-        << "' (" << pl.ls_file_directory
-        << "), " << pl.ls_song_count << " songs"
+        << ": '" << pl.ls_list_name << "'"
+        << std::endl
+        << "    " << pl.ls_file_directory
+        << " " << pl.ls_song_count << " songs"
         << std::endl
         ;
 }
 
 /**
- *  Shows a summary of a song.
+ *  Shows a summary of a song. The directory of the song is currently not
+ *  shown because it makes the summary more difficult to read in the CLI
+ *  output.
  *
  * \param s
  *      The song-specification structure to show.
@@ -1494,7 +1517,7 @@ playlist::show_song (const song_spec_t & s) const
 {
     std::cout
         << "    Song MIDI #" << s.ss_midi_number << ", slot " << s.ss_index
-        << ": " << s.ss_song_directory << s.ss_filename
+        << ": " /* << s.ss_song_directory */ << s.ss_filename
         << std::endl
         ;
 }

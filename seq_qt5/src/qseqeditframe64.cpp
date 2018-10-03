@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-08-12
+ * \updates       2018-10-02
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -1975,7 +1975,8 @@ qseqeditframe64::popup_sequence_menu ()
     (void) m_sequences_popup->addAction(off);
     (void) m_sequences_popup->addSeparator();
     int seqsinset = usr().seqs_in_set();
-    for (int sset = 0; sset < c_max_sets; ++sset)
+    int maxset = usr().max_sets();
+    for (int sset = 0; sset < maxset; ++sset)
     {
         QMenu * menusset = nullptr;
         if (perf().screenset_is_active(sset))

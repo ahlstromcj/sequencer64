@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-09-27
+ * \updates       2018-10-02
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1928,14 +1928,17 @@ bool
 perform::screenset_is_active (int screenset)
 {
     bool result = false;
-    int seqsinset = usr().seqs_in_set();
-    int seqnum = screenset * seqsinset;
-    for (int seq = 0; seq < seqsinset; ++seq, ++seqnum)
+    if (is_screenset_valid(screenset))
     {
-        if (is_active(seqnum))
+        int seqsinset = usr().seqs_in_set();
+        int seqnum = screenset * seqsinset;
+        for (int seq = 0; seq < seqsinset; ++seq, ++seqnum)
         {
-            result = true;
-            break;
+            if (is_active(seqnum))
+            {
+                result = true;
+                break;
+            }
         }
     }
     return result;

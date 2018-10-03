@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-19
+ * \updates       2018-10-01
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -51,6 +51,7 @@ class QCloseEvent;
 class QErrorMessage;
 class QFileDialog;
 class QMessageBox;
+class QResizeEvent;
 class QTimer;
 
 /*
@@ -153,6 +154,7 @@ private:
 
     virtual void closeEvent (QCloseEvent *);
     virtual void changeEvent (QEvent *);
+    virtual void resizeEvent (QResizeEvent *);
 
     void make_perf_frame_in_tab ();
 

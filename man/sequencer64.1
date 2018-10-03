@@ -1,4 +1,4 @@
-.TH Sequencer64 "September 27 2018" "Version 0.96.0" "Seq64 Manual Page"
+.TH Sequencer64 "October 5 2018" "Version 0.96.1" "Seq64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real-time live MIDI sequencer refactored from Seq24
@@ -48,6 +48,13 @@ relative to the user's HOME directory.  The default is ./config/sequencer64.
 .B  \-X, \-\-playlist filename
 Load the given play-list from the HOME directory.  The conventional name for
 this file is, for example, "live-sets.playlist".
+This file provides one or more play-list
+entries, each providing a list of one or more songs.  Once loaded, the
+user can use the four arrow keys to move between play-lists and the songs
+in each play-list.  The play-list entries are also controllable via MIDI
+control values set in the "rc" file.  See the Sequencer64 manual for
+more information.  Note that, once set, this option is, by default, saved
+in the "rc" file.
 
 .TP 8
 .B  \-l, \-\-legacy

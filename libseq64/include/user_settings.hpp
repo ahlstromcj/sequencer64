@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-07-21
+ * \updates       2018-10-01
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -1220,6 +1220,15 @@ public:
     int max_sequence () const
     {
         return m_max_sequence;
+    }
+
+    /**
+     * \getter m_total_seqs
+     */
+
+    int total_seqs () const
+    {
+        return m_total_seqs;            /* not included in .usr file    */
     }
 
     /**

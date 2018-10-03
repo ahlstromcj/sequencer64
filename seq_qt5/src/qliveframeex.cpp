@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-09-16
- * \updates       2018-09-18
+ * \updates       2018-10-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,6 +38,7 @@
 #include "qsliveframe.hpp"
 #include "qsmainwnd.hpp"
 #include "sequence.hpp"
+#include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
 
 /*
  *  Qt's uic application allows a different output file-name, but not sure
@@ -87,6 +88,22 @@ qliveframeex::qliveframeex (perform & p, int ssnum, qsmainwnd * parent)
     QGridLayout * layout = new QGridLayout(this);
     m_live_frame = new qsliveframe(p, parent, nullptr);
     layout->addWidget(m_live_frame);
+    if (usr().window_is_scaled())
+    {
+        /*
+         * Try scaling if applicable.
+         */
+
+        QSize s = size();
+        int h = s.height();
+        int w = s.width();
+        int width = usr().scale_size(w);
+        int height = usr().scale_size(h);
+        resize(width, height);
+        if (not_nullptr(m_live_frame))
+            m_live_frame->repaint();
+    }
+
     show();
     m_live_frame->set_bank(ssnum);
     m_live_frame->show();

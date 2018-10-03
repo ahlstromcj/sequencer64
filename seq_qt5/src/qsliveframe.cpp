@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-21
+ * \updates       2018-10-02
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -136,10 +136,11 @@ qsliveframe::qsliveframe (perform & p, qsmainwnd * window, QWidget * parent)
     );
     m_msg_box->setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     m_msg_box->setDefaultButton(QMessageBox::No);
-    set_bank(0);
 
     QString bname = m_perform.get_bank_name(m_bank_id).c_str();
     ui->txtBankName->setPlainText(bname);
+    ui->spinBank->setRange(0, usr().max_sets() - 1);
+    set_bank(0);
     connect(ui->spinBank, SIGNAL(valueChanged(int)), this, SLOT(updateBank(int)));
     connect(ui->txtBankName, SIGNAL(textChanged()), this, SLOT(updateBankName()));
 
@@ -210,10 +211,9 @@ qsliveframe::paintEvent (QPaintEvent *)
  *  Compare it to mainwid::calculate_base_sizes():
  *
  *      -   m_mainwid_border_x and m_mainwid_border_y are
- *          ui->frame->x() and ui->frame->y(), which can be alter by the
+ *          ui->frame->x() and ui->frame->y(), which can be altered by the
  *          user via resizing the main window.
- *      -   m_seqarea_x and m_seqarea_y are the m_slot_w and m_slot_h members
- *          (!).
+ *      -   m_seqarea_x and m_seqarea_y are the m_slot_w and m_slot_h members.
  *
  * \param seqnum
  *      Provides the number of the sequence to calculate.
@@ -246,7 +246,12 @@ qsliveframe::drawSequence (int seq)
 {
     QPainter painter(this);
     QPen pen(Qt::black);
-    QBrush brush(Qt::black);            // QBrush brush(Qt::darkGray);
+
+    /*
+     * Slot background.  Want something between black and darkGray.
+     */
+
+    QBrush brush(Qt::black);
     m_font.setPointSize(6);
     m_font.setBold(true);
     m_font.setLetterSpacing(QFont::AbsoluteSpacing, 1);
@@ -265,37 +270,43 @@ qsliveframe::drawSequence (int seq)
 
     int fw = ui->frame->width();
     int fh = ui->frame->height();
-    if (usr().window_scaled_up())
-    {
-        fw = 660;
-        fh = 350;
-    }
-    m_slot_w = (fw - 1 - m_mainwid_spacing * 8) / m_mainwnd_cols;
-    m_slot_h = (fh - 1 - m_mainwid_spacing * 5) / m_mainwnd_rows;
+    m_slot_w = (fw - 1 - m_mainwid_spacing * m_mainwnd_cols) / m_mainwnd_cols;
+    m_slot_h = (fh - 1 - m_mainwid_spacing * m_mainwnd_rows) / m_mainwnd_rows;
     m_preview_w = m_slot_w - m_font.pointSize() * 2;
     m_preview_h = m_slot_h - m_font.pointSize() * 5;
-    if
-    (
-        seq >= (m_bank_id * m_mainwnd_rows * m_mainwnd_cols) &&
-        seq < ((m_bank_id + 1) * m_mainwnd_rows * m_mainwnd_cols)
-    )
+
+    /*
+     * This causes scaling to not work when using "-o scale=1.5", either
+     * by startup rescaling or by manual resizing.
+     *
+     *  if (usr().window_scaled_up())
+     *  {
+     *      fw = 660;
+     *      fh = 350;
+     *  }
+     */
+
+    int lowerseq = m_bank_id * m_screenset_slots;
+    int upperseq = lowerseq + m_screenset_slots;
+    if (seq >= lowerseq && seq < upperseq)
     {
         int base_x, base_y;
-        calculate_base_sizes(seq, base_x, base_y);    /* side-effects    */
+        calculate_base_sizes(seq, base_x, base_y);  /* side-effects         */
         sequence * s = perf().get_sequence(seq);
         if (not_nullptr(s))
         {
+            const int penwidth = 4;                 /* 2                    */
             int c = s->color();
             Color backcolor = get_color_fix(PaletteColor(c));
-            pen.setColor(Qt::black);
+            pen.setColor(Qt::darkCyan);             /* setColor(Qt::black)  */
             pen.setStyle(Qt::SolidLine);
             if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
             {
                 /*
-                 * Playing but queued to mute, or turning off after snapping.
+                 * Playing, but queued to mute; or turning off after snapping.
                  */
 
-                pen.setWidth(2);
+                pen.setWidth(penwidth);
                 pen.setColor(Qt::black);
                 pen.setStyle(Qt::DashLine);
                 painter.setPen(pen);
@@ -304,18 +315,18 @@ qsliveframe::drawSequence (int seq)
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w + 1, m_slot_h + 1);
             }
-            else if (s->get_playing())              /* playing, no queueing     */
+            else if (s->get_playing())              /* playing, no queueing */
             {
-                pen.setWidth(2);
+                pen.setWidth(penwidth);
                 painter.setPen(pen);
                 backcolor.setAlpha(210);
                 brush.setColor(backcolor);
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w + 1, m_slot_h + 1);
             }
-            else if (s->get_queued())               /* not playing but queued   */
+            else if (s->get_queued())               /* not playing, queued  */
             {
-                pen.setWidth(2);
+                pen.setWidth(penwidth);
                 pen.setColor(Qt::darkGray);
                 pen.setStyle(Qt::DashLine);
                 backcolor.setAlpha(180);
@@ -324,9 +335,9 @@ qsliveframe::drawSequence (int seq)
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w, m_slot_h);
             }
-            else if (s->one_shot())                 // queued for one-shot
+            else if (s->one_shot())                 /* one-shot queued      */
             {
-                pen.setWidth(2);
+                pen.setWidth(penwidth);
                 pen.setColor(Qt::darkGray);
                 pen.setStyle(Qt::DotLine);
                 backcolor.setAlpha(180);
@@ -335,10 +346,10 @@ qsliveframe::drawSequence (int seq)
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w, m_slot_h);
             }
-            else                                    // just not playing
+            else                                    /* just not playing     */
             {
                 pen.setStyle(Qt::NoPen);
-                backcolor.setAlpha(180);
+                backcolor.setAlpha(100);            /* .setAlpha(180)       */
                 brush.setColor(backcolor);
                 painter.setPen(pen);
                 painter.setBrush(brush);
@@ -538,13 +549,13 @@ void
 qsliveframe::drawAllSequences ()
 {
 #ifdef USE_KEPLER34_REDRAW_ALL
-    for (int i = 0; i < (m_mainwnd_rows * m_mainwnd_cols); ++i)
+    for (int i = 0; i < m_screenset_slots; ++i)
     {
-        drawSequence(i + (m_bank_id * m_mainwnd_rows * m_mainwnd_cols));
-        m_last_tick_x[i + (m_bank_id * m_mainwnd_rows * m_mainwnd_cols)] = 0;
+        drawSequence(i + (m_bank_id * m_screenset_slots));
+        m_last_tick_x[i + (m_bank_id * m_screenset_slots)] = 0;
     }
 #else
-    int send =  m_screenset_offset + m_screenset_slots;
+    int send = m_screenset_offset + m_screenset_slots;
     for (int s = m_screenset_offset; s < send; ++s)
     {
         drawSequence(s);
@@ -592,7 +603,7 @@ qsliveframe::set_bank ()
 void
 qsliveframe::set_bank (int bank)
 {
-    if (bank != m_bank_id)
+    if (bank != m_bank_id && perf().is_screenset_valid(bank))
     {
         QString bname = perf().get_bank_name(bank).c_str();
         ui->txtBankName->setPlainText(bname);
@@ -613,8 +624,11 @@ qsliveframe::set_bank (int bank)
 void
 qsliveframe::updateBank (int bank)
 {
-    perf().set_screenset(bank);
-    set_bank(bank);
+    if (perf().is_screenset_valid(bank))    // if (bank < usr().max_sets())
+    {
+        perf().set_screenset(bank);
+        set_bank(bank);
+    }
 }
 
 /**
@@ -651,6 +665,8 @@ qsliveframe::updateInternalBankName ()
 
 /**
  *  Converts the (x, y) coordinates of a click into a sequence/pattern ID.
+ *  Normally, these values can range from 0 to 31, representing one of 32
+ *  slots in the live frame.  But sets may be larger or smaller.
  *
  * \param click_x
  *      The x-coordinate of the mouse click.
@@ -687,10 +703,7 @@ qsliveframe::seqIDFromClickXY (int click_x, int click_y)
 
     x /= (m_slot_w + m_mainwid_spacing);
     y /= (m_slot_h + m_mainwid_spacing);
-    int seqid =
-    (
-        (x * m_mainwnd_rows + y) + (m_bank_id * m_mainwnd_rows * m_mainwnd_cols)
-    );
+    int seqid = (x * m_mainwnd_rows + y) + (m_bank_id * m_screenset_slots);
     return seqid;
 }
 
@@ -789,12 +802,19 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 
         if (! m_is_external)
         {
-            QAction * liveframe = new QAction(tr("Extern &live frame"), m_popup);
-            m_popup->addAction(liveframe);
-            QObject::connect
-            (
-                liveframe, SIGNAL(triggered(bool)), this, SLOT(new_live_frame())
-            );
+            if (m_curr_seq < usr().max_sets())
+            {
+                QAction * liveframe = new QAction
+                (
+                    tr("Extern &live frame"), m_popup
+                );
+                m_popup->addAction(liveframe);
+                QObject::connect
+                (
+                    liveframe, SIGNAL(triggered(bool)),
+                    this, SLOT(new_live_frame())
+                );
+            }
 
             if (perf().is_active(m_curr_seq))
             {

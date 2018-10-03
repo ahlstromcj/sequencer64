@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-28
+ * \updates       2018-10-03
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -34,11 +34,13 @@
  *  behavior of the pattern slots.
  */
 
+#include <QDesktopWidget>
 #include <QErrorMessage>
 #include <QFileDialog>
-#include <QTimer>
+#include <QInputDialog>
 #include <QMessageBox>
-#include <QDesktopWidget>
+#include <QResizeEvent>
+#include <QTimer>
 
 #include <utility>                      /* std::make_pair()                 */
 
@@ -533,17 +535,32 @@ qsmainwnd::qsmainwnd
         m_is_title_dirty = true;
     }
 
-    /*
-     * This scales the full GUI, cool!  However, it can be overridden by the
-     * size of the new, larger, qseqeditframe64 frame.  We see the normal-size
-     * window come up, and then it jumps to the larger size.
-     */
+    if (usr().window_is_scaled())
+    {
+        /*
+         * This scales the full GUI, cool!  However, it can be overridden by the
+         * size of the new, larger, qseqeditframe64 frame.  We see the normal-size
+         * window come up, and then it jumps to the larger size.
+         */
 
-    int width = usr().scale_size(SEQ64_QSMAINWND_WIDTH);
-    int height = usr().scale_size(SEQ64_QSMAINWND_HEIGHT);
-    resize(width, height);
+#ifdef PLATFORM_DEBUG_XXX
+        int sh = SEQ64_QSMAINWND_WIDTH;
+        int sw = SEQ64_QSMAINWND_HEIGHT;
+        int width = usr().scale_size(sw);
+        int height = usr().scale_size(sh);
+#endif
+
+        QSize s = size();
+        int h = s.height();
+        int w = s.width();
+        int width = usr().scale_size(w);
+        int height = usr().scale_size(h);
+        resize(width, height);
+        if (not_nullptr(m_live_frame))
+            m_live_frame->repaint();
+    }
+
     show();
-
     m_timer = new QTimer(this);         /* refresh GUI element every few ms */
     m_timer->setInterval(2 * usr().window_redraw_rate());    // 50
     connect(m_timer, SIGNAL(timeout()), this, SLOT(refresh()));
@@ -1264,30 +1281,50 @@ qsmainwnd::show_import_dialog ()
 {
     mImportDialog->exec();
     QStringList filePaths = mImportDialog->selectedFiles();
-    for (int i = 0; i < filePaths.length(); i++)
-    {
-        QString path = mImportDialog->selectedFiles()[i];
-        if (!path.isEmpty())
-        {
-            try
-            {
-                std::string fn = path.toStdString();
-                bool is_wrk = file_extension_match(fn, "wrk");
-                midifile * f = is_wrk ?
-                    new wrkfile(fn) : new midifile(fn, ppqn()) ;
 
-                f->parse(perf(), perf().screenset());
-                ui->spinBpm->setValue(perf().bpm());
-                ui->spinBpm->setDecimals(usr().bpm_precision());
-                ui->spinBpm->setSingleStep(usr().bpm_step_increment());
-                if (not_nullptr(m_live_frame))
-                    m_live_frame->set_bank(perf().screenset());
-            }
-            catch (...)
+    /*
+     * Rather than rely on the user remembering to set the destination
+     * screen-set, prompt for the set/bank number.  Could make this a user
+     * option at some point.
+     */
+
+    bool ok;
+	int sset = QInputDialog::getInt
+    (
+        this, tr("Set/bank"),
+        tr("Destination screen-set/bank"), 1, 0, usr().max_sets() - 1, 1, &ok
+    );
+    if (ok)
+    {
+        for (int i = 0; i < filePaths.length(); ++i)
+        {
+            QString path = mImportDialog->selectedFiles()[i];
+            if (! path.isEmpty())
             {
-                QString msg_text = "Error reading MIDI data from file: " + path;
-                m_msg_error->showMessage(msg_text);
-                m_msg_error->exec();
+                try
+                {
+                    std::string fn = path.toStdString();
+                    bool is_wrk = file_extension_match(fn, "wrk");
+                    midifile * f = is_wrk ?
+                        new wrkfile(fn) : new midifile(fn, ppqn()) ;
+
+                    // f->parse(perf(), perf().screenset());
+
+                    f->parse(perf(), perf().set_screenset(sset));
+                    ui->spinBpm->setValue(perf().bpm());
+                    ui->spinBpm->setDecimals(usr().bpm_precision());
+                    ui->spinBpm->setSingleStep(usr().bpm_step_increment());
+                    if (not_nullptr(m_live_frame))
+                        m_live_frame->set_bank(perf().screenset());
+                }
+                catch (...)
+                {
+                    QString msg_text =
+                        "Error reading MIDI data from file: " + path;
+
+                    m_msg_error->showMessage(msg_text);
+                    m_msg_error->exec();
+                }
             }
         }
     }
@@ -1603,15 +1640,17 @@ qsmainwnd::update_beat_length (int blIndex)
     if (not_nullptr(m_beat_ind))
         m_beat_ind->set_beat_width(bl);
 
-    for (int i = 0; i < c_max_sequence; i++) // set beat length, all sequences
+    for (int i = 0; i < c_max_sequence; ++i) // set beat length, all sequences
     {
-        if (perf().is_active(i))
+        sequence * seq = perf().get_sequence(i);
+        if (not_nullptr(seq))
         {
-            sequence * seq =  perf().get_sequence(i);
+            /*
+             * Set beat width, then reset the number of measures, causing
+             * length to adjust to the new beats per measure.
+             */
+
             seq->set_beat_width(bl);
-
-            // reset number of measures, causing length to adjust to new b/m
-
             seq->set_measures(seq->get_measures());
         }
     }
@@ -1635,9 +1674,9 @@ qsmainwnd::updatebeats_per_measure(int bmindex)
     perf().set_beats_per_bar(bmindex + 1);
     for (int i = 0; i < c_max_sequence; ++i)
     {
-        if (perf().is_active(i))
+        sequence * seq = perf().get_sequence(i);
+        if (not_nullptr(seq))
         {
-            sequence * seq = perf().get_sequence(i);
             seq->set_beats_per_bar(bmindex + 1);
             seq->set_measures(seq->get_measures());
         }
@@ -1677,11 +1716,14 @@ qsmainwnd::tabWidgetClicked (int newIndex)
         }
 
         sequence * seq = perf().get_sequence(seqid);
-        seq->set_dirty();
-        m_edit_frame = new qseqeditframe(perf(), seqid, ui->EditTab);
-        ui->EditTabLayout->addWidget(m_edit_frame);     /* no ptr check */
-        m_edit_frame->show();
-        update();
+        if (not_nullptr(seq))
+        {
+            seq->set_dirty();
+            m_edit_frame = new qseqeditframe(perf(), seqid, ui->EditTab);
+            ui->EditTabLayout->addWidget(m_edit_frame); /* no ptr check */
+            m_edit_frame->show();
+            update();
+        }
     }
 }
 
@@ -2192,6 +2234,16 @@ qsmainwnd::changeEvent (QEvent * event)
             // widget is now inactive
         }
     }
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::resizeEvent (QResizeEvent * r)
+{
+    // useful?
 }
 
 }               // namespace seq64

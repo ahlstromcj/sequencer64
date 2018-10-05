@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-08-11
+ * \updates       2018-10-03
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -539,9 +539,8 @@ private:
     short m_seq_number;
 
     /**
-     *  Reserved for a potential feature from the Kepler34 project.  It will
-     *  be an index into a palette.  The colorbyte type is defined in the
-     *  midibyte.hpp file.
+     *  Implements a feature from the Kepler34 project.  It is an index into a
+     *  palette.  The colorbyte type is defined in the midibyte.hpp file.
      */
 
     colorbyte m_seq_color;

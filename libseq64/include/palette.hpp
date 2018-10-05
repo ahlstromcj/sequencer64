@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-02-18
- * \updates       2018-04-22
+ * \updates       2018-10-03
  * \license       GNU GPLv2 or above
  *
  *  This module is inspired by MidiPerformance::getSequenceColor() in
@@ -159,6 +159,12 @@ public:
     void add (PaletteColor index, const COLOR & color);
     const COLOR & get_color (PaletteColor index) const;
 
+    /*
+     * Offload to GUI-specific palette class.
+     *
+     * COLOR get_color_inverse (PaletteColor index) const;
+     */
+
     /**
      *
      */
@@ -212,7 +218,10 @@ palette<COLOR>::add (PaletteColor index, const COLOR & color)
  *      Indicates which color to get.  This index is checked for range, and, if
  *      out of range, the default color object, indexed by PaletteColor::NONE,
  *      is returned.  However, an exception will be thrown if the color does
- *      not exist.
+ *      not exist, which should be the case only via programmer error.
+ *
+ * \return
+ *      Returns a reference to the selected color object.
  */
 
 template <typename COLOR>
@@ -222,6 +231,43 @@ palette<COLOR>::get_color (PaletteColor index) const
     return (index >= SEQ64_COLOR(BLACK) && index < SEQ64_COLOR(MAX)) ?
         *container.at(index) : *container.at(SEQ64_COLOR(NONE)) ;
 }
+
+#if 0
+
+/**
+ * Offload to GUI-specific palette class.
+ *
+ *  Gets a color from the palette, based on the index value, and returns the
+ *  inverted version.
+ *
+ * \param index
+ *      Indicates which color to get.  This index is checked for range, and, if
+ *      out of range, the default color object, indexed by PaletteColor::NONE,
+ *      is returned.
+ *
+ * \return
+ *      Returns an object representing the inverse of the selected color
+ *      object.
+ */
+
+template <typename COLOR>
+COLOR
+palette<COLOR>::get_color_inverse (PaletteColor index) const
+{
+    COLOR c = get_color(index);
+    if (c != SEQ64_COLOR(NONE))
+    {
+        int r, g, b, a;
+        c.getRgb(&r, &g, &b, &a);
+        r = a - r;
+        g = a - g;
+        b = a - b;
+        return COLOR(r, g, b, a);
+    }
+    return c;
+}
+
+#endif  // 0
 
 }           // namespace seq64
 

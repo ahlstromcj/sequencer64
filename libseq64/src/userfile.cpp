@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-08
+ * \updates       2018-10-04
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -815,9 +815,13 @@ userfile::write (const perform & /* a_perf */ )
         file << "\n"
             "# Specifies the style of the main-window grid of patterns.\n"
             "#\n"
-            "# 0 = Normal style, matches the GTK theme, has brackets.\n"
-            "# 1 = White grid boxes that have brackets.\n"
-            "# 2 = Black grid boxes (no brackets, our favorite).\n"
+            "# GTK:\n"
+            "#   0 = Normal style, matches the GTK theme, has brackets.\n"
+            "#   1 = White grid boxes that have brackets.\n"
+            "#   2 = Black grid boxes (no brackets, our favorite).\n"
+            "# Qt:\n"
+            "#   0 = Slot coloring matches Kepler34.\n"
+            "#   1 = Slot coloring more like GTK.\n"
             "\n"
             << usr().grid_style() << "       # grid_style\n"
             ;

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-02-23
- * \updates       2018-04-22
+ * \updates       2018-10-03
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -308,6 +308,9 @@ gui_palette_qt5::get_color_ex
  *
  * \param index
  *      The index into the Sequencer64 stock palette.
+ *
+ * \return
+ *      Returns a copy of the fixed color.
  */
 
 gui_palette_qt5::Color
@@ -322,6 +325,42 @@ gui_palette_qt5::get_color_fix (PaletteColor index) const
         );
     }
     return result;
+}
+
+/**
+ *  Gets a color from the palette, based on the index value, and returns the
+ *  inverted version.
+ *
+ * \param index
+ *      Indicates which color to get.  This index is checked for range, and, if
+ *      out of range, the default color object, indexed by PaletteColor::NONE,
+ *      is returned.
+ *
+ * \param index
+ *      The index into the Sequencer64 stock palette.
+ *
+ * \return
+ *      Returns a copy of the inverted color.
+ */
+
+gui_palette_qt5::Color
+gui_palette_qt5::get_color_inverse (PaletteColor index) const
+{
+    gui_palette_qt5::Color c = m_palette.get_color(index);
+    if (index != SEQ64_COLOR(NONE))
+    {
+        int r, g, b, a;
+        c.getRgb(&r, &g, &b, &a);
+        r = a - r;
+        g = a - g;
+        b = a - b;
+        return gui_palette_qt5::Color(r, g, b, a);
+    }
+    else
+    {
+        // TODO: return black
+    }
+    return c;
 }
 
 }           // namespace seq64

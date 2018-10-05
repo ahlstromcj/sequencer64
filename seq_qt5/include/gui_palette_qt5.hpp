@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-02-23
- * \updates       2018-03-04
+ * \updates       2018-10-03
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -197,6 +197,7 @@ public:
     ) const;
 
     Color get_color_fix (PaletteColor index) const;
+    Color get_color_inverse (PaletteColor index) const;
 
     static void load_inverse_palette (bool inverse = true);
 

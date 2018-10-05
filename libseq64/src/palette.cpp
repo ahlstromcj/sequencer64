@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-02-20
- * \updates       2018-02-22
+ * \updates       2018-10-03
  * \license       GNU GPLv2 or above
  *
  *  This module is inspired by MidiPerformance::getSequenceColor() in
@@ -41,6 +41,9 @@
 
 namespace seq64
 {
+    /*
+     * All code is in the template header file.
+     */
 
 }           // namespace seq64
 

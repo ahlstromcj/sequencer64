@@ -873,7 +873,7 @@
   </action>
   <action name="actionImport_MIDI">
    <property name="text">
-    <string>&amp;Import MIDI...</string>
+    <string>&amp;Import MIDI to Current Set...</string>
    </property>
    <property name="toolTip">
     <string>Import MIDI file, optionally into different bank/set.</string>

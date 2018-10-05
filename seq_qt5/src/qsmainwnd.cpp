@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-03
+ * \updates       2018-10-05
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -205,7 +205,7 @@ qsmainwnd::qsmainwnd
 
     mImportDialog = new QFileDialog
     (
-        this, tr("Import MIDI file"),
+        this, tr("Import MIDI file to Current Set..."),
         rc().last_used_dir().c_str(),
         tr("MIDI files (*.midi *.mid);;WRK files (*.wrk);;All files (*)")
     );
@@ -1127,34 +1127,12 @@ qsmainwnd::save_file (const std::string & fname)
 bool
 qsmainwnd::save_file_as ()
 {
-#if 0
-    QString file;
-    file = QFileDialog::getSaveFileName
-    (
-        this,
-        tr("Save MIDI file as..."),
-        rc().last_used_dir().c_str(),
-        tr("MIDI files (*.midi *.mid);;All files (*)")
-    );
-
-    if (! file.isEmpty())
-    {
-        QFileInfo fileInfo(file);
-        QString suffix = fileInfo.completeSuffix();
-        if ((suffix != "midi") && (suffix != "mid"))
-            file += ".midi";
-
-        std::string fn = file.toStdString();
-        rc().filename(fn);
-        save_file();
-        m_is_title_dirty = true;
-    }
-#endif
     bool result = false;
     std::string prompt = "Save MIDI file as...";
     std::string filename = filename_prompt(prompt);
     if (filename.empty())
     {
+        // no code
     }
     else
     {
@@ -1286,14 +1264,16 @@ qsmainwnd::show_import_dialog ()
      * Rather than rely on the user remembering to set the destination
      * screen-set, prompt for the set/bank number.  Could make this a user
      * option at some point.
+     *
+     *  bool ok;
+     *  int sset = QInputDialog::getInt
+     *  (
+     *      this, tr("Import to Bank"),
+     *      tr("Destination screen-set/bank"), 1, 0, usr().max_sets() - 1, 1, &ok
+     *  );
      */
 
-    bool ok;
-	int sset = QInputDialog::getInt
-    (
-        this, tr("Set/bank"),
-        tr("Destination screen-set/bank"), 1, 0, usr().max_sets() - 1, 1, &ok
-    );
+    bool ok = filePaths.length() > 0;
     if (ok)
     {
         for (int i = 0; i < filePaths.length(); ++i)
@@ -1308,9 +1288,7 @@ qsmainwnd::show_import_dialog ()
                     midifile * f = is_wrk ?
                         new wrkfile(fn) : new midifile(fn, ppqn()) ;
 
-                    // f->parse(perf(), perf().screenset());
-
-                    f->parse(perf(), perf().set_screenset(sset));
+                    f->parse(perf(), perf().screenset());
                     ui->spinBpm->setValue(perf().bpm());
                     ui->spinBpm->setDecimals(usr().bpm_precision());
                     ui->spinBpm->setSingleStep(usr().bpm_step_increment());
@@ -1408,10 +1386,18 @@ qsmainwnd::load_event_editor (int seqid)
         if (not_nullptr(m_event_frame))
             delete m_event_frame;
 
-        m_event_frame = new qseqeventframe(perf(), seqid, ui->EventTab);
-        ui->EventTabLayout->addWidget(m_event_frame);
-        m_event_frame->show();
-        ui->tabWidget->setCurrentIndex(3);
+        /*
+         * First, make sure the sequence exists.  Consider creating it if it
+         * does not exist.
+         */
+
+        if (perf().is_active(seqid))
+        {
+            m_event_frame = new qseqeventframe(perf(), seqid, ui->EventTab);
+            ui->EventTabLayout->addWidget(m_event_frame);
+            m_event_frame->show();
+            ui->tabWidget->setCurrentIndex(3);
+        }
     }
 }
 
@@ -1438,17 +1424,26 @@ qsmainwnd::load_qseqedit (int seqid)
         edit_container::iterator ei = m_open_editors.find(seqid);
         if (ei == m_open_editors.end())
         {
-            qseqeditex * ex = new qseqeditex(perf(), seqid, this);
-            if (not_nullptr(ex))
+            /*
+             * First, make sure the sequence exists.  We should consider
+             * creating it if it does not exist.  So many features, so little
+             * time.
+             */
+
+            if (perf().is_active(seqid))
             {
-                ex->show();
+                qseqeditex * ex = new qseqeditex(perf(), seqid, this);
+                if (not_nullptr(ex))
+                {
+                    ex->show();
 #if __cplusplus >= 201103L              /* C++11    */
-                std::pair<int, qseqeditex *> p = std::make_pair(seqid, ex);
+                    std::pair<int, qseqeditex *> p = std::make_pair(seqid, ex);
 #else
-                std::pair<int, qseqeditex *> p =
-                    std::make_pair<int, qseqeditex *>(seqid, ex);
+                    std::pair<int, qseqeditex *> p =
+                        std::make_pair<int, qseqeditex *>(seqid, ex);
 #endif
-                m_open_editors.insert(p);
+                    m_open_editors.insert(p);
+                }
             }
         }
     }
@@ -1786,7 +1781,7 @@ qsmainwnd::create_action_menu ()
     if (not_nullptr(m_menu_recent) && m_menu_recent->isWidgetType())
         delete m_menu_recent;
 
-    m_menu_recent = new QMenu(tr("&Recent MIDI files..."), this);
+    m_menu_recent = new QMenu(tr("&Recent MIDI Files..."), this);
     for (int i = 0; i < mc_max_recent_files; ++i)
     {
         m_menu_recent->addAction(m_recent_action_list.at(i));

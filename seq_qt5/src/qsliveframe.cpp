@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-02
+ * \updates       2018-10-04
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -103,10 +103,9 @@ qsliveframe::qsliveframe (perform & p, qsmainwnd * window, QWidget * parent)
     m_screenset_offset  (m_bank_id * m_screenset_slots),
     m_slot_w            (0),
     m_slot_h            (0),
-    m_preview_w         (0),
-    m_preview_h         (0),
     m_last_metro        (0),
     m_alpha             (0),
+    m_gtkstyle_border   (! usr().grid_is_normal()),
     m_curr_seq          (0),            // mouse interaction
     m_old_seq           (0),
     m_button_down       (false),
@@ -188,10 +187,8 @@ qsliveframe::set_playlist_name (const std::string & plname)
 void
 qsliveframe::conditional_update ()
 {
-    if (perf().needs_update(0))     // seq().number()))
-    {
+    if (perf().needs_update(0))
         update();
-    }
 }
 
 /**
@@ -206,9 +203,8 @@ qsliveframe::paintEvent (QPaintEvent *)
 
 /**
  *  Provides a way to calculate the base x and y size values for the
- *  pattern map.  The values are returned as side-effects.
- *
- *  Compare it to mainwid::calculate_base_sizes():
+ *  pattern map for a given sequence/pattern/loop.  The values are returned as
+ *  side-effects.  Compare it to mainwid::calculate_base_sizes():
  *
  *      -   m_mainwid_border_x and m_mainwid_border_y are
  *          ui->frame->x() and ui->frame->y(), which can be altered by the
@@ -219,10 +215,16 @@ qsliveframe::paintEvent (QPaintEvent *)
  *      Provides the number of the sequence to calculate.
  *
  * \param [out] basex
- *      A return parameter for the x coordinate of the base size.
+ *      A return parameter for the x coordinate of the base.  This is
+ *      basically the x coordinate of the rectangle for a pattern slot.
+ *      It is the x location of the frame, plus the slot width offset by its
+ *      "x coordinate".
  *
  * \param [out] basey
- *      A return parameter for the y coordinate of the base size.
+ *      A return parameter for the y coordinate of the base.  This is
+ *      basically the y coordinate of the rectangle for a pattern slot.
+ *      It is the y location of the frame, plus the slot height offset by its
+ *      "y coordinate".
  */
 
 void
@@ -235,7 +237,8 @@ qsliveframe::calculate_base_sizes (int seqnum, int & basex, int & basey)
 }
 
 /**
- *  Draws a single pattern slot.
+ *  Draws a single pattern slot.  Support for the fading of timed elements is
+ *  provided via m_last_metro.
  *
  * \param seq
  *      The number of pattern to be drawn.
@@ -244,13 +247,17 @@ qsliveframe::calculate_base_sizes (int seqnum, int & basex, int & basey)
 void
 qsliveframe::drawSequence (int seq)
 {
-    QPainter painter(this);
-    QPen pen(Qt::black);
+    midipulse tick = perf().get_tick();
+    int metro = (tick / perf().get_ppqn()) % 2;
 
     /*
-     * Slot background.  Want something between black and darkGray.
+     * Slot background and font settings.  For background, we want
+     * something between black and darkGray at some point.  Here, the pen
+     * is black, and the brush is black.
      */
 
+    QPainter painter(this);
+    QPen pen(Qt::black);
     QBrush brush(Qt::black);
     m_font.setPointSize(6);
     m_font.setBold(true);
@@ -259,53 +266,77 @@ qsliveframe::drawSequence (int seq)
     painter.setBrush(brush);
     painter.setFont(m_font);
 
-    midipulse tick = perf().get_tick();  // timing info for timed elements
-    int metro = (tick / perf().get_ppqn()) % 2;
-
     /*
-     * Grab frame dimensions for scaled drawing.  Note that the frame
-     * size can be modified by the user dragging a corner, in some window
+     * Grab frame dimensions for scaled drawing.  Note that the frame size
+     * can be modified by the user dragging a corner, in some window
      * managers.
      */
 
     int fw = ui->frame->width();
     int fh = ui->frame->height();
-    m_slot_w = (fw - 1 - m_mainwid_spacing * m_mainwnd_cols) / m_mainwnd_cols;
-    m_slot_h = (fh - 1 - m_mainwid_spacing * m_mainwnd_rows) / m_mainwnd_rows;
-    m_preview_w = m_slot_w - m_font.pointSize() * 2;
-    m_preview_h = m_slot_h - m_font.pointSize() * 5;
+    m_slot_w = (fw - m_mainwid_spacing * m_mainwnd_cols - 1) / m_mainwnd_cols;
+    m_slot_h = (fh - m_mainwid_spacing * m_mainwnd_rows - 1) / m_mainwnd_rows;
 
     /*
-     * This causes scaling to not work when using "-o scale=1.5", either
-     * by startup rescaling or by manual resizing.
-     *
-     *  if (usr().window_scaled_up())
-     *  {
-     *      fw = 660;
-     *      fh = 350;
-     *  }
+     * IDEA: Subtract 20 from height and add 10 to base y.
      */
 
-    int lowerseq = m_bank_id * m_screenset_slots;
-    int upperseq = lowerseq + m_screenset_slots;
-    if (seq >= lowerseq && seq < upperseq)
+    int preview_w = m_slot_w - m_font.pointSize() * 2;
+    int preview_h = m_slot_h - m_font.pointSize() * 5;
+    int base_x, base_y;
+    calculate_base_sizes(seq, base_x, base_y);  /* side-effects         */
+    sequence * s = perf().get_sequence(seq);
+    if (not_nullptr(s))
     {
-        int base_x, base_y;
-        calculate_base_sizes(seq, base_x, base_y);  /* side-effects         */
-        sequence * s = perf().get_sequence(seq);
-        if (not_nullptr(s))
+        int c = s->color();
+
+        /*
+         * Outer pattern-slot border (Seq64) or whole box (Kepler34).
+         */
+
+        if (m_gtkstyle_border)                  /* Gtk/seq64 methods    */
         {
-            const int penwidth = 4;                 /* 2                    */
-            int c = s->color();
-            Color backcolor = get_color_fix(PaletteColor(c));
-            pen.setColor(Qt::darkCyan);             /* setColor(Qt::black)  */
+            painter.setPen(pen);
+            painter.setBrush(brush);
+            painter.setFont(m_font);
+            if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
+            {
+                /* Do we want to grey-up the border, too?   */
+            }
+            else if (s->get_playing())          /* playing, no queueing */
+            {
+                Color backcolor(Qt::black);
+                pen.setColor(Qt::white);
+                brush.setColor(backcolor);
+                painter.setBrush(brush);
+                painter.setPen(pen);
+            }
+            else if (s->get_queued())           /* not playing, queued  */
+            {
+                /* Do we want to grey-up the border, too?   */
+            }
+            else if (s->one_shot())             /* one-shot queued      */
+            {
+                /* Do we want to grey-up the border, too?   */
+            }
+            else                                /* just not playing     */
+            {
+                Color backcolor(Qt::white);
+                pen.setColor(Qt::black);
+                brush.setColor(backcolor);
+                painter.setBrush(brush);
+                painter.setPen(pen);
+            }
+            painter.drawRect(base_x, base_y, m_slot_w + 1, m_slot_h + 1);
+        }
+        else                                    /* Kepler34 methods     */
+        {
+            const int penwidth = 4;             /* 2                    */
+            pen.setColor(Qt::darkCyan);         /* setColor(Qt::black)  */
             pen.setStyle(Qt::SolidLine);
             if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
             {
-                /*
-                 * Playing, but queued to mute; or turning off after snapping.
-                 */
-
+                Color backcolor = get_color_fix(PaletteColor(c));
                 pen.setWidth(penwidth);
                 pen.setColor(Qt::black);
                 pen.setStyle(Qt::DashLine);
@@ -315,8 +346,9 @@ qsliveframe::drawSequence (int seq)
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w + 1, m_slot_h + 1);
             }
-            else if (s->get_playing())              /* playing, no queueing */
+            else if (s->get_playing())          /* playing, no queueing */
             {
+                Color backcolor = get_color_fix(PaletteColor(c));
                 pen.setWidth(penwidth);
                 painter.setPen(pen);
                 backcolor.setAlpha(210);
@@ -324,8 +356,9 @@ qsliveframe::drawSequence (int seq)
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w + 1, m_slot_h + 1);
             }
-            else if (s->get_queued())               /* not playing, queued  */
+            else if (s->get_queued())           /* not playing, queued  */
             {
+                Color backcolor = get_color_fix(PaletteColor(c));
                 pen.setWidth(penwidth);
                 pen.setColor(Qt::darkGray);
                 pen.setStyle(Qt::DashLine);
@@ -335,8 +368,9 @@ qsliveframe::drawSequence (int seq)
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w, m_slot_h);
             }
-            else if (s->one_shot())                 /* one-shot queued      */
+            else if (s->one_shot())             /* one-shot queued      */
             {
+                Color backcolor = get_color_fix(PaletteColor(c));
                 pen.setWidth(penwidth);
                 pen.setColor(Qt::darkGray);
                 pen.setStyle(Qt::DotLine);
@@ -346,195 +380,261 @@ qsliveframe::drawSequence (int seq)
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w, m_slot_h);
             }
-            else                                    /* just not playing     */
+            else                                /* just not playing     */
             {
+                Color backcolor = get_color_fix(PaletteColor(c));
                 pen.setStyle(Qt::NoPen);
-                backcolor.setAlpha(100);            /* .setAlpha(180)       */
+                backcolor.setAlpha(100);        /* .setAlpha(180)       */
                 brush.setColor(backcolor);
                 painter.setPen(pen);
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w, m_slot_h);
             }
+        }
 
-            std::string st = perf().sequence_title(*s);
-            QString title(st.c_str());
-            pen.setColor(Qt::black);                // write seq strings, name
-            pen.setWidth(1);
-            pen.setStyle(Qt::SolidLine);
-            painter.setPen(pen);
-            painter.drawText(base_x + c_text_x, base_y + 4, 80, 80, 1, title);
+        std::string st = perf().sequence_title(*s);
+        QString title(st.c_str());
 
-            std::string sl = perf().sequence_label(*s);
-            QString label(sl.c_str());
-            painter.drawText(base_x + 8, base_y + m_slot_h - 5, label);
-            if (perf().show_ui_sequence_key())
+        /*
+         * Draws the text in the border of the pattern slot.
+         */
+
+        if (m_gtkstyle_border)
+        {
+            if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
             {
-                QString key;
-                key[0] = (char) perf().lookup_keyevent_key
-                (
-                    seq - perf().screenset() * c_seqs_in_set
-                );
-                painter.drawText
-                (
-                    base_x + m_slot_w - 10, base_y + m_slot_h - 5, key
-                );
+                pen.setColor(Qt::white);
             }
-
-            int rectangle_x = base_x + 7;
-            int rectangle_y = base_y + 15;
-            pen.setColor(Qt::gray);
-            brush.setStyle(Qt::NoBrush);
-            painter.setBrush(brush);
-            painter.setPen(pen);        /* for inner box of notes   */
-            painter.drawRect
-            (
-                rectangle_x-2, rectangle_y-1, m_preview_w, m_preview_h
-            );
-
-            int lowest;
-            int highest;
-            bool have_notes = s->get_minmax_note_events(lowest, highest);
-            if (have_notes)
+            else if (s->get_playing())          /* playing, no queueing */
             {
-                int height = highest - lowest+ 2;
-                int length = s->get_length();
-                midipulse tick_s;
-                midipulse tick_f;
-                int note;
-                bool selected;
-                int velocity;
-                draw_type_t dt;
-                Color drawcolor = fg_color();
-                Color eventcolor = fg_color();
-                if (! s->get_transposable())
-                {
-                    eventcolor = red();
-                    drawcolor = red();
-                }
-                m_preview_h -= 6;           /* padding for box measurements */
-                m_preview_w -= 6;
-                rectangle_x += 2;
-                rectangle_y += 2;
-                s->reset_draw_marker();     /* reset container iterator     */
-                while
-                (
-                    (
-                        dt = s->get_next_note_event
-                        (
-                            tick_s, tick_f, note, selected, velocity
-                        )
-                    ) != DRAW_FIN
-                )
-                {
-                    int tick_s_x = (tick_s * m_preview_w) / length;
-                    int tick_f_x = (tick_f * m_preview_h) / length;
-                    int note_y;
-                    if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
-                        tick_f_x = tick_s_x + 1;
-
-                    if (tick_f_x <= tick_s_x)
-                        tick_f_x = tick_s_x + 1;
-
-                    if (dt == DRAW_TEMPO)
-                    {
-                        /*
-                         * Do not scale by the note range here.
-                         */
-
-                        pen.setWidth(2);
-                        drawcolor = tempo_paint();
-                        note_y = m_slot_w -
-                             m_slot_h * (note + 1) / SEQ64_MAX_DATA_VALUE;
-                    }
-                    else
-                    {
-                        pen.setWidth(1);                    /* 2 too thick  */
-                        note_y = m_preview_h -
-                             (m_preview_h * (note+1 - lowest)) / height;
-                    }
-
-                    int sx = rectangle_x + tick_s_x;        /* start x      */
-                    int fx = rectangle_x + tick_f_x;        /* finish x     */
-                    int sy = rectangle_y + note_y;          /* start y      */
-                    int fy = sy;                            /* finish y     */
-                    pen.setColor(drawcolor);                /* note line    */
-                    painter.setPen(pen);
-                    painter.drawLine(sx, sy, fx, fy);
-                    if (dt == DRAW_TEMPO)
-                    {
-                        pen.setWidth(1);                    /* 2 too thick  */
-                        drawcolor = eventcolor;
-                    }
-                }
-
-                int a_tick = perf().get_tick();             /* for playhead */
-                a_tick += (length - s->get_trigger_offset());
-                a_tick %= length;
-
-                midipulse tick_x = a_tick * m_preview_w / length;
-                if (s->get_playing())
-                    pen.setColor(Qt::red);
-                else
-                    pen.setColor(Qt::black);
-
-                if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
-                    pen.setColor(Qt::green);
-                else if (s->one_shot())
-                    pen.setColor(Qt::blue);
-
-                pen.setWidth(1);
-                painter.setPen(pen);
-                painter.drawLine
-                (
-                    rectangle_x + tick_x - 1, rectangle_y - 1,
-                    rectangle_x + tick_x - 1, rectangle_y + m_preview_h + 1
-                );
+                pen.setColor(Qt::white);
+            }
+            else if (s->get_queued())           /* not playing, queued  */
+            {
+                pen.setColor(Qt::white);
+            }
+            else if (s->one_shot())             /* one-shot queued      */
+            {
+                pen.setColor(Qt::white);
+            }
+            else
+            {
+                pen.setColor(Qt::black);
             }
         }
         else
         {
-            /*
-             * This removes the black border around the empty sequence
-             * boxes.  We like the border.
-             *
-             *  pen.setStyle(Qt::NoPen);
-             */
+            pen.setColor(Qt::black);            // or the best contrasting color?
+        }
+        pen.setWidth(1);
+        pen.setStyle(Qt::SolidLine);
+        painter.setPen(pen);
+        painter.drawText(base_x + c_text_x, base_y + 4, 80, 80, 1, title);
 
-            m_font.setPointSize(15);
-            pen.setColor(Qt::black);        // or dark gray?
+        std::string sl = perf().sequence_label(*s);
+        QString label(sl.c_str());
+        painter.drawText(base_x + 8, base_y + m_slot_h - 5, label);
+        if (perf().show_ui_sequence_key())
+        {
+            QString key;
+            key[0] = (char) perf().lookup_keyevent_key
+            (
+                seq - perf().screenset() * c_seqs_in_set
+            );
+            painter.drawText
+            (
+                base_x + m_slot_w - 10, base_y + m_slot_h - 5, key
+            );
+        }
+
+        /*
+         * Draws the inner box of the pattern slot.
+         */
+
+        if (m_gtkstyle_border)
+        {
+            Color backcolor = get_color_fix(PaletteColor(c));
+            backcolor.setAlpha(210);
+            brush.setColor(backcolor);
+            if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
+            {
+                brush.setColor(Qt::gray);
+            }
+            else if (s->get_playing())          /* playing, no queueing */
+            {
+                pen.setColor(Qt::white);
+            }
+            else if (s->get_queued())           /* not playing, queued  */
+            {
+                brush.setColor(Qt::gray);
+            }
+            else if (s->one_shot())             /* one-shot queued      */
+            {
+                pen.setColor(Qt::white);
+                brush.setColor(Qt::darkGray);
+            }
+            else
+            {
+                pen.setColor(Qt::black);
+            }
+        }
+        else
+        {
+            pen.setColor(Qt::gray);
+            brush.setStyle(Qt::NoBrush);
+        }
+
+        int rectangle_x = base_x + 7;
+        int rectangle_y = base_y + 15;
+        painter.setBrush(brush);
+        painter.setPen(pen);                    /* for inner box of notes   */
+        painter.drawRect
+        (
+            rectangle_x-2, rectangle_y-1, preview_w, preview_h
+        );
+
+        int lowest;
+        int highest;
+        bool have_notes = s->get_minmax_note_events(lowest, highest);
+        if (have_notes)
+        {
+            int height = highest - lowest + 2;
+            int length = s->get_length();
+            midipulse tick_s, tick_f;
+            int note;
+            bool selected;
+            int velocity;
+            draw_type_t dt;
+            Color drawcolor = fg_color();
+            Color eventcolor = fg_color();
+            if (! s->get_transposable())
+            {
+                eventcolor = red();
+                drawcolor = red();
+            }
+            preview_h -= 6;             /* padding for box measurements */
+            preview_w -= 6;
+            rectangle_x += 2;
+            rectangle_y += 2;
+            s->reset_draw_marker();     /* reset container iterator     */
+            while
+            (
+                (
+                    dt = s->get_next_note_event
+                    (
+                        tick_s, tick_f, note, selected, velocity
+                    )
+                ) != DRAW_FIN
+            )
+            {
+                int tick_s_x = (tick_s * preview_w) / length;
+                int tick_f_x = (tick_f * preview_h) / length;
+                int note_y;
+                if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
+                    tick_f_x = tick_s_x + 1;
+
+                if (tick_f_x <= tick_s_x)
+                    tick_f_x = tick_s_x + 1;
+
+                if (dt == DRAW_TEMPO)
+                {
+                    /*
+                     * Do not scale by the note range here.
+                     */
+
+                    pen.setWidth(2);
+                    drawcolor = tempo_paint();
+                    note_y = m_slot_w -
+                         m_slot_h * (note + 1) / SEQ64_MAX_DATA_VALUE;
+                }
+                else
+                {
+                    pen.setWidth(1);                    /* 2 too thick  */
+                    note_y = preview_h -
+                         (preview_h * (note+1 - lowest)) / height;
+                }
+
+                int sx = rectangle_x + tick_s_x;        /* start x      */
+                int fx = rectangle_x + tick_f_x;        /* finish x     */
+                int sy = rectangle_y + note_y;          /* start y      */
+                int fy = sy;                            /* finish y     */
+                pen.setColor(drawcolor);                /* note line    */
+                painter.setPen(pen);
+                painter.drawLine(sx, sy, fx, fy);
+                if (dt == DRAW_TEMPO)
+                {
+                    pen.setWidth(1);                    /* 2 too thick  */
+                    drawcolor = eventcolor;
+                }
+            }
+
+            int a_tick = perf().get_tick();             /* for playhead */
+            a_tick += (length - s->get_trigger_offset());
+            a_tick %= length;
+
+            midipulse tick_x = a_tick * preview_w / length;
+            if (s->get_playing())
+                pen.setColor(Qt::red);
+            else
+                pen.setColor(Qt::black);
+
+            if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
+                pen.setColor(Qt::green);
+            else if (s->one_shot())
+                pen.setColor(Qt::blue);
+
+            pen.setWidth(1);
+            painter.setPen(pen);
+            painter.drawLine
+            (
+                rectangle_x + tick_x - 1, rectangle_y - 1,
+                rectangle_x + tick_x - 1, rectangle_y + preview_h + 1
+            );
+        }
+    }
+    else
+    {
+        /*
+         * This removes the black border around the empty sequence
+         * boxes.  We like the border.
+         *
+         *  pen.setStyle(Qt::NoPen);
+         */
+
+        m_font.setPointSize(15);
+        pen.setColor(Qt::black);        // or dark gray?
+        painter.setPen(pen);
+        painter.setFont(m_font);
+        painter.drawRect(base_x, base_y, m_slot_w, m_slot_h);   // outline
+
+        /*
+         * No sequence present. Insert placeholder.  (Not a big fan of this
+         * one, which draws a big ugly plus-sign.)
+         *
+         *  pen.setStyle(Qt::SolidLine);
+         *  painter.setPen(pen);
+         *  painter.drawText(base_x + 2, base_y + 17, "+");
+         */
+
+        if (perf().show_ui_sequence_number())
+        {
+            int lx = base_x + (m_slot_w / 2) - 7;
+            int ly = base_y + (m_slot_h / 2) + 5;
+            char snum[8];
+            snprintf(snum, sizeof snum, "%d", seq);
+            m_font.setPointSize(8);
+            pen.setColor(Qt::white);
+            pen.setWidth(1);
+            pen.setStyle(Qt::SolidLine);
             painter.setPen(pen);
             painter.setFont(m_font);
-            painter.drawRect(base_x, base_y, m_slot_w, m_slot_h);   // outline
-
-            /*
-             * No sequence present. Insert placeholder.  (Not a big fan of this
-             * one, which draws a big ugly plus-sign.)
-             *
-             *  pen.setStyle(Qt::SolidLine);
-             *  painter.setPen(pen);
-             *  painter.drawText(base_x + 2, base_y + 17, "+");
-             */
-
-            if (perf().show_ui_sequence_number())
-            {
-                int lx = base_x + (m_slot_w / 2) - 7;
-                int ly = base_y + (m_slot_h / 2) + 5;
-                char snum[8];
-                snprintf(snum, sizeof snum, "%d", seq);
-                m_font.setPointSize(8);
-                pen.setColor(Qt::white);
-                pen.setWidth(1);
-                pen.setStyle(Qt::SolidLine);
-                painter.setPen(pen);
-                painter.setFont(m_font);
-                painter.drawText(lx, ly, snum);
-            }
+            painter.drawText(lx, ly, snum);
         }
     }
 
     /*
-     * Lessen m_alpha on each redraw to have smooth fading.
-     * Done as a factor of the BPM to get useful fades.
+     * Lessen m_alpha on each redraw to have smooth fading.  Done as a factor
+     * of the BPM to get useful fades.
      */
 
     m_alpha *= 0.7 - perf().bpm() / 300.0;
@@ -624,7 +724,7 @@ qsliveframe::set_bank (int bank)
 void
 qsliveframe::updateBank (int bank)
 {
-    if (perf().is_screenset_valid(bank))    // if (bank < usr().max_sets())
+    if (perf().is_screenset_valid(bank))
     {
         perf().set_screenset(bank);
         set_bank(bank);
@@ -675,34 +775,37 @@ qsliveframe::updateInternalBankName ()
  *      The y-coordinate of the mouse click.
  *
  * \return
- *      Returns the sequence/pattern number.  If not found, then a -1 is returned.
+ *      Returns the sequence/pattern number.  If not found, then a -1 is
+ *      returned.
  */
 
 int
-qsliveframe::seqIDFromClickXY (int click_x, int click_y)
+qsliveframe::seq_id_from_xy (int click_x, int click_y)
 {
     int x = click_x - c_mainwid_border;         /* adjust for border */
     int y = click_y - c_mainwid_border;
-    if                                          /* is it in the box ? */
-    (
-        x < 0 || x >= ((m_slot_w + m_mainwid_spacing) * m_mainwnd_cols) ||
-        y < 0 || y >= ((m_slot_h + m_mainwid_spacing) * m_mainwnd_rows))
-    {
+    int w = m_slot_w + m_mainwid_spacing;
+    int h = m_slot_h + m_mainwid_spacing;
+
+    /*
+     * Is it in the box?
+     */
+
+    if (x < 0 || x >= (w * m_mainwnd_cols) || y < 0 || y >= (h * m_mainwnd_rows))
         return -1;
-    }
 
-    /* gives us x, y in box coordinates */
+    /*
+     * Gives us x, y in box coordinates.  Then we test for the right inactive
+     * side of area.
+     */
 
-    int box_test_x = x % (m_slot_w + m_mainwid_spacing);
-    int box_test_y = y % (m_slot_h + m_mainwid_spacing);
-
-    /* right inactive side of area */
-
+    int box_test_x = x % w;
+    int box_test_y = y % h;
     if (box_test_x > m_slot_w || box_test_y > m_slot_h)
         return -1;
 
-    x /= (m_slot_w + m_mainwid_spacing);
-    y /= (m_slot_h + m_mainwid_spacing);
+    x /= w;
+    y /= h;
     int seqid = (x * m_mainwnd_rows + y) + (m_bank_id * m_screenset_slots);
     return seqid;
 }
@@ -717,7 +820,7 @@ qsliveframe::seqIDFromClickXY (int click_x, int click_y)
 void
 qsliveframe::mousePressEvent (QMouseEvent * event)
 {
-    m_curr_seq = seqIDFromClickXY(event->x(), event->y());
+    m_curr_seq = seq_id_from_xy(event->x(), event->y());
     if (m_curr_seq != -1 && event->button() == Qt::LeftButton)
         m_button_down = true;
 }
@@ -731,7 +834,7 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 {
     /* get the sequence number we clicked on */
 
-    m_curr_seq = seqIDFromClickXY(event->x(), event->y());
+    m_curr_seq = seq_id_from_xy(event->x(), event->y());
     m_button_down = false;
 
     /*
@@ -915,7 +1018,7 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 void
 qsliveframe::mouseMoveEvent (QMouseEvent * event)
 {
-    int seqid = seqIDFromClickXY(event->x(), event->y());
+    int seqid = seq_id_from_xy(event->x(), event->y());
     if (m_button_down)
     {
         if
@@ -952,7 +1055,7 @@ qsliveframe::mouseDoubleClickEvent (QMouseEvent * event)
     if (m_adding_new)
         new_seq();
 #else
-    int m_curr_seq = seqIDFromClickXY(event->x(), event->y());
+    int m_curr_seq = seq_id_from_xy(event->x(), event->y());
     if (! perf().is_active(m_curr_seq))
     {
         if (perf().new_sequence(m_curr_seq))

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-18
+ * \updates       2018-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -119,7 +119,7 @@ private:
     void drawAllSequences ();
     void updateInternalBankName ();
     bool valid_sequence (int seqnum);
-    int seqIDFromClickXY (int click_x, int click_y);
+    int seq_id_from_xy (int click_x, int click_y);
     bool handle_key_press (unsigned gdkkey);
     bool handle_group_learn (keystroke & k, std::string & msgout);
 
@@ -166,12 +166,51 @@ private:
 
     int m_screenset_offset;
 
+    /**
+     *  Width of a pattern slot in pixels.  Corresponds to the mainwid's
+     *  m_seqarea_x value.
+     */
+
     int m_slot_w;
+
+    /**
+     *  Height of a pattern slot in pixels.  Corresponds to the mainwid's
+     *  m_seqarea_y value.
+     */
+
     int m_slot_h;
+
+    /**
+     *  Width of the central part of the pattern slot in pixels.
+
     int m_preview_w;
+     */
+
+    /**
+     *  Height of the central part of the pattern slot in pixels.
+
     int m_preview_h;                    // internal seq MIDI preview dimensions
-    int m_last_metro;                   // beat pulsing
+     */
+
+    /**
+     *  Used in beat pulsing in the qsmaintime bar, which is a bit different than
+     *  the legacy progress pill in maintime.
+     */
+
+    int m_last_metro;
+
+    /**
+     *  Holds the current transparency value, used in beat-pulsing for fading.
+     */
+
     int m_alpha;
+
+    /**
+     *  Indicates how to draw the slots.
+     */
+
+    bool m_gtkstyle_border;
+
     int m_curr_seq;                     // mouse interaction
     int m_old_seq;
     bool m_button_down;

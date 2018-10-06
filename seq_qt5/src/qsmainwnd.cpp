@@ -439,6 +439,7 @@ qsmainwnd::qsmainwnd
         "Shows and toggles the keep-queue status.\n"
         "Does not show one-shot queue status."
     );
+    ui->button_keep_queue->setCheckable(true);
 
     /*
      * BPM (beats-per-minute) spin-box.

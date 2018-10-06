@@ -182,6 +182,9 @@
    <column/>
   </widget>
   <widget class="QPushButton" name="buttonPlaylistLoad">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>310</x>
@@ -214,6 +217,9 @@
    </property>
   </widget>
   <widget class="QPushButton" name="buttonSongLoad">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>688</x>

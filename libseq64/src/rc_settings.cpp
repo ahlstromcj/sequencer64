@@ -258,7 +258,7 @@ rc_settings::set_defaults ()
      */
 
     m_verbose_option            = false;
-    m_auto_option_save          = true;     /* legacy seq224 setting */
+    m_auto_option_save          = true;     /* legacy seq24 setting */
     m_legacy_format             = false;
     m_lash_support              = false;
     m_allow_mod4_mode           = false;

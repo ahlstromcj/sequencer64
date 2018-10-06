@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-04
+ * \updates       2018-10-05
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -332,14 +332,19 @@ qsliveframe::drawSequence (int seq)
         else                                    /* Kepler34 methods     */
         {
             const int penwidth = 4;             /* 2                    */
-            pen.setColor(Qt::darkCyan);         /* setColor(Qt::black)  */
+
+            /*
+             * What color?  Qt::black? Qt::darkCyan? Qt::yellow? Qt::green?
+             */
+
+            pen.setColor(Qt::black);
             pen.setStyle(Qt::SolidLine);
             if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
             {
                 Color backcolor = get_color_fix(PaletteColor(c));
                 pen.setWidth(penwidth);
-                pen.setColor(Qt::black);
-                pen.setStyle(Qt::DashLine);
+                pen.setColor(Qt::gray);         /* instead of Qt::black */
+                pen.setStyle(Qt::SolidLine);    /* not Qt::DashLine     */
                 painter.setPen(pen);
                 backcolor.setAlpha(210);
                 brush.setColor(backcolor);
@@ -361,7 +366,7 @@ qsliveframe::drawSequence (int seq)
                 Color backcolor = get_color_fix(PaletteColor(c));
                 pen.setWidth(penwidth);
                 pen.setColor(Qt::darkGray);
-                pen.setStyle(Qt::DashLine);
+                pen.setStyle(Qt::SolidLine);    /* not Qt::DashLine     */
                 backcolor.setAlpha(180);
                 brush.setColor(backcolor);
                 painter.setPen(pen);

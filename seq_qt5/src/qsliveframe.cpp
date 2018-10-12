@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-05
+ * \updates       2018-10-07
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -289,6 +289,18 @@ qsliveframe::drawSequence (int seq)
     if (not_nullptr(s))
     {
         int c = s->color();
+        if (s->get_playing())          /* playing, no queueing */
+        {
+            brush.setColor(Qt::black);
+            pen.setColor(Qt::white);
+        }
+        else
+        {
+            brush.setColor(Qt::white);
+            pen.setColor(Qt::black);
+        }
+        painter.setPen(pen);
+        painter.setBrush(brush);
 
         /*
          * Outer pattern-slot border (Seq64) or whole box (Kepler34).
@@ -301,29 +313,29 @@ qsliveframe::drawSequence (int seq)
             painter.setFont(m_font);
             if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
             {
-                /* Do we want to grey-up the border, too?   */
+                /* Do we want to gray-up the border, too?   */
             }
             else if (s->get_playing())          /* playing, no queueing */
             {
                 Color backcolor(Qt::black);
-                pen.setColor(Qt::white);
                 brush.setColor(backcolor);
+                pen.setColor(Qt::white);
                 painter.setBrush(brush);
                 painter.setPen(pen);
             }
             else if (s->get_queued())           /* not playing, queued  */
             {
-                /* Do we want to grey-up the border, too?   */
+                /* Do we want to gray-up the border, too?   */
             }
             else if (s->one_shot())             /* one-shot queued      */
             {
-                /* Do we want to grey-up the border, too?   */
+                /* Do we want to gray-up the border, too?   */
             }
             else                                /* just not playing     */
             {
                 Color backcolor(Qt::white);
-                pen.setColor(Qt::black);
                 brush.setColor(backcolor);
+                pen.setColor(Qt::black);
                 painter.setBrush(brush);
                 painter.setPen(pen);
             }
@@ -331,44 +343,43 @@ qsliveframe::drawSequence (int seq)
         }
         else                                    /* Kepler34 methods     */
         {
-            const int penwidth = 4;             /* 2                    */
-
             /*
              * What color?  Qt::black? Qt::darkCyan? Qt::yellow? Qt::green?
              */
 
+            const int penwidth = 3;             /* 2                    */
             pen.setColor(Qt::black);
             pen.setStyle(Qt::SolidLine);
             if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
             {
                 Color backcolor = get_color_fix(PaletteColor(c));
+                backcolor.setAlpha(210);
+                brush.setColor(backcolor);
                 pen.setWidth(penwidth);
                 pen.setColor(Qt::gray);         /* instead of Qt::black */
                 pen.setStyle(Qt::SolidLine);    /* not Qt::DashLine     */
                 painter.setPen(pen);
-                backcolor.setAlpha(210);
-                brush.setColor(backcolor);
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w + 1, m_slot_h + 1);
             }
             else if (s->get_playing())          /* playing, no queueing */
             {
                 Color backcolor = get_color_fix(PaletteColor(c));
-                pen.setWidth(penwidth);
-                painter.setPen(pen);
                 backcolor.setAlpha(210);
                 brush.setColor(backcolor);
+                pen.setWidth(penwidth);
+                painter.setPen(pen);
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w + 1, m_slot_h + 1);
             }
             else if (s->get_queued())           /* not playing, queued  */
             {
                 Color backcolor = get_color_fix(PaletteColor(c));
+                backcolor.setAlpha(180);
+                brush.setColor(backcolor);
                 pen.setWidth(penwidth);
                 pen.setColor(Qt::darkGray);
                 pen.setStyle(Qt::SolidLine);    /* not Qt::DashLine     */
-                backcolor.setAlpha(180);
-                brush.setColor(backcolor);
                 painter.setPen(pen);
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w, m_slot_h);
@@ -376,11 +387,11 @@ qsliveframe::drawSequence (int seq)
             else if (s->one_shot())             /* one-shot queued      */
             {
                 Color backcolor = get_color_fix(PaletteColor(c));
+                backcolor.setAlpha(180);
+                brush.setColor(backcolor);
                 pen.setWidth(penwidth);
                 pen.setColor(Qt::darkGray);
                 pen.setStyle(Qt::DotLine);
-                backcolor.setAlpha(180);
-                brush.setColor(backcolor);
                 painter.setPen(pen);
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w, m_slot_h);
@@ -388,9 +399,9 @@ qsliveframe::drawSequence (int seq)
             else                                /* just not playing     */
             {
                 Color backcolor = get_color_fix(PaletteColor(c));
-                pen.setStyle(Qt::NoPen);
                 backcolor.setAlpha(100);        /* .setAlpha(180)       */
                 brush.setColor(backcolor);
+                pen.setStyle(Qt::NoPen);
                 painter.setPen(pen);
                 painter.setBrush(brush);
                 painter.drawRect(base_x, base_y, m_slot_w, m_slot_h);
@@ -416,7 +427,8 @@ qsliveframe::drawSequence (int seq)
             }
             else if (s->get_queued())           /* not playing, queued  */
             {
-                pen.setColor(Qt::white);
+                // pen.setColor(Qt::white);
+                pen.setColor(Qt::black);
             }
             else if (s->one_shot())             /* one-shot queued      */
             {

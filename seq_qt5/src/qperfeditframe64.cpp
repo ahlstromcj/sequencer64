@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2018-08-21
+ * \updates       2018-10-07
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -240,9 +240,9 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
         else
             snprintf(num, sizeof num, "0 [normal]");
 
-//                  perfedit::transpose_button_callback()
         ui->comboTranspose->insertItem(index, num);
     }
+    ui->comboTranspose->setCurrentIndex(SEQ64_OCTAVE_SIZE);
     connect
     (
         ui->comboTranspose, SIGNAL(currentIndexChanged(int)),

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-10-02
+ * \updates       2018-10-12
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -2528,7 +2528,13 @@ qseqeditframe64::set_event_entry
     midibyte control
 )
 {
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
+    QString mlabel(text.c_str());
+    QIcon micon(*create_menu_image(present));
+    QAction * item = new QAction(micon, mlabel, nullptr);
+#else
     QAction * item = new QAction(*create_menu_image(present), text.c_str());
+#endif
     menu->addAction(item);
     connect(item, &QAction::triggered, SET_DATA_TYPE(status, control));
     if (present && m_first_event == 0x00)

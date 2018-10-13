@@ -6,7 +6,7 @@
 # \library    	qpseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-07-07
+# \update      2018-10-13
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -24,7 +24,14 @@
 
 TEMPLATE = subdirs
 SUBDIRS =  libseq64 seq_portmidi seq_qt5 Seq64qt5
-CONFIG += static link_prl ordered qtc_runnable
+CONFIG += static link_prl ordered qtc_runnable c++11
+
+# None of these seem to work on 32-bit Linux using Qt 5.3:
+#
+# CONFIG += c++14
+# QMAKE_CXXFLAGS += -std=gnu++14
+
+QMAKE_CXXFLAGS += -std=c++11
 
 Seq64qt5.depends = libseq64 seq_portmidi seq_qt5
 

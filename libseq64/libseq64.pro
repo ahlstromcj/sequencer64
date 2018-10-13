@@ -1,25 +1,28 @@
 #******************************************************************************
-# libseq64.pro (qpseq64)
+# libseq64.pro (qseq64 and qpseq64)
 #------------------------------------------------------------------------------
 ##
 # \file       	libseq64.pro
-# \library    	qpseq64 application
+# \library    	qseq64 and qpseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-08-28
+# \update      2018-10-13
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
 # Important:
 #
-#  This project file is designed only for Qt 5 (and above?).
+#  	This project file is designed only for Qt 5 (and above?).  However,
+#  	on a 32-bit Linux system with an old version of Qt (5.3), the build
+#  	fails due to std::unique_ptr not being defined, even with the c++11
+#  	flag added.
 #
 #------------------------------------------------------------------------------
 
 message($$_PRO_FILE_PWD_)
 
 TEMPLATE = lib
-CONFIG += staticlib config_prl qtc_runnable
+CONFIG += staticlib config_prl qtc_runnable c++11
 TARGET = seq64
 
 # These are needed to set up platform_macros:

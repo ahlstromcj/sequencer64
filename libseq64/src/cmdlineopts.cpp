@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-09-29
+ * \updates       2018-10-13
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -47,23 +47,23 @@
  *  at some point.
  */
 
-#include <sstream>
+#include <sstream>                      /* std::ostringstream               */
 #include <stdlib.h>                     /* atoi(), atof(), 32-bit old gcc   */
 #include <string.h>                     /* strlen() <gasp!>                 */
-#include "easy_macros.h"
+#include "easy_macros.h"                /* not_nullptr() and other macros   */
 
 #if defined PLATFORM_UNIX || defined PLATFORM_MINGW
 #include <getopt.h>
 #endif
 
 #include "app_limits.h"                 /* macros for build_details()       */
-#include "cmdlineopts.hpp"
+#include "cmdlineopts.hpp"              /* this module's header file        */
 #include "daemonize.hpp"                /* seqg4::reroute_stdio()           */
 #include "file_functions.hpp"           /* file_accessible()                */
-#include "optionsfile.hpp"
-#include "perform.hpp"
-#include "settings.hpp"
-#include "userfile.hpp"
+#include "optionsfile.hpp"              /* seq64::optionsfile               */
+#include "perform.hpp"                  /* seq64::perform, the master!      */
+#include "settings.hpp"                 /* seq64::rc() and usr()            */
+#include "userfile.hpp"                 /* seq64::userfile                  */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -1157,6 +1157,7 @@ build_details ()
     std::ostringstream result;
     result
         << "Build features:" << std::endl << std::endl
+        << "C++ version " << std::to_string(__cplusplus) << std::endl
 #ifdef SEQ64_RTMIDI_SUPPORT
         << "Native JACK/ALSA (rtmidi) on" << std::endl
 #endif

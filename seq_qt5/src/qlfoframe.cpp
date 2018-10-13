@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-10
+ * \updates       2018-10-12
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -115,7 +115,15 @@ qlfoframe::qlfoframe
     ui->m_radio_wave_sine->setChecked(true);    /* match m_wave member init */
     connect
     (
-        m_wave_group, QOverload<int>::of(&QButtonGroup::buttonClicked),
+        m_wave_group,
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
+        static_cast<void(QButtonGroup::*) (int)>
+        (
+            &QButtonGroup::buttonClicked
+        ),
+#else
+        QOverload<int>::of(&QButtonGroup::buttonClicked),
+#endif
         [=](int id) { m_wave = wave_type_t(id); }
     );
 

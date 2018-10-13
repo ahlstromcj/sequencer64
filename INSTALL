@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.96.0 and above
+INSTALL for Sequencer64 v. 0.96.1 and above
 Chris Ahlstrom
-2015-09-10 to 2018-09-29
+2015-09-10 to 2018-10-13
 
 Getting Sequencer64 requires building the code or going to the
 sequencer64-packages site on GitHub.  The bootstrapping setup is primarily
@@ -13,7 +13,6 @@ the program can be built:
         Signature).  Now the most official version of Sequencer64.  Also
         builds a test application, midiclocker64.
     -   qseq64.  RtMidi version, with a Qt5 user-interface a la Kepler34.
-        Built via GNU automake, Linux only.
     -   qpseq64.  The PortMidi version of the application, with a Qt 5 user
         interface based on Kepler34.  Lacks some user-interface items of the
         Gtkmm 2.4 version.  Built via qmake and suitable for loading in
@@ -21,6 +20,8 @@ the program can be built:
         Linux and (wait for it...) Windows.  If you want to build it yourself
         in Windows, be sure to specify the Mingw library and tools when
         installing QtCreator.
+        However, there are build issues using qmake on older 32-bit/Qt 5.3 
+        systems; C++11 somehow cannot be defined.
     -   seq64cli.  A GUI-less version of Sequencer64, which can run from the
         console or as a daemon, controlled via MIDI and playlists.
     -   sequencer64. ALSA w/JACK transport; the original version. DEPRECATED.
@@ -637,12 +638,16 @@ DEPENDENCIES:
          -  g++-mingw-w64
          -  gdb-mingw-w64 (for debugging on Linux)
          -  mingw-w64-tools (mingw32-pkgconfig on other systems)
-      -  Qt 5.  We do not want to install qtcreater, as it installs 650 Mb
+         Please note that we have not yet tested a mingw build on Linux,
+         and we use qmake and the mingw tools, instead of automake/autoconf,
+         on Windows.
+      -  Qt 5.  We do not want to install qtcreator, as it installs 650 Mb
          worth of files.  Just install the bare minimum:
          -  qt5-default
          -  qtbase5-dev
          -  qtbase5-dev-tools
-         -  qtdeclarative-dev-tools
+         -  qtdeclarative-dev-tools or qtdeclarative5-dev-tools
+            (qtdeclarative5-dev?)
          -  qtchooser
          -  qtdesigner; optional if you want to tweak the GUIs, not huge,
             provided by the qtttools5-dev-tools package in Debian.

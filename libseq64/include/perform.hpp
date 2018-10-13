@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-25
+ * \updates       2018-10-13
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -71,12 +71,8 @@
 #include <set>                          /* std::set, arbitary selection     */
 #endif
 
-#ifdef SEQ64_USE_MIDI_PLAYLIST
-#include <memory>                       /* std::unique_ptr                  */
-#endif
-
-#include <memory>                       /* std::unique_ptr                  */
-#include <vector>                       /* std::vector                      */
+#include <memory>                       /* std::unique_pt<>                 */
+#include <vector>                       /* std::vector<>                    */
 #include <pthread.h>                    /* pthread_t C structure            */
 
 /**

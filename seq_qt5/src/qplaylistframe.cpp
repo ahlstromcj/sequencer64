@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-09-04
- * \updates       2018-09-13
+ * \updates       2018-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -103,6 +103,12 @@ qplaylistframe::qplaylistframe
         this, SLOT(handle_song_click_ex(int, int, int, int))
     );
 
+    connect
+    (
+        ui->buttonPlaylistLoad, SIGNAL(clicked(bool)),
+        this, SLOT(handle_list_load_click())
+    );
+
 #if 0
     QPushButton *buttonPlaylistLoad;
     QPushButton *buttonPlaylistAdd;
@@ -166,20 +172,6 @@ qplaylistframe::set_row_heights (int height)
     for (int sr = 0; sr < rows; ++sr)
         ui->tablePlaylistSongs->setRowHeight(sr, height);
 }
-
-#if 0
-
-/**
- *
- */
-
-void
-qplaylistframe::set_row_height (int row, int height)
-{
-    ui->eventTableWidget->setRowHeight(row, height);
-}
-
-#endif  // 0
 
 /**
  *  Scales the columns against the provided window width.
@@ -449,6 +441,17 @@ qplaylistframe::handle_song_click_ex
 )
 {
     (void) perf().open_select_song(row, true);  /* open selected song   */
+}
+
+/**
+ *
+ */
+
+void
+qplaylistframe::handle_list_load_click ()
+{
+    if (not_nullptr(m_parent))
+        m_parent->open_playlist();
 }
 
 }           // namespace seq64

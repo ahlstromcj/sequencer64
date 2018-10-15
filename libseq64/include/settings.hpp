@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-05-17
- * \updates       2018-08-01
+ * \updates       2018-10-14
  * \license       GNU GPLv2 or above
  *
  *  A couple of universal helper functions remain as inline functions in the
@@ -60,6 +60,17 @@ namespace seq64
 extern rc_settings & rc ();
 extern user_settings & usr ();
 extern int choose_ppqn (int ppqn = SEQ64_USE_DEFAULT_PPQN);
+
+/**
+ *  Shows a message if in verbose mode.
+ */
+
+inline void
+verbose_message (const std::string & msg)
+{
+    if (rc().verbose_option() && ! msg.empty())
+        printf("%s\n", msg.c_str());
+}
 
 }           // namespace seq64
 

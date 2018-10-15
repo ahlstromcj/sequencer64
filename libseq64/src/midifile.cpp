@@ -417,9 +417,8 @@ midifile::grab_input_stream (const std::string & tag)
          * be, via the -v/--verbose option.  Actually, this is annoying for
          * long path-names.
          *
-        if (rc().verbose_option() && ! verify_mode())
-            printf("[Opened %s file, '%s']\n", tag.c_str(), path.c_str());
-         *
+         * if (rc().verbose_option() && ! verify_mode())
+         *     printf("[Opened %s file, '%s']\n", tag.c_str(), path.c_str());
          */
 
         if (m_file_size <= sizeof(long))

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-02-23
- * \updates       2018-10-03
+ * \updates       2018-10-14
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -52,16 +52,13 @@ namespace seq64
 {
 
 /**
- *  Implements a stock palette of Gdk::Color elements.  Note that this
- *  class must be derived from Gtk::DrawingArea (or Gtk::Widget) in order
- *  to get access to the get_default_colormap() function used in the
- *  constructor.
+ *  Implements a stock palette of QColor elements.
  */
 
-class gui_palette_qt5   // WHAT IS NEEDED?
+class gui_palette_qt5
 {
 
-protected:
+public:
 
     /**
      *  Provides a type for the color object.  The following uses are made of
@@ -105,7 +102,19 @@ protected:
 
 protected:
 
+    /**
+     *  Holds the color palette for drawing on slot backgrounds.
+     */
+
     palette<Color> m_palette;
+
+    /**
+     *  Holds the color palette for drawing text or notes on slot backgrounds.
+     *  This is not quite an inverse palette, but consists of colors that show
+     *  well on the background colors.
+     */
+
+    palette<Color> m_pen_palette;
 
 private:                            /* use the accessor functions           */
 
@@ -125,7 +134,7 @@ private:                            /* use the accessor functions           */
     static const Color m_yellow;    /**< Provides the yellow color.         */
     static const Color m_blue;      /**< Provides the blue color.           */
     static const Color m_magenta;   /**< Provides the magenta color.        */
-    static const Color m_cyan;      /**< Provides the cyan color.          */
+    static const Color m_cyan;      /**< Provides the cyan color.           */
     static const Color m_white;     /**< Provides the white color.          */
 
     /*
@@ -186,9 +195,30 @@ public:
 
     void initialize ();
 
+    /**
+     * \param index
+     *      Provides the color index into the palette.
+     *
+     * \return
+     *      Returns the corresponding color from the slot background palette.
+     */
+
     const Color & get_color (PaletteColor index) const
     {
         return m_palette.get_color(index);
+    }
+
+    /**
+     * \param index
+     *      Provides the color index into the palette.
+     *
+     * \return
+     *      Returns the corresponding color from the pen palette.
+     */
+
+    const Color & get_pen_color (PaletteColor index) const
+    {
+        return m_pen_palette.get_color(index);
     }
 
     Color get_color_ex
@@ -481,6 +511,12 @@ public:
     }
 
 };          // gui_palette_qt5
+
+/*
+ *  Free functions for color.
+ */
+
+extern void show_color_rgb (const gui_palette_qt5::Color & c);
 
 }           // namespace seq64
 

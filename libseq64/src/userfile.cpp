@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-04
+ * \updates       2018-10-14
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -819,19 +819,21 @@ userfile::write (const perform & /* a_perf */ )
             "#   0 = Normal style, matches the GTK theme, has brackets.\n"
             "#   1 = White grid boxes that have brackets.\n"
             "#   2 = Black grid boxes (no brackets, our favorite).\n"
+            "#\n"
             "# Qt:\n"
-            "#   0 = Slot coloring matches Kepler34.\n"
-            "#   1 = Slot coloring more like GTK.\n"
+            "#   0 = Slot coloring matches Kepler34; the whole slot is colored.\n"
+            "#   1 = Slot coloring more like GTK; color only the event box.\n"
             "\n"
             << usr().grid_style() << "       # grid_style\n"
             ;
 
         file << "\n"
-            "# Specifies box style of an empty slot in the main-window grid.\n"
+            "# Specifies the box style of an empty slot in the main-window\n"
+            "# grid, for the GTK user-interface only.\n"
             "#\n"
-            "# 0  = Draw a one-pixel box outline around the pattern slot.\n"
-            "# 1  = Draw brackets on the sides of the pattern slot.\n"
-            "# 2 to 30 = Make the brackets thicker and thicker.\n"
+            "#  0 = Draw a one-pixel box outline around the pattern slot.\n"
+            "#  1 = Draw brackets on the sides of the pattern slot.\n"
+            "#  2 to 30 = Make the brackets thicker and thicker.\n"
             "# -1 = Same as 0, draw a box outline one-pixel thick.\n"
             "# -2 to -30 = Draw a box outline, thicker and thicker.\n"
             "\n"

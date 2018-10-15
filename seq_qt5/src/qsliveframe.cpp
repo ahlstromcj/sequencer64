@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-07
+ * \updates       2018-10-14
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -289,7 +289,7 @@ qsliveframe::drawSequence (int seq)
     if (not_nullptr(s))
     {
         int c = s->color();
-        if (s->get_playing())          /* playing, no queueing */
+        if (s->get_playing())                   /* playing, no queueing */
         {
             brush.setColor(Qt::black);
             pen.setColor(Qt::white);
@@ -303,7 +303,8 @@ qsliveframe::drawSequence (int seq)
         painter.setBrush(brush);
 
         /*
-         * Outer pattern-slot border (Seq64) or whole box (Kepler34).
+         * Outer pattern-slot border (Seq64) or whole box (Kepler34).  Do we
+         * want to gray-up the border, too, for Seq64 format?
          */
 
         if (m_gtkstyle_border)                  /* Gtk/seq64 methods    */
@@ -313,7 +314,7 @@ qsliveframe::drawSequence (int seq)
             painter.setFont(m_font);
             if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
             {
-                /* Do we want to gray-up the border, too?   */
+                // no code
             }
             else if (s->get_playing())          /* playing, no queueing */
             {
@@ -325,11 +326,11 @@ qsliveframe::drawSequence (int seq)
             }
             else if (s->get_queued())           /* not playing, queued  */
             {
-                /* Do we want to gray-up the border, too?   */
+                // no code
             }
             else if (s->one_shot())             /* one-shot queued      */
             {
-                /* Do we want to gray-up the border, too?   */
+                // no code
             }
             else                                /* just not playing     */
             {
@@ -427,7 +428,6 @@ qsliveframe::drawSequence (int seq)
             }
             else if (s->get_queued())           /* not playing, queued  */
             {
-                // pen.setColor(Qt::white);
                 pen.setColor(Qt::black);
             }
             else if (s->one_shot())             /* one-shot queued      */
@@ -471,7 +471,10 @@ qsliveframe::drawSequence (int seq)
         if (m_gtkstyle_border)
         {
             Color backcolor = get_color_fix(PaletteColor(c));
-            backcolor.setAlpha(210);
+            Color pencolor = get_pen_color(PaletteColor(c));
+#ifdef PLATFORM_DEBUG_TMI
+            show_color_rgb(backcolor);
+#endif
             brush.setColor(backcolor);
             if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
             {
@@ -479,7 +482,7 @@ qsliveframe::drawSequence (int seq)
             }
             else if (s->get_playing())          /* playing, no queueing */
             {
-                pen.setColor(Qt::white);
+                pen.setColor(pencolor);         /* setColor(Qt::white)  */
             }
             else if (s->get_queued())           /* not playing, queued  */
             {
@@ -487,24 +490,22 @@ qsliveframe::drawSequence (int seq)
             }
             else if (s->one_shot())             /* one-shot queued      */
             {
-                pen.setColor(Qt::white);
                 brush.setColor(Qt::darkGray);
             }
-            else
+            else                                /* muted pattern        */
             {
-                pen.setColor(Qt::black);
+                pen.setColor(pencolor);
             }
         }
         else
         {
-            pen.setColor(Qt::gray);
             brush.setStyle(Qt::NoBrush);
         }
 
         int rectangle_x = base_x + 7;
         int rectangle_y = base_y + 15;
         painter.setBrush(brush);
-        painter.setPen(pen);                    /* for inner box of notes   */
+        painter.setPen(pen);                    /* inner box of notes   */
         painter.drawRect
         (
             rectangle_x-2, rectangle_y-1, preview_w, preview_h
@@ -529,11 +530,11 @@ qsliveframe::drawSequence (int seq)
                 eventcolor = red();
                 drawcolor = red();
             }
-            preview_h -= 6;             /* padding for box measurements */
+            preview_h -= 6;                     /* padding for box      */
             preview_w -= 6;
             rectangle_x += 2;
             rectangle_y += 2;
-            s->reset_draw_marker();     /* reset container iterator     */
+            s->reset_draw_marker();             /* reset iterator       */
             while
             (
                 (
@@ -1505,6 +1506,17 @@ void
 qsliveframe::color_orange ()
 {
     perf().set_sequence_color(m_curr_seq, int(SEQ64_COLOR(ORANGE)));
+}
+
+/**
+ *
+ */
+
+void
+qsliveframe::color_more (int colorcode)
+{
+    // perf().set_sequence_color(m_curr_seq, int(SEQ64_COLOR(ORANGE)));
+    perf().set_sequence_color(m_curr_seq, colorcode);
 }
 
 /**

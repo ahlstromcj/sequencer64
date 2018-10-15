@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2018-04-12
- * \updates       2018-04-12
+ * \updates       2018-10-14
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -44,6 +44,13 @@ namespace seq64
 extern std::string message_concatenate (const char * m1, const char * m2);
 extern bool info_message (const std::string & msg);
 extern bool error_message (const std::string & msg);
+
+inline void
+debug_message (const std::string & msg)
+{
+    if (! msg.empty())
+        printf("Debug: '%s'\n", msg.c_str());
+}
 
 }               /* namespace seq64          */
 

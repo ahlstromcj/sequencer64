@@ -752,7 +752,7 @@ qsmainwnd::show_open_file_dialog ()
 }
 
 /**
- *
+ *  Opens the dialog to request a playlist.
  */
 
 void
@@ -1931,11 +1931,6 @@ qsmainwnd::keyPressEvent (QKeyEvent * event)
                 (void) perf().open_previous_list();
                 done = true;
             }
-#ifdef SEQ64_USE_MIDI_PLAYLIST
-            // Do in timer callback.
-            // if (done && not_nullptr(m_live_frame))
-            //     m_live_frame->set_playlist_name(xxxx);
-#endif
         }
 #endif
 

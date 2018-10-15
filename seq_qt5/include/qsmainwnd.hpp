@@ -119,6 +119,15 @@ public:
         return m_ppqn;
     }
 
+    /**
+     *
+     */
+
+    void open_playlist ()
+    {
+        show_open_list_dialog();
+    }
+
 protected:
 
     /**

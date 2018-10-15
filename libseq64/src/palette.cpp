@@ -44,7 +44,6 @@ namespace seq64
     /*
      * All code is in the template header file.
      */
-
 }           // namespace seq64
 
 /*

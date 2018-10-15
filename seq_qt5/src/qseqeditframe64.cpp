@@ -669,6 +669,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
 #ifdef SEQ64_QSEQEDIT_BUTTON_INCREMENT
     // No increment code at this time.
 #endif
+
     qt_set_icon(midi_xpm, ui->m_button_channel);
     ui->m_button_channel->setToolTip("Resets output MIDI channel number to 1.");
     connect

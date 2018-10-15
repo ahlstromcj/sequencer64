@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-09-04
- * \updates       2018-09-13
+ * \updates       2018-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -116,6 +116,7 @@ private slots:
 
     void handle_list_click_ex (int, int, int, int);
     void handle_song_click_ex (int, int, int, int);
+    void handle_list_load_click ();
     void conditional_update ();
 
 private:

@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-02-18
- * \updates       2018-10-03
+ * \updates       2018-10-14
  * \license       GNU GPLv2 or above
  *
  *  This module is inspired by MidiPerformance::getSequenceColor() in
@@ -158,6 +158,19 @@ public:
 
     void add (PaletteColor index, const COLOR & color);
     const COLOR & get_color (PaletteColor index) const;
+
+    /**
+     * \param index
+     *      The color index to be tested.
+     *
+     * \return
+     *      Returns true if there is no color applied.
+     */
+
+    bool no_color (PaletteColor index) const
+    {
+        return index == PaletteColor::NONE;
+    }
 
     /*
      * Offload to GUI-specific palette class.

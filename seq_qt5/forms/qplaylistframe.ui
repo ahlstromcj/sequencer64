@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>762</width>
-    <height>352</height>
+    <width>804</width>
+    <height>419</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,7 +39,7 @@
      <x>10</x>
      <y>100</y>
      <width>291</width>
-     <height>220</height>
+     <height>301</height>
     </rect>
    </property>
    <property name="rowCount">
@@ -82,7 +82,7 @@
   <widget class="QLabel" name="labelListSong">
    <property name="geometry">
     <rect>
-     <x>390</x>
+     <x>400</x>
      <y>30</y>
      <width>371</width>
      <height>16</height>
@@ -102,7 +102,7 @@
   <widget class="QLabel" name="labelCurrentSong">
    <property name="geometry">
     <rect>
-     <x>390</x>
+     <x>400</x>
      <y>74</y>
      <width>59</width>
      <height>15</height>
@@ -138,7 +138,7 @@
   <widget class="QLabel" name="labelSongDirectory">
    <property name="geometry">
     <rect>
-     <x>390</x>
+     <x>400</x>
      <y>52</y>
      <width>61</width>
      <height>16</height>
@@ -156,10 +156,10 @@
   <widget class="QTableWidget" name="tablePlaylistSongs">
    <property name="geometry">
     <rect>
-     <x>386</x>
+     <x>400</x>
      <y>100</y>
      <width>291</width>
-     <height>220</height>
+     <height>301</height>
     </rect>
    </property>
    <property name="rowCount">
@@ -183,7 +183,7 @@
   </widget>
   <widget class="QPushButton" name="buttonPlaylistLoad">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -192,6 +192,9 @@
      <width>64</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Opens a dialog to select and open a play-list file.</string>
    </property>
    <property name="text">
     <string>Load</string>
@@ -204,13 +207,13 @@
    <property name="geometry">
     <rect>
      <x>310</x>
-     <y>260</y>
+     <y>220</y>
      <width>64</width>
      <height>24</height>
     </rect>
    </property>
    <property name="toolTip">
-    <string>Currently not available.</string>
+    <string>Saves the current play-list file.</string>
    </property>
    <property name="text">
     <string>Save</string>
@@ -222,11 +225,14 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>688</x>
+     <x>700</x>
      <y>140</y>
      <width>64</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Opens a file dialog to select a MIDI song to add to the current play-list.</string>
    </property>
    <property name="text">
     <string>Load</string>
@@ -258,6 +264,9 @@
     </item>
     <item>
      <widget class="QLineEdit" name="entry_playlist_file">
+      <property name="toolTip">
+       <string>Shows the full path to the play-list.</string>
+      </property>
       <property name="text">
        <string/>
       </property>
@@ -271,14 +280,14 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>688</x>
+     <x>700</x>
      <y>180</y>
      <width>64</width>
      <height>24</height>
     </rect>
    </property>
    <property name="toolTip">
-    <string>Currently not available.</string>
+    <string>Adds the song information specified above to the current play-list section.</string>
    </property>
    <property name="text">
     <string>Add</string>
@@ -290,14 +299,14 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>688</x>
+     <x>700</x>
      <y>220</y>
      <width>64</width>
      <height>24</height>
     </rect>
    </property>
    <property name="toolTip">
-    <string>Currently not available.</string>
+    <string>Removes the current song from the current play-list section.</string>
    </property>
    <property name="text">
     <string>Remove</string>
@@ -316,42 +325,23 @@
     </rect>
    </property>
    <property name="toolTip">
-    <string>Currently not available.</string>
+    <string>Adds the play-list defined by the entries above to the current play-list.</string>
    </property>
    <property name="text">
     <string>Add</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="buttonPlaylistRemove">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>310</x>
-     <y>220</y>
-     <width>64</width>
-     <height>24</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>Currently not available.</string>
-   </property>
-   <property name="text">
-    <string>Remove</string>
-   </property>
-  </widget>
   <widget class="QCheckBox" name="checkBoxPlaylistActive">
    <property name="geometry">
     <rect>
-     <x>690</x>
+     <x>710</x>
      <y>280</y>
      <width>61</width>
      <height>21</height>
     </rect>
    </property>
    <property name="toolTip">
-    <string>If checked, the loaded playlist is active.</string>
+    <string>If checked, the loaded play-list file is active.</string>
    </property>
    <property name="text">
     <string>Active</string>
@@ -366,6 +356,9 @@
      <height>20</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>The default song directory for the currently-selected play-list section.</string>
+   </property>
    <property name="text">
     <string>editPlaylistPath</string>
    </property>
@@ -378,6 +371,9 @@
      <width>31</width>
      <height>20</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Shows the MIDI control number for the currently-selected play-list section.</string>
    </property>
    <property name="text">
     <string>000</string>
@@ -392,6 +388,9 @@
      <height>20</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Shows the name of the currently-selected play-list section.</string>
+   </property>
    <property name="text">
     <string>editPlaylistName</string>
    </property>
@@ -401,9 +400,12 @@
     <rect>
      <x>470</x>
      <y>48</y>
-     <width>271</width>
+     <width>281</width>
      <height>20</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Shows the directory in which the currently selected song is stored.</string>
    </property>
    <property name="text">
     <string>editSongPath</string>
@@ -418,6 +420,9 @@
      <height>20</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Shows the MIDI control number for the currently selected song.</string>
+   </property>
    <property name="text">
     <string>000</string>
    </property>
@@ -427,12 +432,31 @@
     <rect>
      <x>510</x>
      <y>74</y>
-     <width>231</width>
+     <width>241</width>
      <height>20</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Shows the base file-name of the currently selected song.</string>
+   </property>
    <property name="text">
     <string>editSongFilename</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="labelDirEmbedded">
+   <property name="geometry">
+    <rect>
+     <x>760</x>
+     <y>50</y>
+     <width>16</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>If set to an asterisk, this directory is part of the song's file-name.</string>
+   </property>
+   <property name="text">
+    <string>*</string>
    </property>
   </widget>
  </widget>

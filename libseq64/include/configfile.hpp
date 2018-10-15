@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-02
+ * \updates       2018-10-14
  * \license       GNU GPLv2 or above
  *
  *  This is actually an elegant little parser, and works well as long as one
@@ -137,6 +137,11 @@ public:
         return m_name;
     }
 
+    void name (const std::string & n)
+    {
+        m_name = n;
+    }
+
     const std::string & error_message () const
     {
         return m_error_message;
@@ -149,12 +154,7 @@ protected:
         m_error_message = msg;
     }
 
-    void name (const std::string & n)
-    {
-        m_name = n;
-    }
-
-};
+};          // class configfile
 
 }           // namespace seq64
 

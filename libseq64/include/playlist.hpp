@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-26
+ * \updates       2018-10-14
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -89,6 +89,14 @@ private:
          */
 
         std::string ss_song_directory;
+
+        /**
+         *  If true, then ss_song_directory was actually part of the name of
+         *  the song file, rather than being specified by
+         *  play_list_t::ls_file_directory.
+         */
+
+        bool ss_embedded_song_directory;
 
         /**
          *  The base file-name, of the form "base.ext".  When appended to
@@ -176,14 +184,6 @@ private:
      */
 
     perform & m_perform;
-
-    /**
-     *  The full path to the file from which this object was filled.
-     *  This item is not needed.  Instead, use the configfile::name()
-     *  function.
-     *
-     *      std::string m_list_filespec;
-     */
 
     /**
      *  Holds the [comments] section of the file. It is a list of concatenated
@@ -334,8 +334,8 @@ public:
      *  playlist, two consecutive double quotes are used.
      */
 
-    const std::string & song_filename () const;     // base-name only
-    std::string song_filepath () const;             // for current song
+    std::string song_filename () const;     // base-name, optional directory
+    std::string song_filepath () const;     // for current song
 
     int song_count () const
     {

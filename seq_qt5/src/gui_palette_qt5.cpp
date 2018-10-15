@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-02-23
- * \updates       2018-10-03
+ * \updates       2018-10-14
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -117,6 +117,7 @@ STATIC_COLOR gui_palette_qt5::m_sel_paint          = Color("dark_orange");
 gui_palette_qt5::gui_palette_qt5 ()
  :
     m_palette           (),
+    m_pen_palette       (),
     m_line_color        (Color("dark cyan")),           // alternative to black
     m_progress_color    (Color("black")),
     m_bg_color          (),
@@ -126,6 +127,9 @@ gui_palette_qt5::gui_palette_qt5 ()
      * \todo
      *      Use an array of colors instead of this switch.
      */
+
+    if (usr().inverse_colors())
+        load_inverse_palette(true);
 
     int colorcode = usr().progress_bar_colored();
     switch (colorcode)
@@ -160,7 +164,7 @@ gui_palette_qt5::gui_palette_qt5 ()
     }
 
     /*
-     * Fill in the palette!
+     * Fill in the slot and pen palettes!
      */
 
     initialize();
@@ -242,6 +246,10 @@ gui_palette_qt5::load_inverse_palette (bool inverse)
 void
 gui_palette_qt5::initialize ()
 {
+    /*
+     * Slot background colors
+     */
+
     m_palette.clear();                  /* just in case */
     m_palette.add(SEQ64_COLOR(BLACK), m_black);
     m_palette.add(SEQ64_COLOR(RED), m_red);
@@ -251,7 +259,6 @@ gui_palette_qt5::initialize ()
     m_palette.add(SEQ64_COLOR(MAGENTA), m_magenta);
     m_palette.add(SEQ64_COLOR(CYAN), m_cyan);
     m_palette.add(SEQ64_COLOR(WHITE), m_white);
-
     m_palette.add(SEQ64_COLOR(DK_BLACK), m_dk_black);
     m_palette.add(SEQ64_COLOR(DK_RED), m_dk_red);
     m_palette.add(SEQ64_COLOR(DK_GREEN), m_dk_green);
@@ -260,16 +267,42 @@ gui_palette_qt5::initialize ()
     m_palette.add(SEQ64_COLOR(DK_MAGENTA), m_dk_magenta);
     m_palette.add(SEQ64_COLOR(DK_CYAN), m_dk_cyan);
     m_palette.add(SEQ64_COLOR(DK_WHITE), m_dk_white);
-
     m_palette.add(SEQ64_COLOR(ORANGE), m_orange);
     m_palette.add(SEQ64_COLOR(PINK), m_pink);
     m_palette.add(SEQ64_COLOR(GREY), m_grey);
-
     m_palette.add(SEQ64_COLOR(DK_ORANGE), m_dk_orange);
     m_palette.add(SEQ64_COLOR(DK_PINK), m_dk_pink);
     m_palette.add(SEQ64_COLOR(DK_GREY), m_dk_grey);
-
     m_palette.add(SEQ64_COLOR(NONE), m_white);
+
+    /*
+     * Pen/inverse colors
+     */
+
+    m_pen_palette.clear();                  /* just in case */
+    m_pen_palette.add(SEQ64_COLOR(BLACK), m_white);
+    m_pen_palette.add(SEQ64_COLOR(RED), m_white);
+    m_pen_palette.add(SEQ64_COLOR(GREEN), m_white);
+    m_pen_palette.add(SEQ64_COLOR(YELLOW), m_black);
+    m_pen_palette.add(SEQ64_COLOR(BLUE), m_white);
+    m_pen_palette.add(SEQ64_COLOR(MAGENTA), m_white);
+    m_pen_palette.add(SEQ64_COLOR(CYAN), m_black);
+    m_pen_palette.add(SEQ64_COLOR(WHITE), m_black);
+    m_pen_palette.add(SEQ64_COLOR(DK_BLACK), m_white);
+    m_pen_palette.add(SEQ64_COLOR(DK_RED), m_white);
+    m_pen_palette.add(SEQ64_COLOR(DK_GREEN), m_white);
+    m_pen_palette.add(SEQ64_COLOR(DK_YELLOW), m_white);
+    m_pen_palette.add(SEQ64_COLOR(DK_BLUE), m_white);
+    m_pen_palette.add(SEQ64_COLOR(DK_MAGENTA), m_white);
+    m_pen_palette.add(SEQ64_COLOR(DK_CYAN), m_white);
+    m_pen_palette.add(SEQ64_COLOR(DK_WHITE), m_white);
+    m_pen_palette.add(SEQ64_COLOR(ORANGE), m_white);
+    m_pen_palette.add(SEQ64_COLOR(PINK), m_black);
+    m_pen_palette.add(SEQ64_COLOR(GREY), m_white);
+    m_pen_palette.add(SEQ64_COLOR(DK_ORANGE), m_white);
+    m_pen_palette.add(SEQ64_COLOR(DK_PINK), m_white);
+    m_pen_palette.add(SEQ64_COLOR(DK_GREY), m_white);
+    m_pen_palette.add(SEQ64_COLOR(NONE), m_black);
 }
 
 /**
@@ -304,27 +337,38 @@ gui_palette_qt5::get_color_ex
 }
 
 /**
- *  Gets a color and fixes its HSV in a stock manner.
+ *  Gets a color and fixes its HSV in a stock manner, unless the index does
+ *  not specify a color.
  *
  * \param index
  *      The index into the Sequencer64 stock palette.
  *
  * \return
- *      Returns a copy of the fixed color.
+ *      Returns a copy of the fixed color.  If it is not a color, then
+ *      "white" is returned.
  */
 
 gui_palette_qt5::Color
 gui_palette_qt5::get_color_fix (PaletteColor index) const
 {
-    gui_palette_qt5::Color result = m_palette.get_color(index);
-    if (result.value() != 255)                      /* i.e. "white"         */
+    if (m_palette.no_color(index))
     {
-        result.setHsv
-        (
-            result.hue(), result.saturation() * 0.65, result.value() * 1.2
-        );
+        return m_palette.get_color(PaletteColor::NONE);
     }
-    return result;
+    else
+    {
+        gui_palette_qt5::Color result = m_palette.get_color(index);
+        if (result.value() != 255)
+        {
+            result.setHsv
+            (
+                result.hue(),
+                result.saturation() * 0.65,
+                result.value() * 1.2
+            );
+        }
+        return result;
+    }
 }
 
 /**
@@ -361,6 +405,27 @@ gui_palette_qt5::get_color_inverse (PaletteColor index) const
         // TODO: return black
     }
     return c;
+}
+
+/**
+ *  Shows the #RRGGBB string for the given color on stdout.  For debugging.
+ *
+ * \param c
+ *      The color to show.
+ */
+
+void
+show_color_rgb (const gui_palette_qt5::Color & c)
+{
+    QString qs = c.name();
+
+#ifdef PLATFORM_WINDOWS
+    std::string text = qs.toLocal8Bit().constData();    /* Windows text */
+#else
+    std::string text = qs.toUtf8().constData();         /* UTF-8 text   */
+#endif
+
+    printf("color: %s\n", text.c_str());
 }
 
 }           // namespace seq64

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-13
+ * \updates       2018-10-14
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1245,7 +1245,7 @@ public:
      *
      */
 
-    const std::string & song_filename () const
+    std::string song_filename () const
     {
         std::string s_dummy;
         return bool(m_play_list) ? m_play_list->song_filename() : s_dummy ;

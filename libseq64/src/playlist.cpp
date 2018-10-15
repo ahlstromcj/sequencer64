@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-10-02
+ * \updates       2018-10-14
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -41,6 +41,8 @@
  *      file3.midi
  *       . . .
  *
+ *  See the file data/sample.playlist for a more up-to-date example and
+ *  explanation.
  */
 
 #include <cctype>                       /* std::toupper() function          */
@@ -297,11 +299,13 @@ playlist::parse (perform & p)
                                 std::string filebase;
                                 filename_split(fname, path, filebase);
                                 sinfo.ss_song_directory = path;
+                                sinfo.ss_embedded_song_directory = true;
                                 sinfo.ss_filename = filebase;
                             }
                             else
                             {
                                 sinfo.ss_song_directory = plist.ls_file_directory;
+                                sinfo.ss_embedded_song_directory = false;
                                 sinfo.ss_filename = fname;
                             }
                             (void) add_song(slist, sinfo);
@@ -1173,19 +1177,30 @@ playlist::song_midi_number () const
  *
  */
 
-const std::string &
+std::string
 playlist::song_filename () const
 {
-    static std::string s_dummy;
+    std::string result;
     if (m_current_list != m_play_lists.end())
     {
         if (m_current_song != m_current_list->second.ls_song_list.end())
-            return m_current_song->second.ss_filename;
-        else
-            return s_dummy;
+        {
+            /*
+             * This would return the full path for display, for those cases
+             * where the directory is different from the play-list's
+             * directory.  However, that is too long to display in some cases.
+             * We need to think this through some more.
+             *
+            if (m_current_song->second.ss_embedded_song_directory)
+                result = song_filepath(m_current_song->second);
+            else
+             *
+             */
+
+            result = m_current_song->second.ss_filename;
+        }
     }
-    else
-        return s_dummy;
+    return result;
 }
 
 /**

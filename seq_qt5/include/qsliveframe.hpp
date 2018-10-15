@@ -284,6 +284,7 @@ private slots:
     void color_purple ();
     void color_pink ();
     void color_orange ();
+    void color_more (int colorcode);
 
 signals:
 

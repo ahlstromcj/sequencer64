@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-09-04
- * \updates       2018-10-14
+ * \updates       2018-10-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -97,8 +97,9 @@ private:
     void set_column_widths ();
     void reset_playlist ();
     void set_current_playlist ();
-    void fill_playlists (int list_index = 0, int song_index = 0);
-    void fill_songs (int song_index = 0);
+    void set_current_song ();
+    void fill_playlists ();
+    void fill_songs ();
     QTableWidgetItem * cell (bool isplaylist, int row, column_id_t col);
 
     /**
@@ -118,6 +119,11 @@ private slots:
     void handle_song_click_ex (int, int, int, int);
     void handle_list_load_click ();
     void conditional_update ();
+
+protected:                          // overrides of event handlers
+
+    virtual void keyPressEvent (QKeyEvent * event);
+    virtual void keyReleaseEvent (QKeyEvent * event);
 
 private:
 

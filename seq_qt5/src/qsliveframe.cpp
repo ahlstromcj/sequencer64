@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-14
+ * \updates       2018-10-17
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -56,6 +56,17 @@
 #else
 #include "forms/qsliveframe.ui.h"
 #endif
+
+/**
+ *  Constants to use to fine-tune the MIDI event preview boxes.  The original
+ *  values are commented out.  The new values make the event boxes smaller and
+ *  nicer looking.  However, we need a less krufty way to change these.
+ */
+
+static const int sc_preview_w_factor = 3;   // 2;
+static const int sc_preview_h_factor = 8;   // 5;
+static const int sc_base_x_offset = 12;     // 7;
+static const int sc_base_y_offset = 24;     // 15;
 
 /*
  * Do not document a namespace, it breaks Doxygen.
@@ -99,6 +110,8 @@ qsliveframe::qsliveframe (perform & p, qsmainwnd * window, QWidget * parent)
     m_mainwnd_rows      (usr().mainwnd_rows()),
     m_mainwnd_cols      (usr().mainwnd_cols()),
     m_mainwid_spacing   (usr().mainwid_spacing()),
+    m_space_rows        (m_mainwid_spacing * m_mainwnd_cols),
+    m_space_cols        (m_mainwid_spacing * m_mainwnd_rows),
     m_screenset_slots   (m_mainwnd_rows * m_mainwnd_cols),
     m_screenset_offset  (m_bank_id * m_screenset_slots),
     m_slot_w            (0),
@@ -274,15 +287,15 @@ qsliveframe::drawSequence (int seq)
 
     int fw = ui->frame->width();
     int fh = ui->frame->height();
-    m_slot_w = (fw - m_mainwid_spacing * m_mainwnd_cols - 1) / m_mainwnd_cols;
-    m_slot_h = (fh - m_mainwid_spacing * m_mainwnd_rows - 1) / m_mainwnd_rows;
+    m_slot_w = (fw - m_space_cols - 1) / m_mainwnd_cols;
+    m_slot_h = (fh - m_space_rows - 1) / m_mainwnd_rows;
 
     /*
      * IDEA: Subtract 20 from height and add 10 to base y.
      */
 
-    int preview_w = m_slot_w - m_font.pointSize() * 2;
-    int preview_h = m_slot_h - m_font.pointSize() * 5;
+    int preview_w = m_slot_w - m_font.pointSize() * sc_preview_w_factor;
+    int preview_h = m_slot_h - m_font.pointSize() * sc_preview_h_factor;
     int base_x, base_y;
     calculate_base_sizes(seq, base_x, base_y);  /* side-effects         */
     sequence * s = perf().get_sequence(seq);
@@ -468,42 +481,52 @@ qsliveframe::drawSequence (int seq)
          * Draws the inner box of the pattern slot.
          */
 
+        Color backcolor = get_color_fix(PaletteColor(c));
+        Color pencolor = get_pen_color(PaletteColor(c));
         if (m_gtkstyle_border)
         {
-            Color backcolor = get_color_fix(PaletteColor(c));
-            Color pencolor = get_pen_color(PaletteColor(c));
 #ifdef PLATFORM_DEBUG_TMI
             show_color_rgb(backcolor);
 #endif
             brush.setColor(backcolor);
             if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
             {
-                brush.setColor(Qt::gray);
+                backcolor = Qt::gray;
             }
             else if (s->get_playing())          /* playing, no queueing */
             {
-                pen.setColor(pencolor);         /* setColor(Qt::white)  */
+                if (no_color(c))
+                {
+                    backcolor = Qt::black;
+                    pencolor = Qt::white;
+                }
+                else
+                {
+                    // pen color set below
+                }
             }
             else if (s->get_queued())           /* not playing, queued  */
             {
-                brush.setColor(Qt::gray);
+                backcolor = Qt::gray;
             }
             else if (s->one_shot())             /* one-shot queued      */
             {
-                brush.setColor(Qt::darkGray);
+                backcolor = Qt::darkGray;
             }
             else                                /* muted pattern        */
             {
-                pen.setColor(pencolor);
+                // pen color set below
             }
         }
         else
         {
             brush.setStyle(Qt::NoBrush);
         }
+        brush.setColor(backcolor);
+        pen.setColor(pencolor);
 
-        int rectangle_x = base_x + 7;
-        int rectangle_y = base_y + 15;
+        int rectangle_x = base_x + sc_base_x_offset;
+        int rectangle_y = base_y + sc_base_y_offset;
         painter.setBrush(brush);
         painter.setPen(pen);                    /* inner box of notes   */
         painter.drawRect
@@ -523,8 +546,8 @@ qsliveframe::drawSequence (int seq)
             bool selected;
             int velocity;
             draw_type_t dt;
-            Color drawcolor = fg_color();
-            Color eventcolor = fg_color();
+            Color drawcolor = pencolor;         // fg_color();
+            Color eventcolor = pencolor;        // fg_color();
             if (! s->get_transposable())
             {
                 eventcolor = red();

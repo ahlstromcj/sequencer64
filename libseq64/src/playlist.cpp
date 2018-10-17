@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-10-14
+ * \updates       2018-10-17
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -594,22 +594,33 @@ playlist::open_song (const std::string & fname, bool verifymode)
     if (result)
     {
         bool is_wrk = file_extension_match(fname, "wrk");
+        int ppqn = 0;
         if (is_wrk)
         {
             wrkfile m(fname, SEQ64_USE_DEFAULT_PPQN, verifymode);
             result = m.parse(m_perform);
+            ppqn = m.ppqn();
         }
         else
         {
             midifile m(fname, SEQ64_USE_DEFAULT_PPQN, false, true, verifymode);
             result = m.parse(m_perform);
+            ppqn = m.ppqn();
         }
-        if (verifymode)
-            (void) m_perform.clear_all();
-        else
+        if (result)
         {
-            if (unmute_set_now())
-                m_perform.toggle_playing_tracks();
+            if (verifymode)
+            {
+                (void) m_perform.clear_all();
+            }
+            else
+            {
+                usr().file_ppqn(ppqn);          /* save the value from file */
+                m_perform.set_ppqn(choose_ppqn());  /* set chosen PPQN      */
+                rc().filename(fname);           /* save current file-name   */
+                if (unmute_set_now())
+                    m_perform.toggle_playing_tracks();
+            }
         }
     }
     return result;
@@ -668,7 +679,7 @@ playlist::verify (bool strong)
             for (const_song_iterator sci = sl.begin(); sci != sl.end(); ++sci)
             {
                 const song_spec_t & s = sci->second;
-                const std::string fname = song_filepath(s);
+                std::string fname = song_filepath(s);
                 if (file_exists(fname))
                 {
                     if (strong)
@@ -726,7 +737,7 @@ playlist::open_current_song ()
     {
         if (m_current_song != m_current_list->second.ls_song_list.end())
         {
-            const std::string fname = song_filepath(m_current_song->second);
+            std::string fname = song_filepath(m_current_song->second);
             result = open_song(fname);
             if (! result)
                 (void) make_file_error_message("could not open song '%s'", fname);
@@ -1150,6 +1161,55 @@ playlist::song_index () const
     {
         if (m_current_song != m_current_list->second.ls_song_list.end())
             result = m_current_song->second.ss_index;
+    }
+    return result;
+}
+
+/**
+ *
+ *  Used to return m_current_list->second.ls_file_directory.
+ */
+
+std::string
+playlist::file_directory () const
+{
+    std::string result;
+    if (m_current_list != m_play_lists.end())
+        return m_current_list->second.ls_file_directory;
+
+    return result;
+}
+
+/**
+ *
+ *  Used to return m_current_list->second.ls_file_directory.
+ */
+
+std::string
+playlist::song_directory () const
+{
+    std::string result;
+    if (m_current_list != m_play_lists.end())
+    {
+        if (m_current_song != m_current_list->second.ls_song_list.end())
+            result = m_current_song->second.ss_song_directory;
+    }
+    return result;
+}
+
+/**
+ *
+ *  Used to return m_current_list->second.ls_file_directory.
+ */
+
+bool
+playlist::is_own_song_directory () const
+{
+    bool result = false;
+    if (m_current_list != m_play_lists.end())
+    {
+        if (m_current_song != m_current_list->second.ls_song_list.end())
+            result = m_current_song->second.ss_embedded_song_directory;
     }
     return result;
 }

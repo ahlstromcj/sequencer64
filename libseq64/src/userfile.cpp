@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-14
+ * \updates       2018-10-17
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -871,7 +871,8 @@ userfile::write (const perform & /* a_perf */ )
             ;
 
         file << "\n"
-            "# Specifies the border spacing in the main window.\n"
+            "# Specifies the border spacing in the main window. Normally 2, it\n"
+            "# can range from 2 to 16.\n"
             "\n"
             << usr().mainwid_spacing() << "      # mainwid_spacing\n"
             ;

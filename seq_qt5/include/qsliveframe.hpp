@@ -151,6 +151,8 @@ private:
     int m_mainwnd_rows;
     int m_mainwnd_cols;
     int m_mainwid_spacing;
+    int m_space_rows;
+    int m_space_cols;
 
     /**
      *  Provides a convenience variable for avoiding multiplications.

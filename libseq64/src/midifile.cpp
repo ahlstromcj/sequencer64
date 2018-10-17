@@ -2877,7 +2877,7 @@ open_midi_file
             usr().file_ppqn(f->ppqn());         /* save the value from file */
             p.set_ppqn(choose_ppqn());          /* set chosen PPQN for MIDI */
             rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
-            rc().filename(fn);
+            rc().filename(fn);                  /* save current file-name   */
             rc().add_recent_file(fn);           /* Oli Kester's Kepler34!   */
         }
         else

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-05
+ * \updates       2018-10-17
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -986,21 +986,24 @@ qsmainwnd::refresh ()
             set_tap_button(0);
         }
     }
-    if (m_is_title_dirty)
-    {
-        m_is_title_dirty = false;
-        update_window_title();
-    }
 #ifdef SEQ64_USE_MIDI_PLAYLIST
     if (perf().playlist_mode())
     {
         if (not_nullptr(m_live_frame))
+        {
+            m_is_title_dirty = true;
             m_live_frame->set_playlist_name(perf().playlist_song());
+        }
     }
     else
     {
         if (not_nullptr(m_live_frame))
             m_live_frame->set_playlist_name("");
+    }
+    if (m_is_title_dirty)
+    {
+        m_is_title_dirty = false;
+        update_window_title();
     }
 #endif
 }
@@ -1914,21 +1917,25 @@ qsmainwnd::keyPressEvent (QKeyEvent * event)
             if (k.is(SEQ64_Right))
             {
                 (void) perf().open_next_song();
+                m_is_title_dirty = true;
                 done = true;
             }
             else if (k.is(SEQ64_Left))
             {
                 (void) perf().open_previous_song();
+                m_is_title_dirty = true;
                 done = true;
             }
             else if (k.is(SEQ64_Down))
             {
                 (void) perf().open_next_list();
+                m_is_title_dirty = true;
                 done = true;
             }
             else if (k.is(SEQ64_Up))
             {
                 (void) perf().open_previous_list();
+                m_is_title_dirty = true;
                 done = true;
             }
         }

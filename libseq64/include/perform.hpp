@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-14
+ * \updates       2018-10-16
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1232,13 +1232,39 @@ public:
     }
 
     /**
-     *
+     *  \return
+     *      Returns the default directory for songs in the current play-list.
      */
 
-    const std::string & song_directory () const
+    std::string file_directory () const
     {
-        std::string s_dummy;
+        static std::string s_dummy;
+        return bool(m_play_list) ? m_play_list->file_directory() : s_dummy ;
+    }
+
+    /**
+     *  \return
+     *      Returns the actual directory for songs in the current play-list.
+     *      Some songs might provide their own directory to use.
+     */
+
+    std::string song_directory () const
+    {
+        static std::string s_dummy;
         return bool(m_play_list) ? m_play_list->song_directory() : s_dummy ;
+    }
+
+    /**
+     * \return
+     *      Returns true if the current song provides its own directory to
+     *      override the default directory specified by the current playlist
+     *      section.
+     */
+
+    bool is_own_song_directory () const
+    {
+        return bool(m_play_list) ?
+            m_play_list->is_own_song_directory() : false ;
     }
 
     /**
@@ -1247,7 +1273,7 @@ public:
 
     std::string song_filename () const
     {
-        std::string s_dummy;
+        static std::string s_dummy;
         return bool(m_play_list) ? m_play_list->song_filename() : s_dummy ;
     }
 

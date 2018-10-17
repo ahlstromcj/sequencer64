@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-10-14
+ * \updates       2018-10-16
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -301,7 +301,7 @@ public:
             m_current_list->second.ls_index : (-1) ;
     }
 
-    const std::string & list_name () const
+    std::string list_name () const
     {
         static std::string s_dummy;
         return m_current_list != m_play_lists.end() ?
@@ -313,13 +313,9 @@ public:
         return int(m_play_lists.size());
     }
 
-    const std::string & song_directory () const
-    {
-        static std::string s_dummy;
-        return m_current_list != m_play_lists.end() ?
-            m_current_list->second.ls_file_directory : s_dummy ;
-    }
-
+    std::string file_directory () const;
+    std::string song_directory () const;
+    bool is_own_song_directory () const;
     int song_midi_number () const;
     int song_index () const;
 

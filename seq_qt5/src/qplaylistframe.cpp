@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-09-04
- * \updates       2018-10-14
+ * \updates       2018-10-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -121,9 +121,7 @@ qplaylistframe::qplaylistframe
 #endif  // 0
 
     if (perf().playlist_mode())
-    {
-        reset_playlist();           // set_current_playlist();
-    }
+        reset_playlist();
 
     m_timer = new QTimer(this);        /* timer for regular redraws    */
     m_timer->setInterval(usr().window_redraw_rate());
@@ -152,7 +150,6 @@ qplaylistframe::conditional_update ()
 {
     if (perf().needs_update(0))
     {
-        // /* bool */ load_playlist (const std::string & fullfilespec)
         update();
     }
 }
@@ -190,7 +187,9 @@ qplaylistframe::set_column_widths ()
 }
 
 /**
- *
+ *  Resets the play-list.  First, resets to the first (0th) play-list and the first
+ *  (0th) song.  Then fills the play-list items and resets again.  Then
+ *  fills in the play-list and song items for the current selection.
  */
 
 void
@@ -199,8 +198,11 @@ qplaylistframe::reset_playlist ()
     if (perf().playlist_reset())
     {
         fill_playlists();
-        perf().playlist_reset();
+        perf().playlist_reset();        /* back to the 0th play-list    */
+        fill_songs();
         set_current_playlist();
+        ui->tablePlaylistSections->selectRow(0);
+        ui->tablePlaylistSongs->selectRow(0);
     }
 }
 
@@ -218,7 +220,7 @@ qplaylistframe::set_current_playlist ()
         std::string temp = perf().playlist_filename();
         ui->entry_playlist_file->setText(QString::fromStdString(temp));
 
-        temp = perf().song_directory();
+        temp = perf().file_directory();
         ui->editPlaylistPath->setText(QString::fromStdString(temp));
 
         int midinumber = perf().playlist_midi_number();
@@ -228,23 +230,35 @@ qplaylistframe::set_current_playlist ()
         temp = perf().playlist_name();
         ui->editPlaylistName->setText(QString::fromStdString(temp));
 
-        midinumber = perf().song_midi_number();
-        temp = std::to_string(midinumber);
+        set_current_song();
+    }
+    else
+    {
+        ui->checkBoxPlaylistActive->setChecked(false);
+    }
+}
+
+/**
+ *
+ */
+
+void
+qplaylistframe::set_current_song ()
+{
+    if (perf().playlist_mode())
+    {
+        std::string temp = std::to_string(perf().song_midi_number());
         ui->editSongNumber->setText(QString::fromStdString(temp));
 
         temp = perf().song_directory();
         ui->editSongPath->setText(QString::fromStdString(temp));
 
-        midinumber = perf().song_midi_number();
-        temp = std::to_string(midinumber);
-        ui->editSongNumber->setText(QString::fromStdString(temp));
+        bool embedded = perf().is_own_song_directory();
+        temp = embedded ? "*" : " " ;
+        ui->labelDirEmbedded->setText(QString::fromStdString(temp));
 
         temp = perf().song_filename();
         ui->editSongFilename->setText(QString::fromStdString(temp));
-    }
-    else
-    {
-        ui->checkBoxPlaylistActive->setChecked(false);
     }
 }
 
@@ -287,17 +301,19 @@ qplaylistframe::cell (bool isplaylist, int row, column_id_t col)
 }
 
 /**
- *  Adds the list of playlists to the tablePlaylistSections
- *  table-widget.
+ *  Adds the list of playlists to the tablePlaylistSections table-widget.  It
+ *  does not select a play-list or select a song.  To be called only when
+ *  loading a new play-list, as in reset_playlist().  Only acts if the list is
+ *  non-empty.
  */
 
 void
-qplaylistframe::fill_playlists (int list_index, int song_index)
+qplaylistframe::fill_playlists ()
 {
     int rows = perf().playlist_count();
-    ui->tablePlaylistSections->clearContents();
     if (rows > 0)
     {
+        ui->tablePlaylistSections->clearContents();
         ui->tablePlaylistSections->setRowCount(rows);
         for (int r = 0; r < rows; ++r)
         {
@@ -316,10 +332,6 @@ qplaylistframe::fill_playlists (int list_index, int song_index)
                 temp = perf().playlist_name();
                 qtip->setText(QString::fromStdString(temp));
             }
-            if (r == list_index)
-            {
-                fill_songs(song_index);
-            }
             if (! perf().open_next_list(false))     /* false = no load song */
                 break;
         }
@@ -328,16 +340,16 @@ qplaylistframe::fill_playlists (int list_index, int song_index)
 
 /**
  *  Adds the songs of the current playlist to the tablePlaylistSongs
- *  table-widget.
+ *  table-widget.  It does not select any song.
  */
 
 void
-qplaylistframe::fill_songs (int song_index)
+qplaylistframe::fill_songs ()
 {
     int rows = perf().song_count();
-    ui->tablePlaylistSongs->clearContents();
     if (rows > 0)
     {
+        ui->tablePlaylistSongs->clearContents();
         ui->tablePlaylistSongs->setRowCount(rows);
         for (int r = 0; r < rows; ++r)
         {
@@ -361,35 +373,12 @@ qplaylistframe::fill_songs (int song_index)
                     temp = perf().song_filename();
                     qtip->setText(QString::fromStdString(temp));
                 }
-                if (r == song_index)
-                {
-                    // anything useful?
-                }
-
-                /*
-                 * We already open via index at the top of this loop, no need
-                 * to move to the next song here.
-                 *
-                 * if (! perf().open_next_song(false)) // false = no load song
-                 *     break;
-                 */
             }
             else
                 break;
         }
     }
 }
-
-/**
- *
-
-void
-qplaylistframe::set_current_song ()
-{
-    std::string filename = perf().playlist_filename();
-    ui->entry_playlist_file->setText(QString::fromStdString(filename));
-}
- */
 
 /**
  *
@@ -406,7 +395,7 @@ qplaylistframe::load_playlist (const std::string & fullfilespec)
     }
     if (perf().playlist_mode())
     {
-        reset_playlist();           // set_current_playlist();
+        reset_playlist();
     }
     else
     {
@@ -424,9 +413,18 @@ qplaylistframe::handle_list_click_ex
     int row, int /*column*/, int /*prevrow*/, int /*prevcolumn*/
 )
 {
-    if (perf().open_select_list(row, false))
+    if (row < 0)
     {
-        fill_songs(0);
+        warnprintf("List row %d\n", row);
+    }
+    else
+    {
+        if (perf().open_select_list(row, false))
+        {
+            fill_songs();
+            set_current_playlist();
+            ui->tablePlaylistSongs->selectRow(0);
+        }
     }
 }
 
@@ -440,7 +438,17 @@ qplaylistframe::handle_song_click_ex
     int row, int /*column*/, int /*prevrow*/, int /*prevcolumn*/
 )
 {
-    (void) perf().open_select_song(row, true);  /* open selected song   */
+    if (row < 0)
+    {
+        warnprintf("Song row %d!\n", row);
+    }
+    else
+    {
+        if (perf().open_select_song(row, true))     /* open selected song   */
+        {
+            set_current_song();
+        }
+    }
 }
 
 /**
@@ -452,6 +460,26 @@ qplaylistframe::handle_list_load_click ()
 {
     if (not_nullptr(m_parent))
         m_parent->open_playlist();
+}
+
+/**
+ *
+ */
+
+void
+qplaylistframe::keyPressEvent (QKeyEvent * event)
+{
+    QWidget::keyPressEvent(event);      // event->ignore();
+}
+
+/**
+ *
+ */
+
+void
+qplaylistframe::keyReleaseEvent (QKeyEvent * event)
+{
+    QWidget::keyReleaseEvent(event);    // event->ignore();
 }
 
 }           // namespace seq64

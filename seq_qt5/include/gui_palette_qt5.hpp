@@ -241,6 +241,16 @@ public:
     }
 
     /**
+     *  A convenience function to hide some details of checking for
+     *  sequence color codes.
+     */
+
+    bool no_color (int c)
+    {
+        return m_palette.no_color(PaletteColor(c));
+    }
+
+    /**
      * \getter m_line_color
      *      Provides an experimental way to change some line colors from black
      *      to something else.  Might eventually be selectable from the "user"

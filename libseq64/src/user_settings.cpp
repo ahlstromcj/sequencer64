@@ -923,14 +923,14 @@ user_settings::mainwid_border (int value)
 /**
  * \setter m_mainwid_spacing
  *      This value is not modified unless the value parameter is
- *      between 2 and 6, inclusive.  The default value is 2.
+ *      between 2 and 16, inclusive.  The default value is 2.
  *      Dependent values are recalculated after the assignment.
  */
 
 void
 user_settings::mainwid_spacing (int value)
 {
-    if (value >= 2 && value <= 6)
+    if (value >= 2 && value <= 16)
     {
         m_mainwid_spacing = value;
         normalize();

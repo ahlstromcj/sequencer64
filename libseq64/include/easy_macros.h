@@ -10,11 +10,11 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2018-06-09
+ * \updates       2018-10-18
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
- *  Copyright (C) 2013-2016 Chris Ahlstrom <ahlstromcj@gmail.com>
+ *  Copyright (C) 2013-2018 Chris Ahlstrom <ahlstromcj@gmail.com>
  *
  *  The macros in this file cover:
  *
@@ -30,19 +30,6 @@
 #include <stdio.h>
 
 #include "platform_macros.h"
-
-/*
- * For now, let's see if we can get MingW to create a Windows-appropriate
- * header file.
- *
-#ifdef PLATFORM_WINDOWS
-#include "win32-seq64-config.h"
-#else
-#include "seq64-config.h"
-#endif
- *
- */
-
 #include "seq64-config.h"
 
 #undef  SEQ64_SHOW_API_CALLS
@@ -50,7 +37,8 @@
 /**
  *  Language macros:
  *
- *  __cplusplus >= 201103L implies C++11
+ *    __cplusplus >= 201103L implies C++11, but we define PLATFORM_CPP_11 in
+ *    the platform_macros.h file instead.
  *
  *    "nullptr" provides an alternative to NULL in older compilers.
  *
@@ -87,7 +75,7 @@
 
 #else
 
-#if __cplusplus >= 201103L      /* C++11                */
+#ifdef PLATFORM_CPP_11
 
 #define nullptr                 nullptr
 #define override                override
@@ -99,7 +87,7 @@
 #define override
 #define noexcept                throw()
 
-#endif                          /* not C++11            */
+#endif                          /* not C++11 or above   */
 
 #endif                          /* defined __cplusplus  */
 

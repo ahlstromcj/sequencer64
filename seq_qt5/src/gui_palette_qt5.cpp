@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-02-23
- * \updates       2018-10-14
+ * \updates       2018-10-18
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -251,58 +251,58 @@ gui_palette_qt5::initialize ()
      */
 
     m_palette.clear();                  /* just in case */
-    m_palette.add(SEQ64_COLOR(BLACK), m_black);
-    m_palette.add(SEQ64_COLOR(RED), m_red);
-    m_palette.add(SEQ64_COLOR(GREEN), m_green);
-    m_palette.add(SEQ64_COLOR(YELLOW), m_yellow);
-    m_palette.add(SEQ64_COLOR(BLUE), m_blue);
-    m_palette.add(SEQ64_COLOR(MAGENTA), m_magenta);
-    m_palette.add(SEQ64_COLOR(CYAN), m_cyan);
-    m_palette.add(SEQ64_COLOR(WHITE), m_white);
-    m_palette.add(SEQ64_COLOR(DK_BLACK), m_dk_black);
-    m_palette.add(SEQ64_COLOR(DK_RED), m_dk_red);
-    m_palette.add(SEQ64_COLOR(DK_GREEN), m_dk_green);
-    m_palette.add(SEQ64_COLOR(DK_YELLOW), m_dk_yellow);
-    m_palette.add(SEQ64_COLOR(DK_BLUE), m_dk_blue);
-    m_palette.add(SEQ64_COLOR(DK_MAGENTA), m_dk_magenta);
-    m_palette.add(SEQ64_COLOR(DK_CYAN), m_dk_cyan);
-    m_palette.add(SEQ64_COLOR(DK_WHITE), m_dk_white);
-    m_palette.add(SEQ64_COLOR(ORANGE), m_orange);
-    m_palette.add(SEQ64_COLOR(PINK), m_pink);
-    m_palette.add(SEQ64_COLOR(GREY), m_grey);
-    m_palette.add(SEQ64_COLOR(DK_ORANGE), m_dk_orange);
-    m_palette.add(SEQ64_COLOR(DK_PINK), m_dk_pink);
-    m_palette.add(SEQ64_COLOR(DK_GREY), m_dk_grey);
-    m_palette.add(SEQ64_COLOR(NONE), m_white);
+    m_palette.add(SEQ64_COLOR(BLACK), m_black, "Black");
+    m_palette.add(SEQ64_COLOR(RED), m_red, "Red");
+    m_palette.add(SEQ64_COLOR(GREEN), m_green, "Green");
+    m_palette.add(SEQ64_COLOR(BLUE), m_blue, "Blue");
+    m_palette.add(SEQ64_COLOR(YELLOW), m_yellow, "Yellow");
+    m_palette.add(SEQ64_COLOR(MAGENTA), m_magenta, "Magenta");
+    m_palette.add(SEQ64_COLOR(CYAN), m_cyan, "Cyan");
+    m_palette.add(SEQ64_COLOR(WHITE), m_white, "White");
+    m_palette.add(SEQ64_COLOR(DK_BLACK), m_dk_black, "Dk black");
+    m_palette.add(SEQ64_COLOR(DK_RED), m_dk_red, "Dk red");
+    m_palette.add(SEQ64_COLOR(DK_GREEN), m_dk_green, "Dk green");
+    m_palette.add(SEQ64_COLOR(DK_YELLOW), m_dk_yellow, "Dk yellow");
+    m_palette.add(SEQ64_COLOR(DK_BLUE), m_dk_blue, "Dk blue");
+    m_palette.add(SEQ64_COLOR(DK_MAGENTA), m_dk_magenta, "Dk magenta");
+    m_palette.add(SEQ64_COLOR(DK_CYAN), m_dk_cyan, "Dk cyan");
+    m_palette.add(SEQ64_COLOR(DK_WHITE), m_dk_white, "Dk white");
+    m_palette.add(SEQ64_COLOR(ORANGE), m_orange, "Orange");
+    m_palette.add(SEQ64_COLOR(PINK), m_pink, "Pink");
+    m_palette.add(SEQ64_COLOR(GREY), m_grey, "Gray");
+    m_palette.add(SEQ64_COLOR(DK_ORANGE), m_dk_orange, "Dk orange");
+    m_palette.add(SEQ64_COLOR(DK_PINK), m_dk_pink, "Dk pink");
+    m_palette.add(SEQ64_COLOR(DK_GREY), m_dk_grey, "Dk grey");
+    m_palette.add(SEQ64_COLOR(NONE), m_white, "None");
 
     /*
      * Pen/inverse colors
      */
 
     m_pen_palette.clear();                  /* just in case */
-    m_pen_palette.add(SEQ64_COLOR(BLACK), m_white);
-    m_pen_palette.add(SEQ64_COLOR(RED), m_white);
-    m_pen_palette.add(SEQ64_COLOR(GREEN), m_white);
-    m_pen_palette.add(SEQ64_COLOR(YELLOW), m_black);
-    m_pen_palette.add(SEQ64_COLOR(BLUE), m_white);
-    m_pen_palette.add(SEQ64_COLOR(MAGENTA), m_white);
-    m_pen_palette.add(SEQ64_COLOR(CYAN), m_black);
-    m_pen_palette.add(SEQ64_COLOR(WHITE), m_black);
-    m_pen_palette.add(SEQ64_COLOR(DK_BLACK), m_white);
-    m_pen_palette.add(SEQ64_COLOR(DK_RED), m_white);
-    m_pen_palette.add(SEQ64_COLOR(DK_GREEN), m_white);
-    m_pen_palette.add(SEQ64_COLOR(DK_YELLOW), m_white);
-    m_pen_palette.add(SEQ64_COLOR(DK_BLUE), m_white);
-    m_pen_palette.add(SEQ64_COLOR(DK_MAGENTA), m_white);
-    m_pen_palette.add(SEQ64_COLOR(DK_CYAN), m_white);
-    m_pen_palette.add(SEQ64_COLOR(DK_WHITE), m_white);
-    m_pen_palette.add(SEQ64_COLOR(ORANGE), m_white);
-    m_pen_palette.add(SEQ64_COLOR(PINK), m_black);
-    m_pen_palette.add(SEQ64_COLOR(GREY), m_white);
-    m_pen_palette.add(SEQ64_COLOR(DK_ORANGE), m_white);
-    m_pen_palette.add(SEQ64_COLOR(DK_PINK), m_white);
-    m_pen_palette.add(SEQ64_COLOR(DK_GREY), m_white);
-    m_pen_palette.add(SEQ64_COLOR(NONE), m_black);
+    m_pen_palette.add(SEQ64_COLOR(BLACK), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(RED), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(GREEN), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(YELLOW), m_black, "black");
+    m_pen_palette.add(SEQ64_COLOR(BLUE), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(MAGENTA), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(CYAN), m_black, "black");
+    m_pen_palette.add(SEQ64_COLOR(WHITE), m_black, "black");
+    m_pen_palette.add(SEQ64_COLOR(DK_BLACK), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(DK_RED), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(DK_GREEN), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(DK_YELLOW), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(DK_BLUE), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(DK_MAGENTA), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(DK_CYAN), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(DK_WHITE), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(ORANGE), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(PINK), m_black, "black");
+    m_pen_palette.add(SEQ64_COLOR(GREY), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(DK_ORANGE), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(DK_PINK), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(DK_GREY), m_white, "white");
+    m_pen_palette.add(SEQ64_COLOR(NONE), m_black, "black");
 }
 
 /**

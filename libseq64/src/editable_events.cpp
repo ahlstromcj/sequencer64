@@ -190,7 +190,7 @@ editable_events::add (const editable_event & e)
     size_t count = m_events.size();         /* save initial size            */
     event_list::event_key key(e);           /* create the key value         */
 
-#if __cplusplus >= 201103L                  /* C++11                        */
+#ifdef PLATFORM_CPP_11
     EventsPair p = std::make_pair(key, e);
 #else
     EventsPair p = std::make_pair<event_list::event_key, editable_event>(key, e);

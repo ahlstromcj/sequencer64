@@ -28,12 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-03-24
- * \updates       2018-04-22
+ * \updates       2018-10-18
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <string>                       /* std::string                      */
+
+#include "platform_macros.h"            /* feature macros for build control */
 
 /*
  *  Do not document a namespace, it breaks Doxygen.
@@ -46,7 +48,7 @@ namespace seq64
  *  Free functions in the seq64 namespace.
  */
 
-#if __cplusplus < 201103L                   /* C++11                        */
+#if ! defined PLATFORM_CPP_11
 extern void initialize_key_map ();
 #endif
 

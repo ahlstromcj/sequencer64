@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-16
+ * \updates       2018-10-18
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -352,7 +352,7 @@ public:
      *  placeholders or parameters, if desired.
      */
 
-#if __cplusplus >= 201103L                  /* C++11                        */
+#ifdef PLATFORM_CPP_11
     typedef std::function<void(int)> SeqOperation;
 #endif
 
@@ -1994,7 +1994,7 @@ public:
 
 #ifdef SEQ64_SONG_BOX_SELECT
 
-#if __cplusplus >= 201103L                  /* C++11                        */
+#ifdef PLATFORM_CPP_11
     bool selection_operation (SeqOperation func);
 #endif
     void box_insert (int dropseq, midipulse droptick);

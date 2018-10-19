@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-03-24
- * \updates       2018-04-22
+ * \updates       2018-10-18
  * \license       GNU GPLv2 or above
  *
  *  Gtkmm 2.4 and Qt 5 handle keystrokes in a somewhat different manner.
@@ -127,7 +127,7 @@ typedef std::map<unsigned, q_key_spec_t> QtGtkKeyMap;
  *      -   The key's value in Qt 5.  A copy of the map's key value.
  */
 
-#if __cplusplus >= 201103L                  /* C++11                        */
+#ifdef PLATFORM_CPP_11
 
 static QtGtkKeyMap sg_key_map =
 {
@@ -252,7 +252,7 @@ initialize_key_map ()               // where can we call this?
 
 }
 
-#endif  // __cplusplus >= 201103L
+#endif  // PLATFORM_CPP_11
 
 /**
  *  This is meant to accept all key-codes.  However, unless the key-code is

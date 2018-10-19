@@ -992,16 +992,58 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
                 );
             }
 
+            /*
+             * \todo
+             *      Use the stored palette colors!
+             */
+
             QMenu * menuColour = new QMenu(tr("Set pattern &color..."));
-            QAction * color[8];
+
+#define USE_BUILTIN_PALETTE
+#ifdef USE_BUILTIN_PALETTE
+            int firstcolor = int(SEQ64_COLOR(RED));
+            int lastcolor = int(SEQ64_COLOR(WHITE));
+            for (int c = firstcolor; c <= lastcolor; ++c)
+            {
+                PaletteColor pc = PaletteColor(c);
+                QString cname = get_color_name(pc).c_str();     // for now
+                QAction * a = new QAction(cname, menuColour);
+                connect
+                (
+                    a, &QAction::triggered,
+                    [this, c] /*(int i)*/ { color_by_number(c); }
+                );
+                menuColour->addAction(a);
+            }
+
+            QMenu * submenuColour = new QMenu(tr("More colors"));
+            firstcolor = int(SEQ64_COLOR(DK_RED));
+            lastcolor = int(SEQ64_COLOR(DK_PINK));
+            for (int c = firstcolor; c <= lastcolor; ++c)
+            {
+                PaletteColor pc = PaletteColor(c);
+                QString cname = get_color_name(pc).c_str();     // for now
+                QAction * a = new QAction(cname, submenuColour);
+                connect
+                (
+                    a, &QAction::triggered,
+                    [this, c] /*(int i)*/ { color_by_number(c); }
+                );
+                submenuColour->addAction(a);
+            }
+            menuColour->addMenu(submenuColour);
+#else
+
+            QAction * color[12];
             color[0] = new QAction(tr("White"),  menuColour);
             color[1] = new QAction(tr("Red"),    menuColour);
             color[2] = new QAction(tr("Green"),  menuColour);
             color[3] = new QAction(tr("Blue"),   menuColour);
             color[4] = new QAction(tr("Yellow"), menuColour);
-            color[5] = new QAction(tr("Purple"), menuColour);
-            color[6] = new QAction(tr("Pink"),   menuColour);
-            color[7] = new QAction(tr("Orange"), menuColour);
+            color[5] = new QAction(tr("Magenta"), menuColour);
+            color[6] = new QAction(tr("Cyan"),   menuColour);
+            color[7] = new QAction(tr("Pink"),   menuColour);
+            color[8] = new QAction(tr("Orange"), menuColour);
 
             connect(color[0], SIGNAL(triggered(bool)), this, SLOT(color_white()));
             connect(color[1], SIGNAL(triggered(bool)), this, SLOT(color_red()));
@@ -1009,13 +1051,15 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
             connect(color[3], SIGNAL(triggered(bool)), this, SLOT(color_blue()));
             connect(color[4], SIGNAL(triggered(bool)), this, SLOT(color_yellow()));
             connect(color[5], SIGNAL(triggered(bool)), this, SLOT(color_purple()));
-            connect(color[6], SIGNAL(triggered(bool)), this, SLOT(color_pink()));
-            connect(color[7], SIGNAL(triggered(bool)), this, SLOT(color_orange()));
+            connect(color[6], SIGNAL(triggered(bool)), this, SLOT(color_cyan()));
+            connect(color[7], SIGNAL(triggered(bool)), this, SLOT(color_pink()));
+            connect(color[8], SIGNAL(triggered(bool)), this, SLOT(color_orange()));
 
-            for (int i = 0; i < 8; ++i)
+            for (int i = 0; i < 9; ++i)
             {
                 menuColour->addAction(color[i]);
             }
+#endif  // USE_BUILTIN_PALETTE
 
             m_popup->addMenu(menuColour);
 
@@ -1449,6 +1493,16 @@ qsliveframe::keyReleaseEvent (QKeyEvent * event)
      * unsigned kkey = unsigned(event->key());
      * (void) perf().keyboard_group_c_status_press(kkey);
      */
+}
+
+/**
+ *
+ */
+
+void
+qsliveframe::color_by_number (int i)
+{
+    perf().set_sequence_color(m_curr_seq, i);
 }
 
 /**

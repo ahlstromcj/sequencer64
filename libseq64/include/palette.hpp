@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-02-18
- * \updates       2018-10-14
+ * \updates       2018-10-18
  * \license       GNU GPLv2 or above
  *
  *  This module is inspired by MidiPerformance::getSequenceColor() in
@@ -76,7 +76,7 @@ enum progress_colors_t
  *  colors in standard X-terminal order, not in Kepler34 order.
  */
 
-#if __cplusplus >= 201103L                  /* C++11                        */
+#ifdef PLATFORM_CPP_11
 enum class PaletteColor
 #else
 typedef enum
@@ -89,12 +89,11 @@ typedef enum
     BLACK = 0,          //  0 WHITE
     RED,                //  1 RED
     GREEN,              //  2 GREEN
-    YELLOW,             //  3 BLUE
     BLUE,               //  4 YELLOW
+    YELLOW,             //  3 BLUE
     MAGENTA,            //  5 PURPLE
     CYAN,               //  6 PINK
     WHITE,              //  7 ORANGE
-
     DK_BLACK,           //  8 place-holder
     DK_RED,             //  9 N/A
     DK_GREEN,           // 10 N/A
@@ -103,24 +102,25 @@ typedef enum
     DK_MAGENTA,         // 13 N/A
     DK_CYAN,            // 14 N/A
     DK_WHITE,           // 15 N/A
-
     ORANGE,             // N/A
     PINK,               // N/A
     GREY,               // N/A
-
     DK_ORANGE,          // N/A
     DK_PINK,            // N/A
     DK_GREY,            // N/A
-
     MAX,                // first illegal value, not in color set
 
-#if __cplusplus >= 201103L                  /* C++11                        */
+#ifdef PLATFORM_CPP_11
 };
 #else
 } PaletteColor;
 #endif
 
-#if __cplusplus >= 201103L                  /* C++11                        */
+/**
+ *  A macro to handle older versions of C++.
+ */
+
+#ifdef PLATFORM_CPP_11
 #define SEQ64_COLOR(x)  PaletteColor :: x
 #else
 #define SEQ64_COLOR(x)  x
@@ -137,6 +137,19 @@ template <typename COLOR>
 class palette
 {
 
+    /**
+     *  Combines the PaletteColor with a string describing the color.
+     *  This color string is not necessarily standard, but can be added to a
+     *  color-selection menu.
+     */
+
+    typedef struct
+    {
+        const COLOR * ppt_color;
+        std::string ppt_color_name;
+
+    } palette_pair_t;
+
 private:
 
     /*
@@ -150,14 +163,18 @@ private:
      *  A vector could be used instead of a map.
      */
 
-    std::map<PaletteColor, const COLOR *> container;
+    std::map<PaletteColor, palette_pair_t> m_container;
 
 public:
 
     palette ();                         /* initially empty, filled by add() */
 
-    void add (PaletteColor index, const COLOR & color);
+    void add
+    (
+        PaletteColor index, const COLOR & color, const std::string & name
+    );
     const COLOR & get_color (PaletteColor index) const;
+    const std::string & get_color_name (PaletteColor index) const;
 
     /**
      * \param index
@@ -179,12 +196,12 @@ public:
      */
 
     /**
-     *
+     *  Clears the color/name container.
      */
 
     void clear ()
     {
-        container.clear();
+        m_container.clear();
     }
 
 };          // class palette
@@ -198,10 +215,10 @@ public:
 template <typename COLOR>
 palette<COLOR>::palette ()
  :
-    container   ()
+    m_container   ()
 {
     static COLOR color;
-    add(SEQ64_COLOR(NONE), color);
+    add(SEQ64_COLOR(NONE), color, "None");
 }
 
 /**
@@ -218,10 +235,16 @@ palette<COLOR>::palette ()
 
 template <typename COLOR>
 void
-palette<COLOR>::add (PaletteColor index, const COLOR & color)
+palette<COLOR>::add
+(
+    PaletteColor index, const COLOR & color, const std::string & colorname
+)
 {
-    std::pair<PaletteColor, const COLOR *> p = std::make_pair(index, &color);
-    (void) container.insert(p);
+    palette_pair_t colorspec;
+    colorspec.ppt_color = &color;
+    colorspec.ppt_color_name = colorname;
+    std::pair<PaletteColor, palette_pair_t> p = std::make_pair(index, colorspec);
+    (void) m_container.insert(p);
 }
 
 /**
@@ -241,46 +264,33 @@ template <typename COLOR>
 const COLOR &
 palette<COLOR>::get_color (PaletteColor index) const
 {
-    return (index >= SEQ64_COLOR(BLACK) && index < SEQ64_COLOR(MAX)) ?
-        *container.at(index) : *container.at(SEQ64_COLOR(NONE)) ;
+    if (index >= SEQ64_COLOR(BLACK) && index < SEQ64_COLOR(MAX))
+    {
+        return *m_container.at(index).ppt_color;
+    }
+    else
+    {
+        return *m_container.at(SEQ64_COLOR(NONE)).ppt_color;
+    }
 }
 
-#if 0
-
 /**
- * Offload to GUI-specific palette class.
  *
- *  Gets a color from the palette, based on the index value, and returns the
- *  inverted version.
- *
- * \param index
- *      Indicates which color to get.  This index is checked for range, and, if
- *      out of range, the default color object, indexed by PaletteColor::NONE,
- *      is returned.
- *
- * \return
- *      Returns an object representing the inverse of the selected color
- *      object.
  */
 
 template <typename COLOR>
-COLOR
-palette<COLOR>::get_color_inverse (PaletteColor index) const
+const std::string &
+palette<COLOR>::get_color_name (PaletteColor index) const
 {
-    COLOR c = get_color(index);
-    if (c != SEQ64_COLOR(NONE))
+    if (index >= SEQ64_COLOR(BLACK) && index < SEQ64_COLOR(MAX))
     {
-        int r, g, b, a;
-        c.getRgb(&r, &g, &b, &a);
-        r = a - r;
-        g = a - g;
-        b = a - b;
-        return COLOR(r, g, b, a);
+        return m_container.at(index).ppt_color_name;
     }
-    return c;
+    else
+    {
+        return m_container.at(SEQ64_COLOR(NONE)).ppt_color_name;
+    }
 }
-
-#endif  // 0
 
 }           // namespace seq64
 

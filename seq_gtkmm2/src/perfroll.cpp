@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-11
+ * \updates       2018-10-18
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -954,7 +954,7 @@ perfroll::draw_all ()
 
 #ifdef SEQ64_SONG_BOX_SELECT
 
-#if __cplusplus >= 201103L                  /* C++11                        */
+#ifdef PLATFORM_CPP_11
     perform::SeqOperation f = std::bind
     (
         &perfroll::draw_sequence, std::ref(*this), std::placeholders::_1

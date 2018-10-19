@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2018-07-02
+ * \updates       2018-10-18
  * \license       GNU GPLv2 or above
  *
  *  This container now can indicate if certain Meta events (time-signaure or
@@ -238,7 +238,7 @@ event_list::append (const event & e)
 
     event_key key(e);
 
-#if __cplusplus >= 201103L              /* C++11                    */
+#ifdef PLATFORM_CPP_11
     EventsPair p = std::make_pair(key, e);
 #else
     EventsPair p = std::make_pair<event_key, event>(key, e);

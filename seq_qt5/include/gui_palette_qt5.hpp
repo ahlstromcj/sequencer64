@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-02-23
- * \updates       2018-10-14
+ * \updates       2018-10-18
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -194,6 +194,19 @@ public:
     ~gui_palette_qt5 ();
 
     void initialize ();
+
+    /**
+     * \param index
+     *      Provides the color index into the palette.
+     *
+     * \return
+     *      Returns the corresponding color name from the palette.
+     */
+
+    const std::string & get_color_name (PaletteColor index) const
+    {
+        return m_palette.get_color_name(index);
+    }
 
     /**
      * \param index

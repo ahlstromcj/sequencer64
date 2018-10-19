@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-10-02
+ * \updates       2018-10-18
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -553,7 +553,7 @@ perform::finish ()
  *      Returns true if at least one set item was found to operate on.
  */
 
-#if __cplusplus >= 201103L                  /* C++11                        */
+#ifdef PLATFORM_CPP_11
 
 bool
 perform::selection_operation (SeqOperation func)

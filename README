@@ -39,8 +39,8 @@ Windows support derived from PortMidi: Seq64qt5/qpseq64.exe
     be done manually in the "rc" and "usr" files.  See README.windows for more
     information, as it can be tricky to get the Windows configuration right.
 
-See the INSTALL file for build-from-source instructions or using a
-conventional source tarball.
+See the INSTALL file for build-from-source instructions for Linux or Window,
+and using a conventional source tarball.
 
 Recent changes:
 
@@ -50,7 +50,7 @@ Recent changes:
         -   Fixes to the CLI version of Sequencer64.
         -   Fixes to file import in the Qt version.
         -   Fix to the Qt song-editor transpose combo-box.
-        -   File cleanup.
+        -   File cleanup, usage of PLATFORM_CPP_11 macro.
     -   Version 0.96.0:
         -   Support for playlists and MIDI selections of playlists and songs.
             Includes the command-line option, "rc" file, keystroke selection,

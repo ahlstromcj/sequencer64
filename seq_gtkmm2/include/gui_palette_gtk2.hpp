@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2018-03-04
+ * \updates       2018-10-17
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -105,7 +105,19 @@ protected:
 
 protected:
 
+    /**
+     *  Holds the color palette for drawing on slot backgrounds.
+     */
+
     palette<Color> m_palette;
+
+    /**
+     *  Holds the color palette for drawing text or notes on slot backgrounds.
+     *  This is not quite an inverse palette, but consists of colors that show
+     *  well on the background colors.
+     */
+
+    palette<Color> m_pen_palette;
 
 private:                            /* use the accessor functions           */
 
@@ -185,9 +197,31 @@ public:
     ~gui_palette_gtk2 ();
 
     void initialize ();
+
+    /**
+     * \param index
+     *      Provides the color index into the palette.
+     *
+     * \return
+     *      Returns the corresponding color from the slot background palette.
+     */
+
     const Color & get_color (PaletteColor index) const
     {
         return m_palette.get_color(index);
+    }
+
+    /**
+     * \param index
+     *      Provides the color index into the palette.
+     *
+     * \return
+     *      Returns the corresponding color from the pen palette.
+     */
+
+    const Color & get_pen_color (PaletteColor index) const
+    {
+        return m_pen_palette.get_color(index);
     }
 
     Color get_color_ex

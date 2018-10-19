@@ -278,6 +278,7 @@ private slots:
     void delete_seq ();
     void new_live_frame ();
 
+    void color_by_number (int i);
     void color_white ();
     void color_red ();
     void color_green ();

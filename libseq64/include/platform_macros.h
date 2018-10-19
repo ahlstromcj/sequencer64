@@ -11,7 +11,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-25
+ * \updates       2018-10-19
  * \license       GNU GPLv2 or above
  *
  *  Copyright (C) 2013-2018 Chris Ahlstrom <ahlstromcj@gmail.com>
@@ -51,6 +51,8 @@
  *       -  PLATFORM_POSIX_API (alternative to POSIX)
  *    -  Language:
  *       -  PLATFORM_CPP_11
+ *       -  PLATFORM_CPP_14
+ *       -  PLATFORM_CPP_17
  */
 
 #undef PLATFORM_WINDOWS
@@ -68,6 +70,8 @@
 #undef PLATFORM_WINDOWS_API
 #undef PLATFORM_POSIX_API
 #undef PLATFORM_CPP_11
+#undef PLATFORM_CPP_14
+#undef PLATFORM_CPP_17
 
 /**
  *  Provides a "Windows" macro, in case the environment doesn't provide
@@ -292,17 +296,29 @@
  */
 
 #ifdef PLATFORM_MSVC
+
 #if _MSC_VER >= 1700                /* __cplusplus value doesn't work, MS!    */
 #define PLATFORM_CPP_11
 #endif
+
 #else
+
 #if __cplusplus >= 201103L          /* i.e. C++11                             */
 #define PLATFORM_CPP_11
 #endif
+
+#if __cplusplus >= 201402L          /* i.e. C++14                             */
+#define PLATFORM_CPP_14
+#endif
+
+#if __cplusplus >= 201703L          /* i.e. C++17                             */
+#define PLATFORM_CPP_17
+#endif
+
 #endif
 
 /**
- *  Provides macros that mean 64-bit, and only 64-bit.
+ *  Provides macros that mean "debugging enabled".
  *
  *      -  PLATFORM_DEBUG or PLATFORM_RELEASE
  *      -  DEBUG or NDEBUG for legacy usage

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-20
+ * \updates       2018-10-18
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -228,6 +228,9 @@ seqmenu::popup_menu ()
      *
      * Also, we still need to add the selected color to the mainwid and
      * perfroll drawing mechanisms.
+     *
+     * \todo
+     *      Use the stored palette colors!
      */
 
 #define SET_COLOR   mem_fun(*this, &seqmenu::set_color)
@@ -487,7 +490,7 @@ seqmenu::create_seqedit (sequence & s)
     seqedit * result = new seqedit(m_mainperf, s, current_seq());
     if (not_nullptr(result))
     {
-#if __cplusplus >= 201103L              /* C++11 */
+#ifdef PLATFORM_CPP_11
         SeqeditPair p = std::make_pair(current_seq(), result);
 #else
         SeqeditPair p = std::make_pair<int, seqedit *>(current_seq(), result);

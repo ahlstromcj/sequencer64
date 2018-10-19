@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-17
+ * \updates       2018-10-18
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -152,7 +152,7 @@ qsmainwnd::qsmainwnd
     m_open_editors          (),
     m_open_live_frames      ()
 {
-#if __cplusplus < 201103L                               // C++11
+#if ! defined PLATFORM_CPP_11
     initialize_key_map();
 #endif
 
@@ -1440,7 +1440,7 @@ qsmainwnd::load_qseqedit (int seqid)
                 if (not_nullptr(ex))
                 {
                     ex->show();
-#if __cplusplus >= 201103L              /* C++11    */
+#ifdef PLATFORM_CPP_11
                     std::pair<int, qseqeditex *> p = std::make_pair(seqid, ex);
 #else
                     std::pair<int, qseqeditex *> p =
@@ -1546,7 +1546,7 @@ qsmainwnd::load_live_frame (int ssnum)
             if (not_nullptr(ex))
             {
                 ex->show();
-#if __cplusplus >= 201103L              /* C++11    */
+#ifdef PLATFORM_CPP_11
                 std::pair<int, qliveframeex *> p = std::make_pair(ssnum, ex);
 #else
                 std::pair<int, qliveframeex *> p =

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-10-17
+ * \updates       2018-10-18
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -887,7 +887,7 @@ playlist::add_list (play_list_t & plist)
     int listnumber = plist.ls_midi_number;      /* MIDI control number  */
     if (listnumber >= 0)
     {
-#if __cplusplus >= 201103L
+#ifdef PLATFORM_CPP_11
         std::pair<int, play_list_t> ls =
             std::make_pair(listnumber, plist);
 #else
@@ -1435,7 +1435,7 @@ playlist::add_song (song_list & slist, song_spec_t & sspec)
     bool result = false;
     int count = int(slist.size());
     int songnumber = sspec.ss_midi_number;
-#if __cplusplus >= 201103L              // C++11
+#ifdef PLATFORM_CPP_11
     std::pair<int, song_spec_t> s = std::make_pair(songnumber, sspec);
 #else
     std::pair<int, song_spec_t> s =

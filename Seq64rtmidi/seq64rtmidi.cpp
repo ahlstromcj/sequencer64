@@ -25,7 +25,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2018-09-29
+ * \updates       2018-10-19
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -174,6 +174,7 @@ main (int argc, char * argv [])
                 {
                     extant_errmsg = p.playlist_error_message();
                     extant_msg_active = true;
+                    ok = true;                      /* avoid early exit     */
                 }
             }
 #endif
@@ -221,6 +222,15 @@ main (int argc, char * argv [])
 #endif
         );
 
+        if (extant_msg_active)
+        {
+            seq24_window.show_message_box(extant_errmsg, "Start-up Error");
+        }
+        else if (! errmessage.empty())
+        {
+            seq24_window.rc_error_dialog(errmessage);
+        }
+
         /*
          * Having this here after creating the main window may cause issue
          * #100, where ladish doesn't see seq64's ports in time.
@@ -248,11 +258,6 @@ main (int argc, char * argv [])
         }
         else
         {
-            if (extant_msg_active)
-                seq24_window.show_message_box(extant_errmsg, "Start-up Error");
-            else
-                seq24_window.rc_error_dialog(errmessage);
-
             (void) seq64::write_options_files(p, "erroneous");
         }
     }

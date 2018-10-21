@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-05-19
+ * \updates       2018-10-20
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -331,7 +331,7 @@ options::add_midi_clock_page ()
     (
         new Gtk::Label
         (
-            " Pattern number for tempo track, from 0 to 1023 (0 recommended)",
+            " Tempo track number (0 to 1023, 0 recommended)",
             Gtk::ALIGN_LEFT
         )
     );

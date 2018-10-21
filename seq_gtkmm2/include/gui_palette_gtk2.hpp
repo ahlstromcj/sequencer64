@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2018-10-17
+ * \updates       2018-10-21
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -137,7 +137,7 @@ private:                            /* use the accessor functions           */
     static const Color m_yellow;    /**< Provides the yellow color.         */
     static const Color m_blue;      /**< Provides the blue color.           */
     static const Color m_magenta;   /**< Provides the magenta color.        */
-    static const Color m_cyan;      /**< Provides the cyan color.          */
+    static const Color m_cyan;      /**< Provides the cyan color.           */
     static const Color m_white;     /**< Provides the white color.          */
 
     /*
@@ -409,6 +409,15 @@ public:
     const Color & magenta () const
     {
         return m_magenta;
+    }
+
+    /**
+     * \getter m_cyan
+     */
+
+    const Color & cyan () const
+    {
+        return m_cyan;
     }
 
     /**

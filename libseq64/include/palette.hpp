@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-02-18
- * \updates       2018-10-18
+ * \updates       2018-10-21
  * \license       GNU GPLv2 or above
  *
  *  This module is inspired by MidiPerformance::getSequenceColor() in
@@ -89,8 +89,8 @@ typedef enum
     BLACK = 0,          //  0 WHITE
     RED,                //  1 RED
     GREEN,              //  2 GREEN
-    BLUE,               //  4 YELLOW
     YELLOW,             //  3 BLUE
+    BLUE,               //  4 YELLOW
     MAGENTA,            //  5 PURPLE
     CYAN,               //  6 PINK
     WHITE,              //  7 ORANGE
@@ -121,9 +121,11 @@ typedef enum
  */
 
 #ifdef PLATFORM_CPP_11
-#define SEQ64_COLOR(x)  PaletteColor :: x
+#define SEQ64_COLOR(x)      PaletteColor :: x
+#define SEQ64_COLOR_INT(x)  int( PaletteColor :: x )
 #else
-#define SEQ64_COLOR(x)  x
+#define SEQ64_COLOR(x)      x
+#define SEQ64_COLOR_INT(x)  int( x )
 #endif
 
 /**

@@ -38,7 +38,7 @@ have a different setup than the developers.
 
 [playlist-options]
 
-1   # If set to 1, when a new song is select, unmute all its patterns
+1   # If set to 1, when a new song is selected, unmute all its patterns.
 
 [playlist]
 

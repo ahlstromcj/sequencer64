@@ -434,10 +434,13 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                  * Draws a filled-in rectangle to hold the event marks.  We
                  * might make this conditional to preserve the full coloring
                  * of empty or in-edit sequences. TBD.
+                 *
+                 * Weird, somehow m_cyan comes out black, though m_dk_cyan
+                 * works!!!
                  */
 
                 int c = seq->color();
-                Color color = get_color_ex(PaletteColor(c), 40.0, 0.20, 0.5);
+                Color color = get_color(PaletteColor(c));
                 if (c == SEQ64_COLOR_NONE)
                     color = bg_color();     /* preserve normal coloring     */
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-04
+ * \updates       2018-10-21
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,6 +38,8 @@
 #include "globals.h"
 #include "gui_palette_qt5.hpp"
 #include "sequence.hpp"
+
+#define SEQ64_USE_BUILTIN_PALETTE
 
 class QMenu;
 class QTimer;
@@ -279,6 +281,8 @@ private slots:
     void new_live_frame ();
 
     void color_by_number (int i);
+
+#if ! defined SEQ64_USE_BUILTIN_PALETTE
     void color_white ();
     void color_red ();
     void color_green ();
@@ -288,6 +292,7 @@ private slots:
     void color_pink ();
     void color_orange ();
     void color_more (int colorcode);
+#endif
 
 signals:
 

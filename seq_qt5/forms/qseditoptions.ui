@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabMidiClock">
       <attribute name="title">
@@ -60,6 +60,9 @@
         <string>Meta Events</string>
        </property>
        <widget class="QPlainTextEdit" name="plainTextEditTempoTrack">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -70,6 +73,12 @@
         </property>
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the number of the tempo track, and it is saved to the 'rc' file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="readOnly">
+         <bool>false</bool>
+        </property>
+        <property name="overwriteMode">
+         <bool>false</bool>
         </property>
         <property name="placeholderText">
          <string>0</string>
@@ -85,7 +94,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>Pattern number for tempo track, from 0 to 1023 (0 is best)</string>
+         <string>Tempo track number (0 to 1023, 0 recommended)</string>
         </property>
        </widget>
        <widget class="QPushButton" name="pushButtonTempoTrack">
@@ -110,8 +119,8 @@
         <rect>
          <x>30</x>
          <y>410</y>
-         <width>262</width>
-         <height>26</height>
+         <width>338</width>
+         <height>30</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizLayoutClockStartModulo">
@@ -231,8 +240,8 @@
         <rect>
          <x>10</x>
          <y>10</y>
-         <width>213</width>
-         <height>55</height>
+         <width>271</width>
+         <height>63</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayoutUiValues">
@@ -356,8 +365,8 @@
         <rect>
          <x>30</x>
          <y>40</y>
-         <width>246</width>
-         <height>104</height>
+         <width>319</width>
+         <height>120</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="vertLayoutJackTransportMidi">

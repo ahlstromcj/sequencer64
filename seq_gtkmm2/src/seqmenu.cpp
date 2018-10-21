@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-18
+ * \updates       2018-10-21
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -220,7 +220,7 @@ seqmenu::popup_menu ()
         )
     );
 
-#ifdef SEQ64_SHOW_COLOR_PALETTE               // EXPERIMENTAL
+#ifdef SEQ64_SHOW_COLOR_PALETTE
 
     /*
      * Sets up the optional color palette menu.  Currently, we don't access
@@ -228,9 +228,6 @@ seqmenu::popup_menu ()
      *
      * Also, we still need to add the selected color to the mainwid and
      * perfroll drawing mechanisms.
-     *
-     * \todo
-     *      Use the stored palette colors!
      */
 
 #define SET_COLOR   mem_fun(*this, &seqmenu::set_color)
@@ -241,31 +238,67 @@ seqmenu::popup_menu ()
     m_menu->items().push_back(MenuElem("Color", *menu_color));
     PUSH_COLOR("None", -1);
     menu_color->items().push_back(SeparatorElem());
-    /* Not useful: PUSH_COLOR("Black", 0);                                  */
-    PUSH_COLOR("Red", 1);
-    PUSH_COLOR("Green", 2);
-    PUSH_COLOR("Yellow", 3);
-    PUSH_COLOR("Blue", 4);
-    PUSH_COLOR("Magenta", 5);
-    /* Not accessible by this name in Gtkmm: PUSH_COLOR("Cyan", 6);         */
-    PUSH_COLOR("White", 7);
+
+    /*
+     * Not useful, it interferes with the armed/unmuted color:
+     *      PUSH_COLOR("Black", SEQ64_COLOR_INT(BLACK);
+     *
+     * \todo
+     *      Use get_color_name() to get the color string.
+     */
+
+    PUSH_COLOR("Red", SEQ64_COLOR_INT(RED));
+    PUSH_COLOR("Green", SEQ64_COLOR_INT(GREEN));
+    PUSH_COLOR("Yellow", SEQ64_COLOR_INT(YELLOW));
+    PUSH_COLOR("Blue", SEQ64_COLOR_INT(BLUE));
+    PUSH_COLOR("Magenta", SEQ64_COLOR_INT(MAGENTA));
+
+    /*
+     * Not accessible by this code in Gtkmm, use a workaround color for now.
+     */
+
+    PUSH_COLOR("Cyan", SEQ64_COLOR_INT(DK_CYAN));       /* weird!   */
+    PUSH_COLOR("White", SEQ64_COLOR_INT(WHITE));
+    PUSH_COLOR("Orange", SEQ64_COLOR_INT(ORANGE));
     menu_color->items().push_back(SeparatorElem());
-    /* Not useful: PUSH_COLOR("Dk Black", 8);   */
-    PUSH_COLOR("Dk Red", 9);
-    PUSH_COLOR("Dk Green", 10);
-    /* Not accessible by this name in Gtkmm: PUSH_COLOR("Dk Yellow", 11);   */
-    PUSH_COLOR("Dk Blue", 12);
-    PUSH_COLOR("Dk Magenta", 13);
-    PUSH_COLOR("Dk Cyan", 14);
-    /* Not useful:  PUSH_COLOR("Dk White", 15);                             */
-    menu_color->items().push_back(SeparatorElem());
-    PUSH_COLOR("Orange", 16);
-    /* Not accessible by this name in Gtkmm: PUSH_COLOR("Pink", 17);        */
-    /* Conflicts with one-shot: PUSH_COLOR("Grey", 18);                     */
-    menu_color->items().push_back(SeparatorElem());
-    PUSH_COLOR("Dk Orange", 19);
-    /* Not accessible by this name in Gtkmm: PUSH_COLOR("Dk Pink", 20);     */
-    /* Conflicts with queuing: PUSH_COLOR("Dk Grey", 21);                   */
+
+    /* Not useful:
+     *      PUSH_COLOR("Dk Black", SEQ64_COLOR_INT(DK_BLACK));
+     */
+
+    PUSH_COLOR("Dk Red", SEQ64_COLOR_INT(DK_RED));
+    PUSH_COLOR("Dk Green", SEQ64_COLOR_INT(DK_GREEN));
+
+    /*
+     * Not accessible by this code in Gtkmm, use workaround color for now.
+     */
+
+    PUSH_COLOR("Dk Yellow", SEQ64_COLOR_INT(YELLOW));
+    PUSH_COLOR("Dk Blue", SEQ64_COLOR_INT(DK_BLUE));
+    PUSH_COLOR("Dk Magenta", SEQ64_COLOR_INT(DK_MAGENTA));
+    PUSH_COLOR("Dk Cyan", SEQ64_COLOR_INT(DK_CYAN));
+
+    /*
+     * Not useful:
+     *      PUSH_COLOR("Dk White", SEQ64_COLOR_INT(DK_WHITE));
+     *
+     * Not accessible by this code in Gtkmm:
+     *      PUSH_COLOR("Pink", SEQ64_COLOR_INT(PINK));
+     *
+     * Conflicts with one-shot:
+     *      PUSH_COLOR("Grey", SEQ64_COLOR_INT(DK_GREY));
+     */
+
+    PUSH_COLOR("Dk Orange", SEQ64_COLOR_INT(DK_ORANGE));
+
+    /*
+     * Not accessible by this code in Gtkmm:
+     *      PUSH_COLOR("Dk Pink", SEQ64_COLOR_INT(DK_PINK);
+     */
+
+    /*
+     * Conflicts with queuing: PUSH_COLOR("Dk Grey", SEQ64_COLOR_INT(DK_GREY));
+     */
 
 #endif  // SEQ64_SHOW_COLOR_PALETTE
 

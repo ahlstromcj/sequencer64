@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-09-29
+ * \updates       2018-10-19
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -173,6 +173,7 @@ main (int argc, char * argv [])
                 {
                     extant_errmsg = p.playlist_error_message();
                     extant_msg_active = true;
+                    ok = true;                      /* avoid early exit     */
                 }
             }
 #endif
@@ -242,6 +243,11 @@ main (int argc, char * argv [])
         }
 #endif
 
+        if (extant_msg_active)
+            seq24_window.show_message_box(extant_errmsg);
+        else
+            seq24_window.show_message_box(errmessage);
+
         if (ok)
         {
 #ifdef PLATFORM_LINUX
@@ -262,11 +268,6 @@ main (int argc, char * argv [])
         }
         else
         {
-            if (extant_msg_active)
-                seq24_window.show_message_box(extant_errmsg);
-            else
-                seq24_window.show_message_box(errmessage);
-
             (void) seq64::write_options_files(p, "erroneous");
         }
     }

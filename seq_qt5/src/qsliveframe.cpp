@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-17
+ * \updates       2018-10-21
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -999,26 +999,28 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 
             QMenu * menuColour = new QMenu(tr("Set pattern &color..."));
 
-#define USE_BUILTIN_PALETTE
-#ifdef USE_BUILTIN_PALETTE
-            int firstcolor = int(SEQ64_COLOR(RED));
-            int lastcolor = int(SEQ64_COLOR(WHITE));
+#ifdef SEQ64_USE_BUILTIN_PALETTE
+            int firstcolor = int(SEQ64_COLOR_INT(NONE));
+            int lastcolor = int(SEQ64_COLOR_INT(WHITE));
             for (int c = firstcolor; c <= lastcolor; ++c)
             {
-                PaletteColor pc = PaletteColor(c);
-                QString cname = get_color_name(pc).c_str();     // for now
-                QAction * a = new QAction(cname, menuColour);
-                connect
-                (
-                    a, &QAction::triggered,
-                    [this, c] /*(int i)*/ { color_by_number(c); }
-                );
-                menuColour->addAction(a);
+                if (c != int(SEQ64_COLOR_INT(BLACK)))
+                {
+                    PaletteColor pc = PaletteColor(c);
+                    QString cname = get_color_name(pc).c_str();     // for now
+                    QAction * a = new QAction(cname, menuColour);
+                    connect
+                    (
+                        a, &QAction::triggered,
+                        [this, c] /*(int i)*/ { color_by_number(c); }
+                    );
+                    menuColour->addAction(a);
+                }
             }
 
             QMenu * submenuColour = new QMenu(tr("More colors"));
-            firstcolor = int(SEQ64_COLOR(DK_RED));
-            lastcolor = int(SEQ64_COLOR(DK_PINK));
+            firstcolor = int(SEQ64_COLOR_INT(DK_RED));
+            lastcolor = int(SEQ64_COLOR_INT(DK_PINK));
             for (int c = firstcolor; c <= lastcolor; ++c)
             {
                 PaletteColor pc = PaletteColor(c);
@@ -1032,7 +1034,8 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
                 submenuColour->addAction(a);
             }
             menuColour->addMenu(submenuColour);
-#else
+
+#else   // SEQ64_USE_BUILTIN_PALETTE
 
             QAction * color[12];
             color[0] = new QAction(tr("White"),  menuColour);
@@ -1059,7 +1062,7 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
             {
                 menuColour->addAction(color[i]);
             }
-#endif  // USE_BUILTIN_PALETTE
+#endif  // SEQ64_USE_BUILTIN_PALETTE
 
             m_popup->addMenu(menuColour);
 
@@ -1505,6 +1508,8 @@ qsliveframe::color_by_number (int i)
     perf().set_sequence_color(m_curr_seq, i);
 }
 
+#if ! defined SEQ64_USE_BUILTIN_PALETTE
+
 /**
  *
  */
@@ -1595,6 +1600,8 @@ qsliveframe::color_more (int colorcode)
     // perf().set_sequence_color(m_curr_seq, int(SEQ64_COLOR(ORANGE)));
     perf().set_sequence_color(m_curr_seq, colorcode);
 }
+
+#endif // defined SEQ64_USE_BUILTIN_PALETTE
 
 /**
  *

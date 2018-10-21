@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-03
+ * \updates       2018-10-20
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -2035,6 +2035,7 @@ mainwnd::new_open_error_dialog ()
     (
         *this, prompt, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
     );
+    errdialog.set_title("New/Open");
     errdialog.run();
 }
 
@@ -2158,6 +2159,7 @@ mainwnd::file_save_as (midifile::SaveOption option)
                     "File already exists!\nDo you want to overwrite it?",
                     false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, true
                 );
+                warning.set_title("Save As");
                 response = warning.run();
                 if (response == Gtk::RESPONSE_NO)
                     return;
@@ -2180,6 +2182,7 @@ mainwnd::file_save_as (midifile::SaveOption option)
                         Gtk::BUTTONS_OK, true
                     );
                     rc().filename("");
+                    errdialog.set_title("Export Song");
                     errdialog.run();
                 }
             }
@@ -2208,6 +2211,7 @@ mainwnd::file_save_as (midifile::SaveOption option)
                         Gtk::BUTTONS_OK, true
                     );
                     rc().filename("");
+                    errdialog.set_title("Export MIDI");
                     errdialog.run();
                 }
             }
@@ -2263,6 +2267,7 @@ mainwnd::open_file (const std::string & fn)
         (
             *this, errmsg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
         );
+        errdialog.set_title("Open File");
         rc().filename("");
         errdialog.run();
     }
@@ -2400,6 +2405,7 @@ mainwnd::choose_file (bool openplaylist)
                  * rc().playlist_filename("");
                  */
 
+                errdialog.set_title("Playlist");
                 errdialog.run();
             }
             playlistmode = perf().playlist_mode();
@@ -2452,6 +2458,7 @@ mainwnd::save_file ()
                 *this, errmsg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
             );
             rc().filename("");
+            errdialog.set_title("Save");
             errdialog.run();
         }
     }
@@ -2615,6 +2622,7 @@ mainwnd::file_import_dialog ()
                 Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
             );
             rc().filename("");
+            errdialog.set_title("Import");
             errdialog.run();
         }
         update_window_title();

@@ -19,15 +19,15 @@
 /**
  * \file          qseditoptions.cpp
  *
- *  The time bar shows markers and numbers for the measures of the song,
- *  and also depicts the left and right markers.
+ *      The Qt version of the Options editor.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-21
+ * \updates       2018-10-20
  * \license       GNU GPLv2 or above
  *
+ *      This version is located in Edit / Preferences.
  */
 
 #include "perform.hpp"

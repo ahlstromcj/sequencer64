@@ -25,7 +25,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2018-10-19
+ * \updates       2018-10-22
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -149,6 +149,12 @@ main (int argc, char * argv [])
         if (ok)
             p.launch(seq64::usr().midi_ppqn());     /* set up performance   */
 
+        /*
+         * Workaround, force this static value false before checking, as it
+         * sometimes is true at startup.
+         */
+
+        seq64::gui_palette_gtk2::is_inverse(seq64::usr().inverse_colors());
         if (seq64::usr().inverse_colors())
             seq64::gui_palette_gtk2::load_inverse_palette(true);
 

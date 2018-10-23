@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-02
+ * \updates       2018-10-22
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -240,7 +240,8 @@ private:
     {
         font_render().render_string_on_drawable
         (
-            m_gc, x, y, pixmap, num, font::BLACK, true
+            m_gc, x, y, pixmap, num, font::BLACK,   // false // true
+            gui_palette_gtk2::is_inverse()
         );
     }
 

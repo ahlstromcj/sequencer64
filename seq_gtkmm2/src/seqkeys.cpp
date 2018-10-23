@@ -210,7 +210,8 @@ seqkeys::update_pixmap ()
                 snprintf(note, sizeof note, "%2s%1d", c_key_text[okey], octave);
                 render_string_on_pixmap
                 (
-                    2, c_key_y * key - 1, note, font::BLACK, true
+                    // 2, c_key_y * key - 1, note, font::BLACK, true
+                    1, c_key_y * key - 1, note, font::BLACK, true
                 );
             }
         }

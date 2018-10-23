@@ -260,6 +260,11 @@ seqmenu::popup_menu ()
     PUSH_COLOR("Cyan", SEQ64_COLOR_INT(DK_CYAN));       /* weird!   */
     PUSH_COLOR("White", SEQ64_COLOR_INT(WHITE));
     PUSH_COLOR("Orange", SEQ64_COLOR_INT(ORANGE));
+
+    /*
+     * Pink and Gray are not available in the Gtkmm interface.
+     */
+
     menu_color->items().push_back(SeparatorElem());
 
     /* Not useful:
@@ -294,9 +299,7 @@ seqmenu::popup_menu ()
     /*
      * Not accessible by this code in Gtkmm:
      *      PUSH_COLOR("Dk Pink", SEQ64_COLOR_INT(DK_PINK);
-     */
-
-    /*
+     *
      * Conflicts with queuing: PUSH_COLOR("Dk Grey", SEQ64_COLOR_INT(DK_GREY));
      */
 

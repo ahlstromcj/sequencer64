@@ -94,6 +94,9 @@ typedef enum
     MAGENTA,            //  5 PURPLE
     CYAN,               //  6 PINK
     WHITE,              //  7 ORANGE
+    ORANGE,             // N/A
+    PINK,               // N/A
+    GREY,               // N/A
     DK_BLACK,           //  8 place-holder
     DK_RED,             //  9 N/A
     DK_GREEN,           // 10 N/A
@@ -102,9 +105,6 @@ typedef enum
     DK_MAGENTA,         // 13 N/A
     DK_CYAN,            // 14 N/A
     DK_WHITE,           // 15 N/A
-    ORANGE,             // N/A
-    PINK,               // N/A
-    GREY,               // N/A
     DK_ORANGE,          // N/A
     DK_PINK,            // N/A
     DK_GREY,            // N/A

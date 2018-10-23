@@ -8,7 +8,7 @@
 # \library    	Any project
 # \author     	Chris Ahlstrom
 # \date       	2015-07-24
-# \update     	2018-08-26
+# \update     	2018-10-23
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -357,7 +357,11 @@ function clean_tempfiles()
    done
 
 # vim swap-files, backup files, my own temp files, log files
+# Added the hash-tag and am--include-marker files which weirdly appear
+# sometimes.
 
+   find . -name "#" -exec rm -f '{}' \; 2> /dev/null
+   find . -name "am--include-marker" -exec rm -f '{}' \; 2> /dev/null
    find . -name "out.*" -exec rm -f '{}' \; 2> /dev/null
    find . -name "*.swp" -exec rm -f '{}' \; 2> /dev/null
    find . -name ".*.swp" -exec rm -f '{}' \; 2> /dev/null

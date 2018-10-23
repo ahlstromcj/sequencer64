@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-07-05
+ * \updates       2018-10-22
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -810,7 +810,8 @@ seqdata::render_digits
 
     char val[4];
     snprintf(val, sizeof val, "%3d", digits);
-    m_gc->set_foreground(white_paint());
+    m_gc->set_foreground(white_paint());        // black_paint()
+    memset(s_num, 0, 6);
     s_num[0] = val[0];
     s_num[2] = val[1];
     s_num[4] = val[2];

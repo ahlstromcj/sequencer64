@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2018-10-21
+ * \updates       2018-10-22
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -122,7 +122,7 @@ protected:
 private:                            /* use the accessor functions           */
 
     /**
-     *  Flags the presense of the inverse color palette.
+     *  Flags the presence of the inverse color palette.
      */
 
     static bool m_is_inverse;
@@ -238,6 +238,15 @@ public:
     static bool is_inverse ()
     {
         return m_is_inverse;
+    }
+
+    /**
+     *  Indicates if the inverse color palette is loaded.
+     */
+
+    static void is_inverse (bool flag)
+    {
+        m_is_inverse = flag;
     }
 
     /**

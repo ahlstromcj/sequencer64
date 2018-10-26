@@ -1,6 +1,6 @@
 Contributed MIDI/Test Files
 Chris Ahlstrom
-2015-09-11 to 2018-09-21
+2015-09-11 to 2018-10-26
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -22,7 +22,7 @@ the "example1" file.
 
    allofarow.midi:
 
-        The song above, saved by a recent, upgrade, version of Sequencer64.
+        The song above, saved by a recent, upgraded, version of Sequencer64.
 
    allofarow-unstripped.midi:
 

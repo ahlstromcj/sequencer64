@@ -272,6 +272,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Selects a chord to generate automatically when each note is created.</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -464,6 +467,9 @@
          <width>46</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Sets the note length to generate using the mouse. </string>
        </property>
        <property name="text">
         <string>Note</string>

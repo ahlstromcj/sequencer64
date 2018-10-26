@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2018-05-27
+ * \updates       2018-10-26
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -297,12 +297,10 @@ const int c_num_keys = SEQ64_MIDI_COUNT_MAX;      // 128
 
 /**
  *  The dimensions and offset of the virtual keyboard at the left of the
- *  piano roll.
+ *  piano roll.  Some have been moved to the GUI (Gtkmm and Qt) that need
+ *  them.
  */
 
-const int c_keyarea_x = c_key_x + 15;
-const int c_keyoffset_x = c_keyarea_x - c_key_x;
-const int c_keyarea_y = c_key_y * c_num_keys + 1;
 const int c_keyboard_padding_x = 6;         // Qt version
 
 /**
@@ -311,7 +309,7 @@ const int c_keyboard_padding_x = 6;         // Qt version
  *  shown; one must scroll to see it all.
  */
 
-const int c_rollarea_y = c_keyarea_y;
+const int c_rollarea_y = c_key_y * c_num_keys + 1;  // c_keyarea_y
 
 /**
  *  The dimensions of the little rectangles, in pixels, that represent the

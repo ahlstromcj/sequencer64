@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>481</width>
-    <height>317</height>
+    <width>541</width>
+    <height>332</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -55,7 +55,7 @@
   <widget class="QLineEdit" name="m_range_text">
    <property name="geometry">
     <rect>
-     <x>70</x>
+     <x>90</x>
      <y>280</y>
      <width>51</width>
      <height>23</height>
@@ -68,7 +68,7 @@
   <widget class="QLineEdit" name="m_speed_text">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>170</x>
      <y>280</y>
      <width>51</width>
      <height>23</height>
@@ -81,7 +81,7 @@
   <widget class="QLineEdit" name="m_phase_text">
    <property name="geometry">
     <rect>
-     <x>200</x>
+     <x>250</x>
      <y>280</y>
      <width>51</width>
      <height>23</height>
@@ -94,7 +94,7 @@
   <widget class="QPushButton" name="m_button_close">
    <property name="geometry">
     <rect>
-     <x>320</x>
+     <x>390</x>
      <y>280</y>
      <width>80</width>
      <height>23</height>
@@ -107,7 +107,7 @@
   <widget class="QSlider" name="m_value_slider">
    <property name="geometry">
     <rect>
-     <x>25</x>
+     <x>30</x>
      <y>80</y>
      <width>16</width>
      <height>191</height>
@@ -120,7 +120,7 @@
   <widget class="QSlider" name="m_phase_slider">
    <property name="geometry">
     <rect>
-     <x>220</x>
+     <x>270</x>
      <y>80</y>
      <width>16</width>
      <height>191</height>
@@ -133,7 +133,7 @@
   <widget class="QSlider" name="m_range_slider">
    <property name="geometry">
     <rect>
-     <x>90</x>
+     <x>110</x>
      <y>80</y>
      <width>16</width>
      <height>191</height>
@@ -146,7 +146,7 @@
   <widget class="QGroupBox" name="m_wave_type_group">
    <property name="geometry">
     <rect>
-     <x>280</x>
+     <x>350</x>
      <y>50</y>
      <width>171</width>
      <height>221</height>
@@ -206,9 +206,9 @@
   <widget class="QLabel" name="m_phase_label">
    <property name="geometry">
     <rect>
-     <x>216</x>
+     <x>260</x>
      <y>51</y>
-     <width>59</width>
+     <width>41</width>
      <height>16</height>
     </rect>
    </property>
@@ -219,20 +219,20 @@
   <widget class="QLabel" name="m_speed_label">
    <property name="geometry">
     <rect>
-     <x>151</x>
+     <x>180</x>
      <y>51</y>
      <width>59</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
-    <string>Speed</string>
+    <string>Periods</string>
    </property>
   </widget>
   <widget class="QSlider" name="m_speed_slider">
    <property name="geometry">
     <rect>
-     <x>155</x>
+     <x>190</x>
      <y>80</y>
      <width>16</width>
      <height>191</height>
@@ -252,20 +252,20 @@
     </rect>
    </property>
    <property name="text">
-    <string>Value</string>
+    <string>DC Value</string>
    </property>
   </widget>
   <widget class="QLabel" name="m_range_label">
    <property name="geometry">
     <rect>
-     <x>86</x>
+     <x>90</x>
      <y>51</y>
-     <width>59</width>
+     <width>71</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
-    <string>Range</string>
+    <string>Mod Range</string>
    </property>
   </widget>
  </widget>

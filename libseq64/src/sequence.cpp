@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-11
+ * \updates       2018-10-26
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -2998,6 +2998,10 @@ sequence::change_event_data_lfo
     bool have_selection = m_events.any_selected_events(status, cc);
     if (m_length == 0)                      /* should never happen, though  */
         dlength = double(m_ppqn);
+
+#ifdef PLATFORM_DEBUG
+    printf("DC %g Mod %g Period %g Phase %g\n", value, range, speed, phase);
+#endif
 
     if (useundo)
     {

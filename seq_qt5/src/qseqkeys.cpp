@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-25
+ * \updates       2018-10-26
  * \license       GNU GPLv2 or above
  *
  *      We've added the feature of a right-click toggling between showing the
@@ -44,7 +44,23 @@
 
 namespace seq64
 {
-    class perform;
+
+class perform;
+
+static const int sc_key_x = 20;     // 16;
+static const int sc_key_y =  8;
+
+/**
+ *  The dimensions and offset of the virtual keyboard at the left of the
+ *  piano roll.  These differ from the same members in the Gtkmm seqkeys
+ *  class.
+ */
+
+static const int sc_keyarea_x = sc_key_x + 15;
+// static const int sc_keyarea_y = sc_key_y * c_num_keys + 1;
+// static const int sc_drawarea_x = sc_keyarea_x + 1;
+// static const int sc_drawarea_y = sc_keyarea_y - 2;
+static const int sc_keyoffset_x = sc_keyarea_x - sc_key_x;
 
 /**
  *
@@ -63,11 +79,11 @@ qseqkeys::qseqkeys
     m_seq                   (seq),
     m_font                  (),
     m_show_octave_letters   (true),
-    m_is_previewing            (false),
+    m_is_previewing         (false),
     m_key                   (0),
     m_key_y                 (keyheight),
     m_key_area_y            (keyareaheight),
-    m_preview_key            (-1)
+    m_preview_key           (-1)
 {
     /*
      * This policy is necessary in order to allow the vertical scrollbar to work.
@@ -114,7 +130,7 @@ qseqkeys::paintEvent (QPaintEvent *)
      * Draw keyboard border.
      */
 
-    painter.drawRect(0, 0, c_keyarea_x, m_key_area_y);  /* see sizeHint()   */
+    painter.drawRect(0, 0, sc_keyarea_x, m_key_area_y); /* see sizeHint()   */
     for (int i = 0; i < c_num_keys; ++i)
     {
         pen.setColor(Qt::black);                /* draw keys                */
@@ -123,7 +139,10 @@ qseqkeys::paintEvent (QPaintEvent *)
         brush.setStyle(Qt::SolidPattern);
         painter.setPen(pen);
         painter.setBrush(brush);
-        painter.drawRect(c_keyoffset_x+1, m_key_y*i + 1, c_key_x-2, m_key_y-1);
+        painter.drawRect
+        (
+            sc_keyoffset_x + 1, m_key_y * i + 1, sc_key_x - 2, m_key_y - 1
+        );
 
         int keyvalue = c_num_keys - i - 1;
         int key = keyvalue % SEQ64_OCTAVE_SIZE;
@@ -136,7 +155,8 @@ qseqkeys::paintEvent (QPaintEvent *)
             painter.setBrush(brush);
             painter.drawRect
             (
-                c_keyoffset_x+1, m_key_y*i + 3, c_key_x-4, m_key_y-5
+                sc_keyoffset_x + 1, m_key_y * i + 3,
+                sc_key_x - 4, m_key_y - 5
             );
         }
         if (keyvalue == m_preview_key)          /* highlight note preview   */
@@ -147,7 +167,8 @@ qseqkeys::paintEvent (QPaintEvent *)
             painter.setBrush(brush);
             painter.drawRect
             (
-                c_keyoffset_x+3, m_key_y*i + 3, c_key_x-5, m_key_y-4
+                sc_keyoffset_x + 3, m_key_y * i + 3,
+                sc_key_x - 5, m_key_y - 4
             );
         }
 
@@ -256,7 +277,7 @@ qseqkeys::mouseMoveEvent (QMouseEvent * event)
 QSize
 qseqkeys::sizeHint () const
 {
-    return QSize(c_keyarea_x, m_key_area_y);
+    return QSize(sc_keyarea_x, m_key_area_y);
 }
 
 /**

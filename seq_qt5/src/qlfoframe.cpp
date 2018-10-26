@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-12
+ * \updates       2018-10-26
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -139,7 +139,7 @@ qlfoframe::qlfoframe
 
     ui->m_value_slider->setToolTip
     (
-        "Value: a kind of DC offset for the data value. Starts at 64."
+        "Value: a kind of DC offset for the data value. Range: 0 to 127."
     );
     ui->m_value_slider->setMinimum(to_slider(m_value_min));
     ui->m_value_slider->setMaximum(to_slider(m_value_max));
@@ -162,7 +162,7 @@ qlfoframe::qlfoframe
 
     ui->m_range_slider->setToolTip
     (
-        "Range: controls the depth of modulation. Starts at 64."
+        "Range: controls the depth of modulation. Range: 0 to 127."
     );
     ui->m_range_slider->setMinimum(to_slider(m_range_min));
     ui->m_range_slider->setMaximum(to_slider(m_range_max));

@@ -118,11 +118,11 @@ lfownd::lfownd (perform & p, sequence & seq, seqdata & sdata)
     set_size_request(400, 300); // set_size_request(150, 200);
     m_scale_value->set_tooltip_text
     (
-        "Value: a kind of DC offset for the data value. Starts at 64."
+        "Value: a kind of DC offset for the data value. Range: 0 to 127."
     );
     m_scale_range->set_tooltip_text
     (
-        "Range: controls the depth of modulation. Starts at 64."
+        "Range: controls the depth of modulation. Range: 0 to 127."
     );
     m_scale_speed->set_tooltip_text
     (

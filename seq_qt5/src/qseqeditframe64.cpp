@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-10-12
+ * \updates       2018-10-26
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -446,8 +446,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     for
     (
         int b = SEQ64_MINIMUM_BEATS_PER_MEASURE - 1;
-        b <= SEQ64_MAXIMUM_BEATS_PER_MEASURE - 1;
-        ++b
+        b <= SEQ64_MAXIMUM_BEATS_PER_MEASURE - 1; ++b
     )
     {
         QString combo_text = QString::number(b + 1);
@@ -1119,15 +1118,6 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     );
     set_recording_volume(usr().velocity_override());
 
-    /*
-     * Test code:
-     *
-     * QSize sz = m_seqroll->sizeHint();
-     * printf("roll width = %d height = %d\n", sz.width(), sz.height());
-     * QSize sz = ui->rollScrollArea->sizeHint();
-     * printf("scroll width = %d height = %d\n", sz.width(), sz.height());
-     */
-
     int seqwidth = m_seqroll->width();
     int scrollwidth = ui->rollScrollArea->width();
     m_seqroll->progress_follow(seqwidth > scrollwidth);
@@ -1156,22 +1146,25 @@ qseqeditframe64::~qseqeditframe64 ()
  *  user-interface.  seqkeys: Not quite working as we'd hope.  The scrollbars
  *  still eat up space.  They needed to be hidden.
  *
- *  Although tricky, the creator of this object must call this function after the
- *  creation, just to avoid transgressing the rule about calling virtual functions
- *  in the constructor.
+ *  Although tricky, the creator of this object must call this function after
+ *  the creation, just to avoid transgressing the rule about calling virtual
+ *  functions in the constructor.
+ *
+ *  Note that m_seqkeys is a protected member of the qseqframe base class.
  */
 
 void
 qseqeditframe64::initialize_panels ()
 {
+    int height = usr().key_height() * c_num_keys + 1;
     m_seqkeys = new qseqkeys
     (
-        seq(), ui->keysScrollArea,
-        usr().key_height(), usr().key_height() * c_num_keys + 1
+        perf(), seq(), ui->keysScrollArea, usr().key_height(), height
     );
     ui->keysScrollArea->setWidget(m_seqkeys);
     ui->keysScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->keysScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->keysScrollArea->verticalScrollBar()->setRange(0, height);
 
     /*
      * qseqtime
@@ -1235,6 +1228,10 @@ qseqeditframe64::initialize_panels ()
     ui->rollScrollArea->add_h_scroll(ui->timeScrollArea->horizontalScrollBar());
     ui->rollScrollArea->add_h_scroll(ui->dataScrollArea->horizontalScrollBar());
     ui->rollScrollArea->add_h_scroll(ui->eventScrollArea->horizontalScrollBar());
+
+    int minimum = ui->rollScrollArea->verticalScrollBar()->minimum();
+    int maximum = ui->rollScrollArea->verticalScrollBar()->maximum();
+    ui->rollScrollArea->verticalScrollBar()->setValue((minimum + maximum) / 2);
 
 #ifdef PLATFORM_DEBUG_TMI
     int w = ui->rollScrollArea->width();

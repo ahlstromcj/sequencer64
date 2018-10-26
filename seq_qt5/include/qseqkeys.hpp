@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-22
+ * \updates       2018-10-26
  * \license       GNU GPLv2 or above
  *
  *      We've added the feature of a right-click toggling between showing the
@@ -52,22 +52,26 @@
 namespace seq64
 {
 
+    class perform;
     class sequence;
 
 /**
- * draws the piano keys in the sequence editor
+ *  Draws the piano keys in the sequence editor.
  */
 
 class qseqkeys : public QWidget
 {
     Q_OBJECT
 
+    friend class qseqroll;
+
 public:
 
-    explicit qseqkeys
+    qseqkeys
     (
+        perform & perf,
         sequence & seq,
-        QWidget * parent    = 0,
+        QWidget * parent,
         int keyHeight       = 12,
         int keyAreaHeight   = 12 * c_num_keys + 1
     );
@@ -79,23 +83,18 @@ public:
 
 protected:
 
-    // override painting event to draw on the frame
 
-    void paintEvent (QPaintEvent *);
-
-    // override mouse events for interaction
-
-    void mousePressEvent (QMouseEvent * event);
+    void paintEvent (QPaintEvent *);                // to draw on the frame
+    void mousePressEvent (QMouseEvent * event);     // mouse interaction
     void mouseReleaseEvent (QMouseEvent * event);
     void mouseMoveEvent (QMouseEvent * event);
-
-    // override the sizehint to set our own defaults
-
-    QSize sizeHint() const;
+    QSize sizeHint() const;                         // sizehint to set defaults
 
 signals:
 
 public slots:
+
+    // void conditional_update ();
 
 private:
 
@@ -116,10 +115,19 @@ private:
         return key == 1 || key == 3 || key == 6 || key == 8 || key == 10;
     }
 
+    /**
+     * \getter m_seq
+     */
+
+    sequence & seq ()
+    {
+        return m_seq;
+    }
+
 private:
 
+    perform & m_perform;
     sequence & m_seq;
-    QTimer * m_timer;
     QFont m_font;
 
     /**
@@ -130,11 +138,11 @@ private:
 
     bool m_show_octave_letters;
 
+    bool m_is_previewing;
     int m_key;
     int m_key_y;
     int m_key_area_y;
-    bool m_Previewing;
-    int  m_PreviewKey;
+    int m_preview_key;
 
 };          // class qseqkeys
 

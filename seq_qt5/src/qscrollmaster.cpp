@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-06-18
- * \updates       2018-08-12
+ * \updates       2018-10-26
  * \license       GNU GPLv2 or above
  *
  * Other useful QScrollBar functions:
@@ -89,10 +89,6 @@ qscrollmaster::~qscrollmaster ()
 void
 qscrollmaster::scrollContentsBy (int dx, int dy)
 {
-#ifdef PLATFORM_DEBUG_TMI
-    printf("scrollContentsBy(%d, %d)\n", dx, dy);
-#endif
-
     if (! m_v_scrollbars.empty())
     {
         int vvalue = m_self_v_scrollbar->value();

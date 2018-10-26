@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-20
+ * \updates       2018-10-26
  * \license       GNU GPLv2 or above
  *
  *  One thing we must be sure of is the MIDI note range.  Obviously, in terms
@@ -49,6 +49,29 @@
  *      -   If the device/application considers the third MIDI note
  *          octave to be 0, then middle C is still 60, but is called "C3",
  *          and the highest note is "G8".
+ *
+ *  Variables:
+ *
+ * \verbatim
+ *          <- sc_drawarea_x  ->
+ *          <- sc_keyarea_x ->
+ *           ----------------
+ *          |     C5 |       | |    sc_key_y
+ *          |         -------| |
+ *          |        |bbbbbbb| |
+ *          |         -------| |
+ *          |        |       | |
+ *          |         -------| |
+ *          |        |bbbbbbb| |
+ *          |         -------| |
+ *          |        |       | |
+ *          |         -------| |
+ *
+ *                   <------>      sc_key_x
+ *                   ^
+ *                   |
+ *                    ------------ sc_keyoffset_x
+ * \endverbatim
  */
 
 #include <gtkmm/adjustment.h>
@@ -68,6 +91,20 @@
 
 namespace seq64
 {
+
+static const int sc_key_x = 20;     // 16;
+static const int sc_key_y =  8;
+
+/**
+ *  The dimensions and offset of the virtual keyboard at the left of the
+ *  piano roll.
+ */
+
+static const int sc_keyarea_x = sc_key_x + 20 - 4;
+static const int sc_keyarea_y = sc_key_y * c_num_keys + 1;
+static const int sc_drawarea_x = sc_keyarea_x + 1;
+static const int sc_drawarea_y = sc_keyarea_y - 2;
+static const int sc_keyoffset_x = sc_keyarea_x - sc_key_x + 1;
 
 /**
  *  Principal constructor.
@@ -92,9 +129,7 @@ seqkeys::seqkeys
 ) :
     gui_drawingarea_gtk2
     (
-        p, adjustment_dummy(), vadjust,
-        c_keyarea_x + 1,                        // 36 + 1
-        10                                      // bogus y window height
+        p, adjustment_dummy(), vadjust, sc_drawarea_x, 10   // bogus y height
     ),
     m_seq                   (seq),
     m_scroll_offset_key     (0),
@@ -177,14 +212,24 @@ seqkeys::reset ()
 void
 seqkeys::update_pixmap ()
 {
-    int kx = c_keyoffset_x + 1;
-    draw_rectangle_on_pixmap(black_paint(), 0, 0, c_keyarea_x, c_keyarea_y);
-    draw_rectangle_on_pixmap(white_paint(), 1, 1, c_keyoffset_x-1, c_keyarea_y-2);
+    int kx = sc_keyoffset_x + 4;    //  + 1;
+
+    /*
+     * Doesn't seem to be needed:
+     *
+     *  draw_rectangle_on_pixmap(black_paint(), 0, 0, sc_keyarea_x, sc_keyarea_y);
+     */
+
+    draw_rectangle_on_pixmap
+    (
+        white_paint(), 1, 1, sc_keyoffset_x + 2, sc_drawarea_y
+    );
     for (int key = 0; key < c_num_keys; ++key)
     {
+        int yofkey = sc_key_y * key;
         draw_rectangle_on_pixmap
         (
-            white_key_paint(), kx, (c_key_y * key) + 1, c_key_x - 2, c_key_y - 1
+            white_key_paint(), kx, yofkey + 1, sc_key_x - 2, sc_key_y - 1
         );
 
         int okey = (c_num_keys - key - 1) % SEQ64_OCTAVE_SIZE;
@@ -192,13 +237,14 @@ seqkeys::update_pixmap ()
         {
             draw_rectangle_on_pixmap
             (
-                black_key_paint(), kx, (c_key_y * key) + 2,
-                c_key_x - 3, c_key_y - 3
+                black_key_paint(), kx, yofkey + 2, sc_key_x - 2, sc_key_y - 3
             );
         }
 
         char note[8];
         int keyvalue = c_num_keys - key - 1;
+        bool inverse = usr().inverse_colors();
+        --yofkey;
         if (m_show_octave_letters)
         {
             if (okey == m_key)                  /* octave note      */
@@ -208,11 +254,7 @@ seqkeys::update_pixmap ()
                     octave *= -1;
 
                 snprintf(note, sizeof note, "%2s%1d", c_key_text[okey], octave);
-                render_string_on_pixmap
-                (
-                    // 2, c_key_y * key - 1, note, font::BLACK, true
-                    1, c_key_y * key - 1, note, font::BLACK, true
-                );
+                render_string_on_pixmap(2, yofkey, note, font::BLACK, inverse);
             }
         }
         else
@@ -220,10 +262,7 @@ seqkeys::update_pixmap ()
             if ((keyvalue % 2) == 0)
             {
                 snprintf(note, sizeof note, "%3d", keyvalue);
-                render_string_on_pixmap
-                (
-                    2, c_key_y * key - 1, note, font::BLACK, true
-                );
+                render_string_on_pixmap(1, yofkey, note, font::BLACK, inverse);
             }
         }
     }
@@ -238,7 +277,7 @@ void
 seqkeys::draw_area()
 {
     update_pixmap();
-    draw_drawable(0, m_scroll_offset_y, 0, 0, c_keyarea_x, c_keyarea_y);
+    draw_drawable(0, m_scroll_offset_y, 0, 0, sc_keyarea_x, sc_keyarea_y);
 }
 
 /**
@@ -268,7 +307,7 @@ seqkeys::force_draw ()
 void
 seqkeys::convert_y (int y, int & note)
 {
-    note = (c_rollarea_y - y - 2) / c_key_y;
+    note = (sc_drawarea_y - y) / sc_key_y;     // instead of c_rollarea_y
 }
 
 /**
@@ -322,11 +361,10 @@ seqkeys::draw_key (int key, bool state)
     int k = key % SEQ64_OCTAVE_SIZE;                /* key in the octave    */
     key = c_num_keys - key - 1;
 
-    int x = c_keyoffset_x + 1;
-    int y = (c_key_y * key) + 2 - m_scroll_offset_y;
-    int w = c_key_x - 3;                            /* x length of key      */
-    int h = c_key_y - 3;                            /* y height of key      */
-    m_gc->set_foreground(is_black_key(k) ? black_key_paint() : white_key_paint());
+    int x = sc_keyoffset_x + 4; // + 1;
+    int y = (sc_key_y * key) + 2 - m_scroll_offset_y;
+    int w = sc_key_x - 3;                           /* x length of key      */
+    int h = sc_key_y - 3;                           /* y height of key      */
     if (state)
     {
         if (usr().inverse_colors())
@@ -335,8 +373,24 @@ seqkeys::draw_key (int key, bool state)
             draw_rectangle(grey_paint(), x, y, w, h);
     }
     else
-        draw_rectangle(x, y, w, h);
+    {
+        if (is_black_key(k))
+        {
+            m_gc->set_foreground(black_key_paint());
+            draw_rectangle(x, y, w, h);
+        }
+        else
+        {
+            m_gc->set_foreground(white_key_paint());
+            draw_rectangle(x, y, w, h);
+        }
+    }
 }
+
+/**
+ *
+ */
+
 
 /**
  *  Changes the y offset of the scrolling, and the forces a draw.
@@ -345,7 +399,7 @@ seqkeys::draw_key (int key, bool state)
  *  We fixed it, but must beware!
  *
 \verbatim
-    m_scroll_offset_y = m_scroll_offset_key * c_key_y,  // comma operator!!!
+    m_scroll_offset_y = m_scroll_offset_key * sc_key_y,  // comma operator!!!
     force_draw();
 \endverbatim
  */
@@ -354,7 +408,7 @@ void
 seqkeys::change_vert ()
 {
     m_scroll_offset_key = int(m_vadjust.get_value());
-    m_scroll_offset_y = m_scroll_offset_key * c_key_y;
+    m_scroll_offset_y = m_scroll_offset_key * sc_key_y;
     force_draw();
 }
 
@@ -368,7 +422,7 @@ void
 seqkeys::on_realize ()
 {
     gui_drawingarea_gtk2::on_realize();
-    m_pixmap = Gdk::Pixmap::create(m_window, c_keyarea_x, c_keyarea_y, -1);
+    m_pixmap = Gdk::Pixmap::create(m_window, sc_keyarea_x, sc_keyarea_y, -1);
     update_pixmap();
     m_vadjust.signal_value_changed().connect
     (

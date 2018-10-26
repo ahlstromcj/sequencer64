@@ -406,9 +406,24 @@
          <height>240</height>
         </size>
        </property>
+         <property name="maximumSize">
+          <size>
+           <width>148</width>
+           <height>16777215</height>
+          </size>
+         </property>
        <property name="widgetResizable">
         <bool>true</bool>
        </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
        <widget class="QWidget" name="scrollAreaWidgetContents_2">
         <property name="geometry">
          <rect>

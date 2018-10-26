@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-17
+ * \updates       2018-10-25
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -71,8 +71,12 @@ qperfnames::qperfnames (perform & p, QWidget * parent)
     m_nametext_x        (6 * 2 + 6 * 20),       // not used!
     m_nametext_y        (c_names_y)
 {
-    m_font.setBold(true);
+    /*
+     * This policy is necessary in order to allow the vertical scrollbar to work.
+     */
+
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
+    m_font.setBold(true);
     for (int i = 0; i < c_max_sequence; ++i)
         m_sequence_active[i] = false;
 }
@@ -140,8 +144,7 @@ qperfnames::paintEvent (QPaintEvent *)
                         + bankName.length() * 4
                 );
                 painter.rotate(270);
-                m_font.setPointSize(9);
-                // m_font.setBold(true);
+                m_font.setPointSize(9);         // m_font.setBold(true);
                 m_font.setLetterSpacing(QFont::AbsoluteSpacing, 2);
                 painter.setFont(m_font);
                 painter.drawText(0, 0, bankName);

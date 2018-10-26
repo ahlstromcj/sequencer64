@@ -24,9 +24,9 @@
  *  editor.
  *
  * \library       sequencer64 application
- * \author        Seq24 team; modifications by Chris Ahlstrom
+ * \author        Oli Kester; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-10
+ * \updates       2018-10-24
  * \license       GNU GPLv2 or above
  *
  *  This version of the qseqedit-frame class is basically the Kepler34
@@ -193,13 +193,12 @@ qseqeditframe::qseqeditframe
     ui->cmbSeqLen->insertItem(17, "64");
 
     /*
-     * Fill options for scale.  There are many more in the new
-     * edit frame, so we have removed this to make room in
-     * the Edit tab.
-
-    ui->cmbScale->insertItem(0, "Off");
-    ui->cmbScale->insertItem(1, "Major");
-    ui->cmbScale->insertItem(2, "Minor");
+     * Fill options for scale.  There are many more in the new version of the
+     * edit frame, so we have removed this to make room in the Edit tab.
+     *
+     *  ui->cmbScale->insertItem(0, "Off");
+     *  ui->cmbScale->insertItem(1, "Major");
+     *  ui->cmbScale->insertItem(2, "Minor");
      */
 
     /* MIDI buss options */
@@ -327,18 +326,6 @@ qseqeditframe::qseqeditframe
     m_popup->addMenu(menuPitch);
 
     /*
-     * Hide unused GUI elements
-     *
-    ui->lblBackgroundSeq->hide();
-    ui->cmbBackgroundSeq->hide();
-    ui->lblKey->hide();
-    ui->cmbKey->hide();
-    ui->lblScale->hide();
-    ui->cmbScale->hide();
-     *
-     */
-
-    /*
      * We want to implement the event selector in the small edit
      * frame at some point.
      */
@@ -388,11 +375,11 @@ qseqeditframe::qseqeditframe
     /*
      * Disabled, use the new edit-frame instead.
      *
-    connect
-    (
-        ui->cmbKey, SIGNAL(currentIndexChanged(int)), this, SLOT(updateKey(int))
-    );
-     *
+     *  connect
+     *  (
+     *      ui->cmbKey, SIGNAL(currentIndexChanged(int)),
+     *      this, SLOT(updateKey(int))
+     *  );
      */
 
     connect
@@ -404,16 +391,16 @@ qseqeditframe::qseqeditframe
     /*
      * Disabled, use the new edit-frame instead.
      *
-    connect
-    (
-        ui->cmbScale, SIGNAL(currentIndexChanged(int)),
-        this, SLOT(updateScale(int))
-    );
-    connect
-    (
-        ui->cmbBackgroundSeq, SIGNAL(currentIndexChanged(int)),
-        this, SLOT(updateBackgroundSeq(int))
-    );
+     *  connect
+     *  (
+     *      ui->cmbScale, SIGNAL(currentIndexChanged(int)),
+     *      this, SLOT(updateScale(int))
+     *  );
+     *  connect
+     *  (
+     *      ui->cmbBackgroundSeq, SIGNAL(currentIndexChanged(int)),
+     *      this, SLOT(updateBackgroundSeq(int))
+     *  );
      */
 
     connect(ui->btnDrum, SIGNAL(clicked(bool)), this, SLOT(toggleEditorMode()));
@@ -462,7 +449,7 @@ qseqeditframe::initialize_panels ()
 {
     m_seqkeys = new qseqkeys
     (
-        seq(), m_container, usr().key_height(),
+        perf(), seq(), m_container, usr().key_height(),
         usr().key_height() * c_num_keys + 1
     );
     m_seqtime = new qseqtime

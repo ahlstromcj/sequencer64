@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-22
+ * \updates       2018-10-25
  * \license       GNU GPLv2 or above
  *
  *      We've added the feature of a right-click toggling between showing the
@@ -33,8 +33,10 @@
  *      values of the keys.
  */
 
+#include "perform.hpp"
 #include "qseqkeys.hpp"
 #include "sequence.hpp"
+#include "settings.hpp"                 /* seq64::usr().key_height(), etc.  */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -44,25 +46,52 @@ namespace seq64
 {
     class perform;
 
+/**
+ *
+ */
+
 qseqkeys::qseqkeys
 (
-    sequence & seq, QWidget * parent, int keyheight, int keyareaheight
+    perform & p,
+    sequence & seq,
+    QWidget * parent,
+    int keyheight,
+    int keyareaheight
 ) :
     QWidget                 (parent),
+    m_perform               (p),
     m_seq                   (seq),
-    m_timer                 (nullptr),
     m_font                  (),
     m_show_octave_letters   (true),
+    m_is_previewing            (false),
     m_key                   (0),
     m_key_y                 (keyheight),
     m_key_area_y            (keyareaheight),
-    m_Previewing            (false),
-    m_PreviewKey            (-1)
+    m_preview_key            (-1)
 {
-    // setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    /*
+     * This policy is necessary in order to allow the vertical scrollbar to work.
+     */
+
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
     setMouseTracking(true);
 }
+
+#if 0
+
+/**
+ *  In an effort to reduce CPU usage when simply idling, this function calls
+ *  update() only if necessary.  See qseqbase::needs_update().
+ */
+
+void
+qseqkeys::conditional_update ()
+{
+    if (needs_update())
+        update();
+}
+
+#endif     // 0
 
 /**
  *
@@ -81,12 +110,14 @@ qseqkeys::paintEvent (QPaintEvent *)
     painter.setBrush(brush);
     painter.setFont(m_font);
 
-    // draw keyboard border
+    /*
+     * Draw keyboard border.
+     */
 
-    painter.drawRect(0, 0, c_keyarea_x, m_key_area_y);
+    painter.drawRect(0, 0, c_keyarea_x, m_key_area_y);  /* see sizeHint()   */
     for (int i = 0; i < c_num_keys; ++i)
     {
-        pen.setColor(Qt::black);                // draw keys
+        pen.setColor(Qt::black);                /* draw keys                */
         pen.setStyle(Qt::SolidLine);
         brush.setColor(Qt::white);
         brush.setStyle(Qt::SolidPattern);
@@ -96,9 +127,9 @@ qseqkeys::paintEvent (QPaintEvent *)
 
         int keyvalue = c_num_keys - i - 1;
         int key = keyvalue % SEQ64_OCTAVE_SIZE;
-        if (is_black_key(key))
+        if (is_black_key(key))                  /* draw black keys          */
         {
-            pen.setStyle(Qt::SolidLine); // draw black keys
+            pen.setStyle(Qt::SolidLine);
             pen.setColor(Qt::black);
             brush.setColor(Qt::black);
             painter.setPen(pen);
@@ -108,8 +139,7 @@ qseqkeys::paintEvent (QPaintEvent *)
                 c_keyoffset_x+1, m_key_y*i + 3, c_key_x-4, m_key_y-5
             );
         }
-
-        if (keyvalue == m_PreviewKey) // highlight note preview
+        if (keyvalue == m_preview_key)          /* highlight note preview   */
         {
             brush.setColor(Qt::red);
             pen.setStyle(Qt::NoPen);
@@ -169,10 +199,10 @@ qseqkeys::mousePressEvent (QMouseEvent * event)
     {
         int note;
         int y = event->y();
-        m_Previewing = true;
+        m_is_previewing = true;
         convert_y(y, note);
-        m_PreviewKey = note;
-        m_seq.play_note_on(note);
+        m_preview_key = note;
+        seq().play_note_on(note);
     }
     else if (event->button() == Qt::RightButton)
     {
@@ -188,11 +218,11 @@ qseqkeys::mousePressEvent (QMouseEvent * event)
 void
 qseqkeys::mouseReleaseEvent (QMouseEvent * event)
 {
-    if (event->button() == Qt::LeftButton && m_Previewing)
+    if (event->button() == Qt::LeftButton && m_is_previewing)
     {
-        m_seq.play_note_off(m_PreviewKey);
-        m_Previewing = false;
-        m_PreviewKey = -1;
+        seq().play_note_off(m_preview_key);
+        m_is_previewing = false;
+        m_preview_key = -1;
     }
     update();
 }
@@ -207,20 +237,20 @@ qseqkeys::mouseMoveEvent (QMouseEvent * event)
     int note;
     int y = event->y();
     convert_y(y, note);
-    if (m_Previewing)
+    if (m_is_previewing)
     {
-        if (note != m_PreviewKey)
+        if (note != m_preview_key)
         {
-            m_seq.play_note_off(m_PreviewKey);
-            m_seq.play_note_on(note);
-            m_PreviewKey = note;
+            seq().play_note_off(m_preview_key);
+            seq().play_note_on(note);
+            m_preview_key = note;
         }
     }
     update();
 }
 
 /**
- *
+ * 31 x 1025
  */
 
 QSize

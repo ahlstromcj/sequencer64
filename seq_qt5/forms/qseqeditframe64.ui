@@ -697,7 +697,7 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>48</width>
+           <width>40</width>
            <height>64</height>
           </size>
          </property>
@@ -707,6 +707,12 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
@@ -715,8 +721,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>46</width>
-            <height>70</height>
+            <width>48</width>
+            <height>72</height>
            </rect>
           </property>
          </widget>

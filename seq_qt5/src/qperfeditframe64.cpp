@@ -476,15 +476,11 @@ qperfeditframe64::reset_transpose ()
 void
 qperfeditframe64::update_transpose (int index)
 {
-    // if (index != m_chord && index >= 0 && index < c_chord_number)
     int transpose = index - SEQ64_OCTAVE_SIZE;
     if (transpose >= -SEQ64_OCTAVE_SIZE && transpose <= SEQ64_OCTAVE_SIZE)
     {
         if (perf().get_transpose() != transpose)
-        {
             set_transpose(transpose);
-            // set_dirty();
-        }
     }
 }
 
@@ -527,6 +523,10 @@ qperfeditframe64::update_sizes ()
 void
 qperfeditframe64::markerCollapse ()
 {
+    /*
+     * Can't perform do both of these calls?
+     */
+
     perf().push_trigger_undo();
     perf().move_triggers(false);
 }

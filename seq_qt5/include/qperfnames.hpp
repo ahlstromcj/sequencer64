@@ -58,7 +58,7 @@ class qperfnames : public QWidget, gui_palette_qt5
 
 public:
 
-    explicit qperfnames (perform & p, QWidget * parent);
+    qperfnames (perform & p, QWidget * parent);
     virtual ~qperfnames ();
 
 protected:
@@ -105,12 +105,11 @@ public slots:
 private:
 
     perform & m_perform;
-//  QTimer * m_timer;
     QFont m_font;
     bool m_sequence_active[c_max_sequence];
 
     /**
-     *  The maximum number of sequences, current 32 x 32 = 1024.
+     *  The maximum number of sequences, currently 32 x 32 = 1024.
      */
 
     const int m_sequence_max;

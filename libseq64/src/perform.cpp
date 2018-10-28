@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-10-18
+ * \updates       2018-10-28
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -4993,7 +4993,7 @@ perform::set_thru (bool thru_active, int seq, bool toggle)
  *      Provides the MIDI event to potentially trigger a control action.
  *
  * \return
- *      Returns true if the event was actually handled.  TODO.
+ *      Returns true if the event was actually handled, at least once.
  */
 
 bool
@@ -5003,9 +5003,20 @@ perform::midi_control_event (const event & ev)
     int offset = m_screenset_offset;
     for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
     {
-        result = handle_midi_control_event(ev, ctl, offset);
-        if (result)
-            break;      /* differs from legacy behavior, which keeps going */
+        /*
+         * \change ca 2018-10-28 GitHub issue #170.
+         *      Breaking after success prevents a MIDI control from handling
+         *      the same control event more than one time.  For example,
+         *      this prevents toggling multiple patterns with the same event.
+         *
+         *  result = handle_midi_control_event(ev, ctl, offset);
+         *  if (result)
+         *      break;      // differs from legacy behavior, which keeps going
+         */
+
+        bool ok = handle_midi_control_event(ev, ctl, offset);
+        if (! result)
+            result = ok;
     }
     return result;
 }

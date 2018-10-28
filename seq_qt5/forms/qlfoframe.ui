@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>541</width>
+    <width>632</width>
     <height>332</height>
    </rect>
   </property>
@@ -55,7 +55,7 @@
   <widget class="QLineEdit" name="m_range_text">
    <property name="geometry">
     <rect>
-     <x>90</x>
+     <x>110</x>
      <y>280</y>
      <width>51</width>
      <height>23</height>
@@ -68,7 +68,7 @@
   <widget class="QLineEdit" name="m_speed_text">
    <property name="geometry">
     <rect>
-     <x>170</x>
+     <x>210</x>
      <y>280</y>
      <width>51</width>
      <height>23</height>
@@ -81,7 +81,7 @@
   <widget class="QLineEdit" name="m_phase_text">
    <property name="geometry">
     <rect>
-     <x>250</x>
+     <x>310</x>
      <y>280</y>
      <width>51</width>
      <height>23</height>
@@ -94,7 +94,7 @@
   <widget class="QPushButton" name="m_button_close">
    <property name="geometry">
     <rect>
-     <x>390</x>
+     <x>460</x>
      <y>280</y>
      <width>80</width>
      <height>23</height>
@@ -120,7 +120,7 @@
   <widget class="QSlider" name="m_phase_slider">
    <property name="geometry">
     <rect>
-     <x>270</x>
+     <x>330</x>
      <y>80</y>
      <width>16</width>
      <height>191</height>
@@ -133,7 +133,7 @@
   <widget class="QSlider" name="m_range_slider">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>130</x>
      <y>80</y>
      <width>16</width>
      <height>191</height>
@@ -146,9 +146,9 @@
   <widget class="QGroupBox" name="m_wave_type_group">
    <property name="geometry">
     <rect>
-     <x>350</x>
+     <x>420</x>
      <y>50</y>
-     <width>171</width>
+     <width>201</width>
      <height>221</height>
     </rect>
    </property>
@@ -160,7 +160,7 @@
      <rect>
       <x>20</x>
       <y>30</y>
-      <width>136</width>
+      <width>173</width>
       <height>181</height>
      </rect>
     </property>
@@ -168,7 +168,7 @@
      <item>
       <widget class="QRadioButton" name="m_radio_wave_none">
        <property name="text">
-        <string>None</string>
+        <string>&amp;None</string>
        </property>
       </widget>
      </item>
@@ -189,7 +189,7 @@
      <item>
       <widget class="QRadioButton" name="m_radio_wave_revsaw">
        <property name="text">
-        <string>Reverse Sawtooth</string>
+        <string>Re&amp;verse Sawtooth</string>
        </property>
       </widget>
      </item>
@@ -206,22 +206,22 @@
   <widget class="QLabel" name="m_phase_label">
    <property name="geometry">
     <rect>
-     <x>260</x>
+     <x>300</x>
      <y>51</y>
-     <width>41</width>
+     <width>91</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
-    <string>Phase</string>
+    <string>Phase Shift</string>
    </property>
   </widget>
   <widget class="QLabel" name="m_speed_label">
    <property name="geometry">
     <rect>
-     <x>180</x>
+     <x>210</x>
      <y>51</y>
-     <width>59</width>
+     <width>71</width>
      <height>16</height>
     </rect>
    </property>
@@ -232,7 +232,7 @@
   <widget class="QSlider" name="m_speed_slider">
    <property name="geometry">
     <rect>
-     <x>190</x>
+     <x>230</x>
      <y>80</y>
      <width>16</width>
      <height>191</height>
@@ -247,7 +247,7 @@
     <rect>
      <x>21</x>
      <y>51</y>
-     <width>59</width>
+     <width>81</width>
      <height>16</height>
     </rect>
    </property>
@@ -258,9 +258,9 @@
   <widget class="QLabel" name="m_range_label">
    <property name="geometry">
     <rect>
-     <x>90</x>
+     <x>110</x>
      <y>51</y>
-     <width>71</width>
+     <width>91</width>
      <height>16</height>
     </rect>
    </property>

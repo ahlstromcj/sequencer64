@@ -12,7 +12,17 @@ the "example1" file.
    1Bar.midi:
 
         A small sample to play with.  Was also saved (accidentally)
-        with a buss-override of 5.
+        with a buss-override of 5, so the buss will not appear in the pattern
+        editor unless it happens to exist.  Also added notes and used the LFO
+        editor to set DC = 64, Mod Range = 64, Periods = 7.77, Phase Shift = 0.21,
+        and Waveform = 1 (Sine wave).  Also added some extra notes after
+        modulation, which shows that we do not handle two different velocities at
+        the same time value.
+
+   2Bars.midi:
+
+        A 2-bar sample.  Also shows different values of velocity, but added
+        via the mouse on the data pane.
 
    allofarow.mid:
 

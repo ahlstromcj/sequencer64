@@ -1181,7 +1181,7 @@ sequence::play
         if (song_recording())
         {
             grow_trigger(song_record_tick(), end_tick, SEQ64_SONG_RECORD_INC);
-            set_dirty_mp();             /* force redraw                 */
+            set_dirty_mp();                 /* force redraw                 */
         }
 #endif
 

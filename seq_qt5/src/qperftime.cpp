@@ -79,9 +79,7 @@ void
 qperftime::conditional_update ()
 {
     if (needs_update())
-    {
         update();
-    }
 }
 
 /**

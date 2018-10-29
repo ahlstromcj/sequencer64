@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-30
+ * \updates       2018-10-28
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -322,7 +322,15 @@ optionsfile::parse (perform & p)
         {
             rc().midi_control_filename(filename);       /* base file-name   */
             fullpath = rc().midi_control_filespec();    /* full path-spec   */
+            printf("[Reading rc MIDI control file %s]\n", fullpath.c_str());
             ok = parse_midi_control_section(fullpath, p);
+            if (! ok)
+            {
+                std::string info = "cannot parse file '";
+                info += fullpath;
+                info += "'";
+                return make_error_message("midi-control-file", info);
+            }
         }
         rc().use_midi_control_file(ok);                 /* did it work?     */
         rc().midi_control_filename(ok ? filename : ""); /* base file-name   */

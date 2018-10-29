@@ -1,6 +1,6 @@
 README for Sequencer64 0.96.1 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2018-10-26
+2015-09-10 to 2018-10-29
 
 Sequencer64 is a reboot of seq24, extending it with many new features.
 The heart of seq24 remains intact.  It is an old friend with a whole lot
@@ -52,6 +52,8 @@ Recent changes:
         -   Fix to the Qt song-editor transpose combo-box.
         -   File cleanup, usage of PLATFORM_CPP_11 macro.
         -   Fixes to seqkeys issues in Gtkmm and Qt pattern editors.
+        -   Fixed GitHub issue #170, where we exited prematurely from
+            processing all of the MIDI controls set up in the "rc" file.
     -   Version 0.96.0:
         -   Support for playlists and MIDI selections of playlists and songs.
             Includes the command-line option, "rc" file, keystroke selection,

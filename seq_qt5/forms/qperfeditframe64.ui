@@ -139,9 +139,15 @@
        </item>
        <item>
         <widget class="QComboBox" name="cmbGridSnap">
+         <property name="minimumSize">
+          <size>
+           <width>70</width>
+           <height>32</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
-           <width>55</width>
+           <width>70</width>
            <height>32</height>
           </size>
          </property>
@@ -406,31 +412,28 @@
          <height>240</height>
         </size>
        </property>
-         <property name="maximumSize">
-          <size>
-           <width>148</width>
-           <height>16777215</height>
-          </size>
-         </property>
+       <property name="maximumSize">
+        <size>
+         <width>148</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Plain</enum>
+       </property>
        <property name="widgetResizable">
         <bool>true</bool>
        </property>
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
-         </property>
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
        <widget class="QWidget" name="scrollAreaWidgetContents_2">
         <property name="geometry">
          <rect>
           <x>0</x>
           <y>0</y>
           <width>16</width>
-          <height>238</height>
+          <height>240</height>
          </rect>
         </property>
         <property name="sizePolicy">

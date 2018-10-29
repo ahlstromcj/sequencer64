@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-18
+ * \updates       2018-10-28
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2585,18 +2585,7 @@ public:
     bool is_dirty_perf (int seq);
     bool is_dirty_names (int seq);
     bool is_exportable (int seq) const;
-
-    /**
-     *  New for the Qt 5 version, to stop endless needless redraws upon
-     *  ticking of the redraw timer.  Also see (for Qt 5) the qseqbase ::
-     *  needs_update() function.  Most useful in seqedit or qseqedit.
-     */
-
-    bool needs_update (int seq)
-    {
-        return is_running() || is_dirty_main(seq);
-    }
-
+    bool needs_update (int seq = -1);
     int set_screenset (int ss);
 
     /**

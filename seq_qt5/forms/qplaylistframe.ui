@@ -66,7 +66,7 @@
     <rect>
      <x>10</x>
      <y>74</y>
-     <width>61</width>
+     <width>71</width>
      <height>16</height>
     </rect>
    </property>
@@ -104,8 +104,8 @@
     <rect>
      <x>400</x>
      <y>74</y>
-     <width>59</width>
-     <height>15</height>
+     <width>71</width>
+     <height>16</height>
     </rect>
    </property>
    <property name="font">
@@ -122,7 +122,7 @@
     <rect>
      <x>10</x>
      <y>52</y>
-     <width>61</width>
+     <width>74</width>
      <height>16</height>
     </rect>
    </property>
@@ -140,7 +140,7 @@
     <rect>
      <x>400</x>
      <y>52</y>
-     <width>61</width>
+     <width>74</width>
      <height>16</height>
     </rect>
    </property>
@@ -243,8 +243,8 @@
     <rect>
      <x>10</x>
      <y>0</y>
-     <width>731</width>
-     <height>25</height>
+     <width>751</width>
+     <height>29</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizPlaylistFileLayout">
@@ -336,7 +336,7 @@
     <rect>
      <x>710</x>
      <y>280</y>
-     <width>61</width>
+     <width>81</width>
      <height>21</height>
     </rect>
    </property>
@@ -350,7 +350,7 @@
   <widget class="QLineEdit" name="editPlaylistPath">
    <property name="geometry">
     <rect>
-     <x>80</x>
+     <x>90</x>
      <y>48</y>
      <width>281</width>
      <height>20</height>
@@ -366,9 +366,9 @@
   <widget class="QLineEdit" name="editPlaylistNumber">
    <property name="geometry">
     <rect>
-     <x>80</x>
+     <x>90</x>
      <y>74</y>
-     <width>31</width>
+     <width>36</width>
      <height>20</height>
     </rect>
    </property>
@@ -382,7 +382,7 @@
   <widget class="QLineEdit" name="editPlaylistName">
    <property name="geometry">
     <rect>
-     <x>120</x>
+     <x>130</x>
      <y>74</y>
      <width>241</width>
      <height>20</height>
@@ -398,7 +398,7 @@
   <widget class="QLineEdit" name="editSongPath">
    <property name="geometry">
     <rect>
-     <x>470</x>
+     <x>480</x>
      <y>48</y>
      <width>281</width>
      <height>20</height>
@@ -414,9 +414,9 @@
   <widget class="QLineEdit" name="editSongNumber">
    <property name="geometry">
     <rect>
-     <x>470</x>
+     <x>480</x>
      <y>74</y>
-     <width>31</width>
+     <width>36</width>
      <height>20</height>
     </rect>
    </property>
@@ -430,7 +430,7 @@
   <widget class="QLineEdit" name="editSongFilename">
    <property name="geometry">
     <rect>
-     <x>510</x>
+     <x>520</x>
      <y>74</y>
      <width>241</width>
      <height>20</height>
@@ -446,7 +446,7 @@
   <widget class="QLabel" name="labelDirEmbedded">
    <property name="geometry">
     <rect>
-     <x>760</x>
+     <x>770</x>
      <y>50</y>
      <width>16</width>
      <height>20</height>

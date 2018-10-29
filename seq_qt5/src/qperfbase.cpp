@@ -205,7 +205,7 @@ qperfbase::needs_update () const
 {
     bool result = const_cast<qperfbase *>(this)->check_dirty();
     if (! result)
-        result = perf().is_running();
+        result = perf().is_running();           // or perf().needs_update()?
 
     return result;
 }

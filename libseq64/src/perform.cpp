@@ -418,7 +418,6 @@ perform::set_ppqn (int p)
 #endif
     m_one_measure = p * 4;                  // simplistic!
     m_right_tick = m_one_measure * 4;       // ditto
-    // set_dirty_settings();
 }
 
 /**
@@ -2063,6 +2062,41 @@ perform::is_dirty_names (int seq)
         }
     }
     return was_active;
+}
+
+/**
+ *  New for the Qt 5 version, to stop endless needless redraws upon
+ *  ticking of the redraw timer.  Also see (for Qt 5) the qseqbase ::
+ *  needs_update() function.  Most useful in seqedit or qseqedit.
+ *
+ * \param seq
+ *      The sequence to check.  If set to -1, the default, check them all,
+ *      exiting when the first dirty one is found.
+ *
+ * \return
+ *      Returns true if the performance is running or if a sequence is found
+ *      to be dirty, and in need of refreshing in the user interface.
+ */
+
+bool
+perform::needs_update (int seq)
+{
+    bool result = is_running();
+    if (! result)
+    {
+        if (seq == (-1))        /* check if a muting change in any sequence */
+        {
+            for (int s = 0; s < m_sequence_high; ++s)
+            {
+                result = is_dirty_main(s);
+                if (result)
+                    break;
+            }
+        }
+        else
+            result = is_dirty_main(seq);
+    }
+    return result;
 }
 
 /**
@@ -5052,6 +5086,14 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
     {
         if (midi_control_toggle(ctl).in_range(d1))
         {
+            if (rc().verbose_option())
+            {
+                printf
+                (
+                    "MIDI Control %3d toggle:  status %3d data %d %d\n",
+                    ctl, status, d0, d1
+                );
+            }
             if (is_a_sequence)
             {
                 sequence_playing_toggle(offset);
@@ -5070,6 +5112,14 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
     {
         if (midi_control_on(ctl).in_range(d1))
         {
+            if (rc().verbose_option())
+            {
+                printf
+                (
+                    "MIDI Control %3d on:      status %3d, data %d %d\n",
+                    ctl, status, d0, d1
+                );
+            }
             if (is_a_sequence)
             {
                 sequence_playing_on(offset);
@@ -5087,6 +5137,14 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
         }
         else if (midi_control_on(ctl).inverse_active())
         {
+            if (rc().verbose_option())
+            {
+                printf
+                (
+                    "MIDI Control %3d on/inv:  status %3d, data %d %d\n",
+                    ctl, status, d0, d1
+                );
+            }
             if (is_a_sequence)
             {
                 sequence_playing_off(offset);
@@ -5107,6 +5165,14 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
     {
         if (midi_control_off(ctl).in_range(d1))  /* Issue #35 */
         {
+            if (rc().verbose_option())
+            {
+                printf
+                (
+                    "MIDI Control %3d off:     status %3d, data %d %d\n",
+                    ctl, status, d0, d1
+                );
+            }
             if (is_a_sequence)
             {
                 sequence_playing_off(offset);
@@ -5124,6 +5190,14 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
         }
         else if (midi_control_off(ctl).inverse_active())
         {
+            if (rc().verbose_option())
+            {
+                printf
+                (
+                    "MIDI Control %3d off/inv: status %3d, data %d %d\n",
+                    ctl, status, d0, d1
+                );
+            }
             if (is_a_sequence)
             {
                 sequence_playing_on(offset);

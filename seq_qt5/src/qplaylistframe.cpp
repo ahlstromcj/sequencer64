@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-09-04
- * \updates       2018-10-17
+ * \updates       2018-10-28
  * \license       GNU GPLv2 or above
  *
  */
@@ -140,18 +140,15 @@ qplaylistframe::~qplaylistframe ()
 
 /**
  *  In an effort to reduce CPU usage when simply idling, this function calls
- *  update() only if necessary.  See qseqbase::needs_update().  For now, we
- *  just copped the code from that function, but have to check all sequences
- *  at some point.  LATER.
+ *  update() only if necessary.  See qseqbase::needs_update().  We
+ *  must check all sequences.
  */
 
 void
 qplaylistframe::conditional_update ()
 {
-    if (perf().needs_update(0))
-    {
+    if (perf().needs_update())          /* potentially checks all sequences */
         update();
-    }
 }
 
 /**

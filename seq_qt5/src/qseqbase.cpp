@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-11
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -173,15 +173,22 @@ qseqbase::set_ppqn (int ppqn)
 }
 
 /**
+ *  Checks for the dirtiness of the user-interface or the current sequence.
  *
+ * \return
+ *      Returns true if an update is needed.
  */
 
 bool
 qseqbase::needs_update () const
 {
     bool dirty = const_cast<qseqbase *>(this)->check_dirty();
-    perform & ncp = const_cast<perform &>(perf());
-    return ncp.needs_update(seq().number()) || dirty;
+    if (! dirty)
+    {
+        perform & ncp = const_cast<perform &>(perf());
+        dirty = ncp.needs_update(seq().number());
+    }
+    return dirty;
 }
 
 /**

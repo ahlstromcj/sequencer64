@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-21
+ * \updates       2018-10-28
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -192,15 +192,14 @@ qsliveframe::set_playlist_name (const std::string & plname)
 
 /**
  *  In an effort to reduce CPU usage when simply idling, this function calls
- *  update() only if necessary.  See qseqbase::needs_update().  For now, we
- *  just copped the code from that function, but have to check all sequences
- *  at some point.  LATER.
+ *  update() only if necessary.  See qseqbase::needs_update(). All
+ *  sequences are potentially checked.
  */
 
 void
 qsliveframe::conditional_update ()
 {
-    if (perf().needs_update(0))
+    if (perf().needs_update())
         update();
 }
 

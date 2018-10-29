@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>767</width>
-    <height>332</height>
+    <width>789</width>
+    <height>359</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -169,8 +169,8 @@
     <rect>
      <x>535</x>
      <y>9</y>
-     <width>223</width>
-     <height>314</height>
+     <width>241</width>
+     <height>335</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -473,7 +473,7 @@
      <widget class="QSplitter" name="del_ins_mod_splitter">
       <property name="maximumSize">
        <size>
-        <width>200</width>
+        <width>224</width>
         <height>24</height>
        </size>
       </property>
@@ -486,13 +486,13 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>0</width>
+         <width>72</width>
          <height>24</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>64</width>
+         <width>72</width>
          <height>24</height>
         </size>
        </property>
@@ -506,13 +506,13 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>0</width>
+         <width>72</width>
          <height>24</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>64</width>
+         <width>72</width>
          <height>24</height>
         </size>
        </property>
@@ -526,13 +526,13 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>0</width>
+         <width>72</width>
          <height>24</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>64</width>
+         <width>72</width>
          <height>24</height>
         </size>
        </property>

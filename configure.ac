@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-10-26
+dnl \update        2018-10-29
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -655,21 +655,6 @@ else
     AC_MSG_NOTICE([Event editor disabled.]);
 fi
 
-dnl Support for pausing playback in ALSA mode, including a pause button.
-dnl If enabled, the macro SEQ64_PAUSE_SUPPORT is defined.
-
-AC_ARG_ENABLE(pause,
-    [AS_HELP_STRING(--disable-pause, [Disable pausing sequences and pause button])],
-    [pause=$enableval],
-    [pause=yes])
-
-if test "$pause" != "no"; then
-    AC_DEFINE(PAUSE_SUPPORT, 1, [Define to enable pausing and pause button])
-    AC_MSG_RESULT([Pausing sequences and pause-button enabled.]);
-else
-    AC_MSG_NOTICE([Pausing sequences and pause-button disabled.]);
-fi
-
 dnl Support for multiple main windows. If enabled, SEQ64_MULTI_MAINWID defined.
 
 AC_ARG_ENABLE(multiwid,
@@ -767,7 +752,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-10-26"
+#define VERSION_DATE_SHORT "2018-10-29"
 #define VERSION "0.96.1"
 
 )

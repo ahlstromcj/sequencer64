@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-31
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -144,9 +144,7 @@ qstriggereditor::paintEvent (QPaintEvent *)
         {
             pen.setColor(Qt::black);
             pen.setStyle(Qt::SolidLine);
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
             pen.setWidth(2);                    /* two pixels               */
-#endif
         }
         else if (tick % ticks_per_beat == 0)
         {
@@ -159,7 +157,6 @@ qstriggereditor::paintEvent (QPaintEvent *)
             pen.setStyle(Qt::DashLine);
             int tick_snap = tick - (tick % snap());
 
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
             if (tick == tick_snap)
             {
                 pen.setStyle(Qt::SolidLine);    // pen.setColor(Qt::DashLine)
@@ -170,13 +167,6 @@ qstriggereditor::paintEvent (QPaintEvent *)
                 pen.setStyle(Qt::DashLine);     // Gdk::LINE_ON_OFF_DASH
                 pen.setColor(Qt::lightGray);    // faint step lines
             }
-#else
-            pen.setStyle(Qt::DashLine);         // Gdk::LINE_ON_OFF_DASH
-            if (tick == tick_snap)
-                pen.setColor(Qt::darkGray);
-            else
-                pen.setColor(Qt::lightGray);
-#endif
         }
         painter.setPen(pen);
         painter.drawLine(x_offset, 1, x_offset, qc_eventarea_y);
@@ -320,7 +310,7 @@ qstriggereditor::mousePressEvent (QMouseEvent *event)
                     }
                     else
                     {
-                        /// needs update
+                        // needs update
                     }
                 }
 

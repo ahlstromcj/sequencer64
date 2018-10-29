@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-03
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -73,9 +73,7 @@ namespace Gtk
     class Button;
     class Cursor;
     class Entry;
-#ifdef SEQ64_USE_MIDI_PLAYLIST
     class HSeparator;
-#endif
     class Label;
     class MenuBar;
     class Menu;
@@ -278,10 +276,8 @@ private:
 
     maintime * m_main_time;
 
-#ifdef SEQ64_USE_MIDI_PLAYLIST
     Gtk::HSeparator * m_playlist_sep;
     Gtk::Label * m_playlist_text;
-#endif
 
     /**
      *  A pointer to the first song/performance editor.
@@ -369,8 +365,6 @@ private:
 
     Gtk::Button * m_button_perfedit;
 
-#ifdef SEQ64_STAZED_MENU_BUTTONS
-
     /**
      *  Provides a pointer to hold the images for the song/live button.
      */
@@ -379,8 +373,6 @@ private:
     Gtk::ToggleButton * m_button_mode;  /**< Live/Song mode button.         */
     Gtk::ToggleButton * m_button_mute;  /**< Mute toggle button.            */
     Gtk::ToggleButton * m_button_menu;  /**< Menu enable/disable button.    */
-
-#endif
 
 #ifdef SEQ64_SHOW_JACK_STATUS
 
@@ -640,9 +632,7 @@ private:
     void update_markers (midipulse tick);
     void reset ();
     void reset_window ();
-#ifdef SEQ64_PAUSE_SUPPORT
     void set_play_image (bool isrunning);
-#endif
     void set_songlive_image (bool issong);
     void start_playing ();
     void pause_playing ();
@@ -716,14 +706,10 @@ private:
     void apply_song_transpose ();
     void clear_mute_groups ();
     void reload_mute_groups ();
-
-#ifdef SEQ64_STAZED_MENU_BUTTONS
     void set_song_mode ();
     void toggle_song_mode();
     void set_menu_mode ();
     void toggle_menu_mode ();
-#endif
-
     void update_window_title ();
     void update_recent_files_menu ();
     void load_recent_file (int index);

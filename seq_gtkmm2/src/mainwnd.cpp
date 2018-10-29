@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-20
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -80,11 +80,7 @@
 #include <csignal>
 #include <cerrno>
 #include <cstring>                      /* strerror()                       */
-
-#ifdef SEQ64_USE_MIDI_PLAYLIST
 #include <memory>                       /* std::unique_ptr                  */
-#endif
-
 #include <stdio.h>                      /* snprintf()                       */
 #include <gtk/gtkversion.h>
 #include <gtkmm/aboutdialog.h>
@@ -142,12 +138,10 @@
 #include "pixmaps/sequencer64_legacy.xpm"
 #endif
 
-#ifdef SEQ64_STAZED_MENU_BUTTONS            // these are too inscrutable
 #include "pixmaps/live_mode.xpm"            // anything better than a mike icon?
 #include "pixmaps/menu.xpm"                 // any better image of a "menu"?
 #include "pixmaps/muting.xpm"               // need better/smaller icon
 #include "pixmaps/song_mode.xpm"            // need better/smaller icon
-#endif
 
 #ifdef SEQ64_SONG_RECORDING
 
@@ -313,10 +307,8 @@ mainwnd::mainwnd
 #endif
     m_current_screenset     (-1),
     m_main_time             (manage(new maintime(p))),
-#ifdef SEQ64_USE_MIDI_PLAYLIST
     m_playlist_sep          (manage(new Gtk::HSeparator())),
     m_playlist_text         (manage(new (Gtk::Label))),
-#endif
     m_perf_edit             (new perfedit(p, false /*allowperf2*/)),
     m_perf_edit_2           (allowperf2 ? new perfedit(p, true) : nullptr),
     m_options               (nullptr),
@@ -330,7 +322,6 @@ mainwnd::mainwnd
     m_button_tempo_record   (manage(new Gtk::ToggleButton())),
     m_is_tempo_recording    (false),
     m_button_perfedit       (manage(new Gtk::Button())),
-#ifdef SEQ64_STAZED_MENU_BUTTONS
     m_image_songlive        (nullptr),
     m_button_mode
     (
@@ -350,7 +341,6 @@ mainwnd::mainwnd
             manage(new Gtk::ToggleButton()) :
             manage(new Gtk::ToggleButton("Menu"))
     ),
-#endif
 #ifdef SEQ64_SHOW_JACK_STATUS
     m_button_jack           (manage(new Gtk::Button("ALSA"))),
 #endif
@@ -469,8 +459,6 @@ mainwnd::mainwnd
             *manage(new PIXBUF_IMAGE(bitmap)), false, false, TOP_HBOX_PADDING
         );
     }
-
-#ifdef SEQ64_STAZED_MENU_BUTTONS            /* also enables muting button */
 
     if (usr().use_more_icons())
         m_button_mode->add(*manage(new PIXBUF_IMAGE(live_mode_xpm)));
@@ -628,8 +616,6 @@ mainwnd::mainwnd
     tophbox->pack_start(*m_status_label, false, false);  /* new */
 #endif
 
-#endif  // SEQ64_STAZED_MENU_BUTTONS
-
     /*
      * Placement of the logo and time-line.
      */
@@ -638,13 +624,11 @@ mainwnd::mainwnd
     Gtk::HBox * hbox3 = manage(new Gtk::HBox(false, 0));
     hbox3->pack_start(*m_main_time, Gtk::PACK_SHRINK, TIMELINE_PILL_PADDING);
     vbox_b->pack_start(*hbox3, false, false);
-#ifdef SEQ64_USE_MIDI_PLAYLIST
     vbox_b->pack_start(*m_playlist_sep, false, false);
     vbox_b->pack_start(*m_playlist_text, false, false);
     m_playlist_text->set_text("Playlists entries shown here");
     m_playlist_text->hide();
     m_playlist_sep->hide();
-#endif
 
     /*
      * Add the time-line and the time-clock.
@@ -1265,8 +1249,6 @@ mainwnd::edit_field_has_focus () const
     return result;
 }
 
-#ifdef SEQ64_STAZED_MENU_BUTTONS
-
 /**
  *  Sets the song mode, which is actually the JACK start mode.  If true, we
  *  are in playback/song mode.  If false, we are in live mode.  This
@@ -1327,8 +1309,6 @@ mainwnd::toggle_menu_mode ()
 {
     m_button_menu->set_active(! m_button_menu->get_active());
 }
-
-#endif  // SEQ64_STAZED_MENU_BUTTONS
 
 /**
  *  This function is the GTK timer callback, used to draw our current time
@@ -1394,7 +1374,6 @@ mainwnd::timer_callback ()
 
     update_screenset();
 
-#ifdef SEQ64_USE_MIDI_PLAYLIST
     if (perf().playlist_mode())
     {
         m_playlist_text->set_text(perf().playlist_song());
@@ -1407,9 +1386,6 @@ mainwnd::timer_callback ()
         m_playlist_text->hide();
         m_playlist_sep->hide();
     }
-#endif
-
-#ifdef SEQ64_STAZED_MENU_BUTTONS
 
     m_button_mute->set_sensitive(! perf().song_start_mode());
     if (m_button_mode->get_active() != perf().song_start_mode())
@@ -1426,8 +1402,6 @@ mainwnd::timer_callback ()
             m_button_mode->set_sensitive(true);
     }
     m_menubar->set_sensitive(m_menu_mode);
-
-#endif
 
 #ifdef SEQ64_SHOW_JACK_STATUS
 
@@ -1484,10 +1458,8 @@ mainwnd::timer_callback ()
     if (perf().is_running() != m_is_running)
     {
         m_is_running = perf().is_running();
-#ifdef SEQ64_PAUSE_SUPPORT
         if (! usr().work_around_play_image())
             set_play_image(m_is_running);
-#endif
     }
     if (m_current_beats > 0 && m_last_time_ms > 0)
     {
@@ -2254,9 +2226,7 @@ mainwnd::open_file (const std::string & fn)
     bool result = open_midi_file(perf(), fn, ppqn, errmsg);
     if (result)
     {
-#ifdef SEQ64_USE_MIDI_PLAYLIST
         perf().playlist_mode(false);
-#endif
         update_recent_files_menu();
         update_window_title();
         reset_window();
@@ -2319,17 +2289,14 @@ mainwnd::choose_file (bool openplaylist)
 {
     Gtk::FileChooserDialog dlg("Open MIDI file", Gtk::FILE_CHOOSER_ACTION_OPEN);
     dlg.set_transient_for(*this);
-#ifdef SEQ64_USE_MIDI_PLAYLIST
     if (openplaylist)
         dlg.set_title("Open play-list file");
-#endif
     dlg.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
     dlg.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
 
     Gtk::FileFilter filter_midi;
     if (openplaylist)
     {
-#ifdef SEQ64_USE_MIDI_PLAYLIST
         filter_midi.set_name("Sequencer64 play-list files");
         filter_midi.add_pattern("*.playlist");
         dlg.add_filter(filter_midi);
@@ -2339,7 +2306,6 @@ mainwnd::choose_file (bool openplaylist)
         filter_any.add_pattern("*");
         dlg.add_filter(filter_any);
         dlg.set_current_folder(rc().last_used_dir());
-#endif
     }
     else
     {
@@ -2368,8 +2334,6 @@ mainwnd::choose_file (bool openplaylist)
     {
         if (openplaylist)
         {
-#ifdef SEQ64_USE_MIDI_PLAYLIST
-
             /*
              * This call is forwarded to the playlist attached to the perform
              * object to open the play-list file, verify the play-list (no need to
@@ -2409,7 +2373,6 @@ mainwnd::choose_file (bool openplaylist)
                 errdialog.run();
             }
             playlistmode = perf().playlist_mode();
-#endif
         }
         else
         {
@@ -2899,8 +2862,6 @@ mainwnd::edit_callback_notepad ()
     perf().set_screenset_notepad(text);
 }
 
-#ifdef SEQ64_PAUSE_SUPPORT
-
 /**
  *  Changes the image used for the pause/play button.  Is this a memory leak?
  *  Some users report segfaults (all of a sudden) with this setting!
@@ -2926,8 +2887,6 @@ mainwnd::set_play_image (bool isrunning)
     if (not_nullptr(m_image_play))
         m_button_play->set_image(*m_image_play);
 }
-
-#endif
 
 /**
  *  Changes the image used for the song/live mode button
@@ -3329,7 +3288,6 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 toggle_song_record();
             }
 #endif
-#ifdef SEQ64_USE_MIDI_PLAYLIST
             else if (k.is(SEQ64_Right))
             {
                 (void) perf().open_next_song();
@@ -3346,7 +3304,6 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             {
                 (void) perf().open_previous_list();
             }
-#endif
         }
 
         (void) handle_group_learn(k);
@@ -3758,7 +3715,6 @@ mainwnd::populate_menu_file ()
             mem_fun(*this, &mainwnd::file_open)
         )
     );
-#ifdef SEQ64_USE_MIDI_PLAYLIST
     m_menu_file->items().push_back
     (
         MenuElem
@@ -3767,7 +3723,6 @@ mainwnd::populate_menu_file ()
             mem_fun(*this, &mainwnd::file_open_playlist)
         )
     );
-#endif
     m_menu_file->items().push_back(SeparatorElem());
     update_recent_files_menu();                     /* copped from Kepler34 */
     m_menu_file->items().push_back(SeparatorElem());

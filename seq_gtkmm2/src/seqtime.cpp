@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-05
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -34,7 +34,6 @@
 
 #include <gtkmm/adjustment.h>
 
-#include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "event.hpp"
 #include "font.hpp"
 #include "perform.hpp"
@@ -188,13 +187,7 @@ seqtime::update_pixmap ()
 
     draw_rectangle_on_pixmap(black_paint(), 0, 0, m_window_x, m_window_y);
     draw_rectangle_on_pixmap(white_paint(), 1, 1, m_window_x-2, m_window_y-1);
-
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
     set_line(Gdk::LINE_SOLID, 2);
-#else
-    set_line(Gdk::LINE_SOLID);
-#endif
-
     draw_line_on_pixmap
     (
         black_paint(), 0, m_window_y - 1, m_window_x, m_window_y - 1
@@ -252,8 +245,6 @@ seqtime::update_pixmap ()
      *      the height of the seqtime and the height of a character.
      */
 
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
-
     /*
      *  Puts number after the number of the next measure:
      *
@@ -270,17 +261,6 @@ seqtime::update_pixmap ()
     int width = 20;
     int height = 10;
     int y_text = 6;
-
-#else
-
-    int x = m_scroll_offset_x;
-    int y = 9;
-    int width = 20;
-    int height = 8;
-    int y_text = 7;
-
-#endif
-
     int x_end = m_seq.get_length() / m_zoom - x;
     draw_rectangle_on_pixmap(black_paint(), x_end, y, width, height);
     render_string_on_pixmap(x_end + 1, y_text, "END", font::WHITE, true);

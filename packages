@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2018-09-29
-# \update     	2018-09-29
+# \update     	2018-10-29
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -19,7 +19,7 @@
 #-----------------------------------------------------------------------------
 
 RELEASEMAJOR="0.96"
-RELEASEMINOR="0"
+RELEASEMINOR="1"
 RELEASENUMBER="$RELEASEMAJOR.$RELEASEMINOR"
 REVNUMBER="0"
 DODRYRUN="no"
@@ -29,7 +29,7 @@ if [ "$1" == "--help" ] || [ "$1" == "help" ] ; then
 
    cat << E_O_F
 
-packages 0.1 2018-09-29
+packages 0.2 2018-10-29
 
 Usage:  ./pack [--dry-run] [--release 0.96.0]
 
@@ -59,7 +59,7 @@ else
         --release)
             shift
             DORELEASE="yes"
-            RELEASENUMBER="0.96.0"
+            RELEASENUMBER="$RELEASEMAJOR.$RELEASEMINOR"
             ;;
 
         *)
@@ -110,7 +110,7 @@ else
    mv $ZIPNAME ../sequencer64-packages/latest
    echo "Making a standard Linux source/configure tarball..."
 #  ./bootstrap --full-clean
-   ./pack --release rtmidi 0.96.0
+   ./pack --release rtmidi $RELEASENUMBER
    mv ../$TARNAME ../sequencer64-packages/latest
 #  rm -rf qpseq64/
    ls -lrt ../sequencer64-packages/latest

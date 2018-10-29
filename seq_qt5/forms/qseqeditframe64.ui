@@ -847,13 +847,13 @@
         <widget class="QPushButton" name="m_toggle_drum">
          <property name="minimumSize">
           <size>
-           <width>48</width>
+           <width>54</width>
            <height>32</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>34</width>
+           <width>54</width>
            <height>32</height>
           </size>
          </property>
@@ -902,7 +902,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>814</width>
+            <width>808</width>
             <height>128</height>
            </rect>
           </property>

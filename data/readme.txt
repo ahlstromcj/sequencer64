@@ -1,6 +1,6 @@
-readme.txt for Sequencer64 0.96.0
+readme.txt for Sequencer64 0.96.1
 Chris Ahlstrom
-2015-09-10 to 2018-09-29
+2015-09-10 to 2018-10-29
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 It is a "live performance" sequencer, with the musician creating and
@@ -22,8 +22,8 @@ Windows support:
     built-in MIDI devices are detected, inaccessible devices are ignored, and
     playback (e.g. to the built-in wavetable synthesizer) work.
 
-    However, the Qt 5 GUI is still a bit behind the Gtkmm 2.4 GUI for many
-    features.  That will be fixed bit-by-bit (help wanted!).  In the meantime,
+    However, the Qt 5 GUI is a little behind the Gtkmm 2.4 GUI for some
+    features.  It is about 90% complete, but very useable. In the meantime,
     some configuration can be done manually in the "rc" and "usr" files.  See
     README.windows for more information.
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-05
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  When the Song/Performance editor has focus, Sequencer64 is automatically
@@ -808,9 +808,7 @@ perfedit::timeout ()
     if (perf().is_running() != m_is_running)
     {
         m_is_running = perf().is_running();
-#ifdef SEQ64_PAUSE_SUPPORT
         set_image(m_is_running);
-#endif
     }
     return true;
 }
@@ -950,8 +948,8 @@ perfedit::on_realize ()
  *  space-bar starts the playing, and the Escape key stops the playing.  The
  *  start/end key may be the same key (i.e. space-bar), allow toggling when
  *  the same key is mapped to both triggers.  Note that we now pass false in
- *  the call to perform::playback_key_event(), if SEQ64_PAUSE_SUPPORT is
- *  compiled in.  Song mode doesn't yield the pause effect we want.
+ *  the call to perform::playback_key_event().  Song mode doesn't yield the
+ *  pause effect we want.
  *
  * \param ev
  *      Provides the key event to implement.

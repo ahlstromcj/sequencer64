@@ -43,11 +43,11 @@
 #endif
 
 #ifndef SEQ64_VERSION_DATE_SHORT
-#define SEQ64_VERSION_DATE_SHORT "2018-09-14"
+#define SEQ64_VERSION_DATE_SHORT "2018-10-29"
 #endif
 
 #ifndef SEQ64_VERSION
-#define SEQ64_VERSION "0.95.4"
+#define SEQ64_VERSION "0.96.1"
 #endif
 
 #ifndef SEQ64_GIT_VERSION
@@ -324,7 +324,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef SEQ64_PACKAGE_STRING
-#define SEQ64_PACKAGE_STRING "Sequencer64 0.95.4"
+#define SEQ64_PACKAGE_STRING "Sequencer64 0.96.1"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -339,19 +339,7 @@
 
 /* Define to the version of this package. */
 #ifndef SEQ64_PACKAGE_VERSION
-#define SEQ64_PACKAGE_VERSION "0.95.4"
-#endif
-
-/*
- * Define to enable pausing and pause button
- *
- *      NOT AVAILABLE YET IN QT USER INTERFACE.
- */
-
-#ifndef SEQ64_QT5_USER_INTERFACE
-#ifndef SEQ64_PAUSE_SUPPORT
-#define SEQ64_PAUSE_SUPPORT 1
-#endif
+#define SEQ64_PACKAGE_VERSION "0.96.1"
 #endif
 
 /*
@@ -392,14 +380,6 @@
 /* #undef STATISTICS_SUPPORT */
 
 /*
- * Define to enable the chord generator.
- */
-
-#ifndef SEQ64_STAZED_CHORD_GENERATOR
-#define SEQ64_STAZED_CHORD_GENERATOR 1
-#endif
-
-/*
  * Define to enable Seq32 LFO window support.
  */
 
@@ -417,7 +397,7 @@
 
 /* Version number of package */
 #ifndef SEQ64_VERSION
-#define SEQ64_VERSION "0.95.4"
+#define SEQ64_VERSION "0.96.1"
 #endif
 
 /* Indicates limited Windows support */

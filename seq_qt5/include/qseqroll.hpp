@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-10
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -198,16 +198,12 @@ private:
 
     int m_pos;
 
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-
     /**
      *  Indicates either that chord support is disabled (0), or a particular
      *  chord is to be created when inserting notes.
      */
 
     int m_chord;
-
-#endif
 
     /**
      *  The current musical key selected.

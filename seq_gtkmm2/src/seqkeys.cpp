@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-26
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  One thing we must be sure of is the MIDI note range.  Obviously, in terms
@@ -76,7 +76,6 @@
 
 #include <gtkmm/adjustment.h>
 
-#include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT() etc.      */
 #include "font.hpp"
 #include "globals.h"                    /* c_keyarea_y and more         */

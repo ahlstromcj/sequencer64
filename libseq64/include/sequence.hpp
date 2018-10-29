@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-10-03
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1467,9 +1467,7 @@ public:
         bool paint = false,
         int velocity = SEQ64_PRESERVE_VELOCITY
     );
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
     bool add_chord (int chord, midipulse tick, midipulse len, int note);
-#endif
     bool add_event (const event & er);      /* another one declared below */
     bool add_event
     (

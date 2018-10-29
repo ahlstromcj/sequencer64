@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-20
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -808,9 +808,8 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 0, 1, 2, 3);
     controltable->attach(*entry, 1, 2, 2, 3);
-#if ! defined SEQ64_STAZED_MENU_BUTTONS
-    entry->set_sensitive(false);
-#endif
+
+    // entry->set_sensitive(false);
 
     label = manage(new Gtk::Label("Follow transport", Gtk::ALIGN_RIGHT));
     entry = manage

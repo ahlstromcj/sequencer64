@@ -2253,8 +2253,6 @@ midifile::write (perform & p, bool doseqspec)
     return result;
 }
 
-#ifdef SEQ64_STAZED_EXPORT_SONG
-
 /**
  *  Write the whole MIDI data and Seq24 information out to a MIDI file, writing
  *  out patterns based on their song/performance information (triggers) and
@@ -2449,8 +2447,6 @@ midifile::write_song (perform & p)
 
     return result;
 }
-
-#endif  // SEQ64_STAZED_EXPORT_SONG
 
 /**
  *  Writes out the final proprietary/SeqSpec section, using the new format if

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-07-05
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  We are currently trying to get event processing to accomodate tempo
@@ -35,7 +35,6 @@
 #include <gtkmm/adjustment.h>
 #include <gdkmm/cursor.h>               /* Gdk::Cursor(Gdk::PENCIL)     */
 
-#include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT, etc.       */
 #include "event.hpp"
 #include "keystroke.hpp"                /* instead of gdk_basic_keys.h  */
@@ -187,8 +186,8 @@ seqevent::redraw ()
 /**
  *  This function updates the background.  It sets the foreground to
  *  white, draws the rectangle, in order to clear the pixmap.
- *  The build-time option SEQ64_SOLID_PIANOROLL_GRID causes solid lines to be
- *  drawn, in gray, instead of dotted black lines, for a smoother look.
+ *  The build now causes solid lines to be drawn, in gray, instead of dotted
+ *  black lines, for a smoother look.
  *
  *  Also, as a trial option, if the current data type is EVENT_NOTE_ON,
  *  EVENT_NOTE_OFF, and EVENT_AFTERTOUCH, we draw the background in light grey
@@ -199,13 +198,7 @@ seqevent::redraw ()
 void
 seqevent::draw_background ()
 {
-
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
     Color minor_line_color = light_grey_paint();
-#else
-    Color minor_line_color = grey_paint();
-#endif
-
     if (event::is_note_msg(m_status))
     {
         draw_rectangle_on_pixmap(light_grey_paint(), 0, 0, m_window_x, m_window_y);
@@ -229,11 +222,7 @@ seqevent::draw_background ()
         int base_line = tick / m_zoom;
         if (tick % ticks_per_major == 0)            /* solid line every beat */
         {
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
             set_line(Gdk::LINE_SOLID, 2);
-#else
-            set_line(Gdk::LINE_SOLID);
-#endif
             m_gc->set_foreground(black());
         }
         else if (tick % ticks_per_beat == 0)
@@ -243,8 +232,6 @@ seqevent::draw_background ()
         }
         else
         {
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
-
             /*
              * This better matches what the seqroll draws for vertical lines.
              */
@@ -262,21 +249,12 @@ seqevent::draw_background ()
                 gint8 dash = 1;
                 m_gc->set_dashes(0, &dash, 1);
             }
-#else
-            m_gc->set_foreground(grey_paint());
-            set_line(Gdk::LINE_ON_OFF_DASH);
-            gint8 dash = 1;
-            m_gc->set_dashes(0, &dash, 1);
-#endif
         }
         int x = base_line - m_scroll_offset_x;
         draw_line_on_pixmap(x, 0, x, m_window_y);
     }
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
     set_line(Gdk::LINE_SOLID, 2);
-#else
-    set_line(Gdk::LINE_SOLID);
-#endif
+
     int wx = m_window_x + 1;
     int wy = m_window_y - 1;
     draw_rectangle_on_pixmap(black(), -1, 0, wx, wy, false);

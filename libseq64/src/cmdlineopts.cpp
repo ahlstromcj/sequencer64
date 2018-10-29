@@ -1192,20 +1192,14 @@ build_details ()
 #ifdef SEQ64_USE_MIDI_VECTOR
         << "MIDI vector (vs list) on" << std::endl
 #endif
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
         << "Seq32 chord generator on" << std::endl
-#endif
 #ifdef SEQ64_STAZED_LFO_SUPPORT
         << "Seq32 LFO window on" << std::endl
 #endif
-#ifdef SEQ64_STAZED_MENU_BUTTONS
         << "Seq32 menu buttons on" << std::endl
-#endif
         << "Seq32 transpose on" << std::endl
         << "BPM Tap button on" << std::endl
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
         << "Solid piano-roll grid on" << std::endl
-#endif
 #ifdef SEQ64_JE_PATTERN_PANEL_SCROLLBARS
         << "Main window scroll-bars on" << std::endl
 #endif

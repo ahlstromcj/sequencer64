@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-11
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  Please see the additional notes for the Gtkmm-2.4 version of this panel,
@@ -83,9 +83,7 @@ qseqroll::qseqroll
     mFont                   (),
     m_scale                 (0),
     m_pos                   (0),
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
     m_chord                 (0),
-#endif
     m_key                   (0),
     m_note_length           (p.get_ppqn() * 4 / 16),
     m_background_sequence   (0),
@@ -202,16 +200,9 @@ qseqroll::paintEvent (QPaintEvent *)
     QBrush brush(Qt::NoBrush);
     mFont.setPointSize(6);
 
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
     bool fruity_lines = true;
     QPen pen(Qt::lightGray);
     pen.setStyle(Qt::SolidLine);
-#else
-    bool fruity_lines = rc().interaction_method() == e_fruity_interaction;
-    QPen pen(Qt::gray);
-    pen.setStyle(Qt::DotLine);
-#endif
-
     painter.setPen(pen);
     painter.setBrush(brush);
     painter.setFont(mFont);
@@ -250,15 +241,9 @@ qseqroll::paintEvent (QPaintEvent *)
             }
             else if ((modkey % SEQ64_OCTAVE_SIZE) == (SEQ64_OCTAVE_SIZE-1))
             {
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
                 pen.setColor(Qt::lightGray);
                 pen.setStyle(Qt::SolidLine);
                 painter.setPen(pen);
-#else
-                pen.setColor(Qt::gray);
-                pen.setStyle(Qt::DotLine);
-                painter.setPen(pen);
-#endif
             }
         }
 
@@ -318,9 +303,7 @@ qseqroll::paintEvent (QPaintEvent *)
         {
             pen.setColor(Qt::black);
             pen.setStyle(Qt::SolidLine);
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
             pen.setWidth(2);                    /* two pixels               */
-#endif
         }
         else if (tick % ticks_per_beat == 0)
         {
@@ -332,8 +315,6 @@ qseqroll::paintEvent (QPaintEvent *)
             pen.setColor(Qt::lightGray);        // faint step lines
             pen.setStyle(Qt::DotLine);
             int tick_snap = tick - (tick % snap());
-
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
             if (tick == tick_snap)
             {
                 pen.setStyle(Qt::SolidLine);    // pen.setColor(Qt::DashLine)
@@ -344,22 +325,11 @@ qseqroll::paintEvent (QPaintEvent *)
                 pen.setStyle(Qt::DotLine);     // Gdk::LINE_ON_OFF_DASH
                 pen.setColor(Qt::lightGray);    // faint step lines
             }
-#else
-            pen.setStyle(Qt::DotLine);         // Gdk::LINE_ON_OFF_DASH
-            if (tick == tick_snap)
-                pen.setColor(Qt::darkGray);
-            else
-                pen.setColor(Qt::lightGray);
-#endif
         }
         painter.setPen(pen);
         painter.drawLine(x_offset, 0, x_offset, m_keyarea_y);
     }
     pen.setWidth(1);
-
-#if ! defined SEQ64_SOLID_PIANOROLL_GRID
-    pen.setStyle(Qt::SolidLine);
-#endif
 
     /*
      * draw_progress_on_window():
@@ -1270,8 +1240,6 @@ qseqroll::update_edit_mode (edit_mode_t mode)
     m_edit_mode = mode;
 }
 
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-
 /**
  *  Sets the current chord to the given value.
  *
@@ -1285,8 +1253,6 @@ qseqroll::set_chord (int chord)
     if (m_chord != chord)
         m_chord = chord;
 }
-
-#endif  // SEQ64_STAZED_CHORD_GENERATOR
 
 /**
  *

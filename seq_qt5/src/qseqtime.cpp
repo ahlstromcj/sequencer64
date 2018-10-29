@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-31
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -138,19 +138,15 @@ qseqtime::paintEvent (QPaintEvent *)
 
         if (tick % ticks_per_bar == 0)
         {
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
             pen.setWidth(2);                    // two pixels
             painter.setPen(pen);
-#endif
             painter.drawLine(x_offset, 0, x_offset, size().height());
             snprintf(bar, sizeof bar, "%d", tick / ticks_per_bar + 1);
             painter.drawText(x_offset + 3, 10, bar);
         }
         else if (tick % ticks_per_beat == 0)
         {
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
             pen.setWidth(1);                    // back to one pixel
-#endif
             painter.setPen(pen);
             pen.setStyle(Qt::SolidLine);        // pen.setColor(Qt::DashLine)
             painter.drawLine(x_offset, 0, x_offset, size().height());

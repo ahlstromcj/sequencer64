@@ -25,7 +25,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2018-10-22
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -163,7 +163,6 @@ main (int argc, char * argv [])
         bool extant_msg_active = false;             /* a kludge             */
         if (ok)
         {
-#ifdef SEQ64_USE_MIDI_PLAYLIST
             std::string playlistname = seq64::rc().playlist_filespec();
             if (seq64::rc().playlist_active() && ! playlistname.empty())
             {
@@ -183,7 +182,6 @@ main (int argc, char * argv [])
                     ok = true;                      /* avoid early exit     */
                 }
             }
-#endif
             if (optionindex < argc)                 /* MIDI filename given? */
             {
                 std::string fname = argv[optionindex];

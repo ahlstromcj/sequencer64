@@ -8,7 +8,7 @@
 :: \library     Sequencer64 for Windows
 :: \author      Chris Ahlstrom
 :: \date        2018-05-26
-:: \update      2018-09-29
+:: \update      2018-10-29
 :: \license     $XPC_SUITE_GPL_LICENSE$
 ::
 ::      This script sets up and creates a release build of Sequencer64 for
@@ -27,6 +27,9 @@
 ::          command-line, as 7z.exe.
 ::
 :: Instructions:
+::
+::      Note that steps 5 through 9 can be performed on Linux with the
+::      "packages" script.
 ::
 ::       1. Before running this script, modify the environment variables below
 ::          for your specific setup, including PROJECT_VERSION, PROJECT_DRIVE,
@@ -78,7 +81,7 @@
 ::
 ::---------------------------------------------------------------------------
  
-set PROJECT_VERSION=0.96.0
+set PROJECT_VERSION=0.96.1
 set PROJECT_DRIVE=C:
 set PROJECT_BASE=\Users\Chris\Documents\Home
 set PROJECT_ROOT=..\sequencer64

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-10-26
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -147,10 +147,7 @@ QWidget container?
 #include "pixmaps/transpose.xpm"
 #include "pixmaps/undo.xpm"
 #include "pixmaps/zoom.xpm"             /* zoom_in/_out combo-box           */
-
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
 #include "pixmaps/chord3-inv.xpm"
-#endif
 
 /**
  *  Helps with making the page leaps slightly smaller than the width of the
@@ -200,10 +197,7 @@ namespace seq64
 
 int qseqeditframe64::m_initial_snap         = SEQ64_DEFAULT_PPQN / 4;
 int qseqeditframe64::m_initial_note_length  = SEQ64_DEFAULT_PPQN / 4;
-
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
 int qseqeditframe64::m_initial_chord        = 0;
-#endif
 
 /**
  * To reduce the amount of written code, we use a static array to
@@ -318,8 +312,6 @@ s_lookup_zoom (int zoom)
     return result;
 }
 
-#ifdef SEQ64_STAZED_CHORD_GENERATOR_NOT_NEEDED_YET
-
 /**
  *  Looks up a chord name and returns its index.  Note that the chord names
  *  are defined in the scales.h file.
@@ -340,7 +332,9 @@ s_lookup_chord (const std::string & chordname)
     return result;
 }
 
-#endif
+/**
+ *
+ */
 
 static const int s_rec_vol_items [] =
 {
@@ -378,9 +372,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     m_snap              (m_initial_snap),
     m_note_length       (m_initial_note_length),
     m_scale             (usr().seqedit_scale()),        // m_initial_scale
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
     m_chord             (0),    // (usr().seqedit_chord()),  // m_initial_chord
-#endif
     m_key               (usr().seqedit_key()),          // m_initial_key
     m_bgsequence        (usr().seqedit_bgsequence()),   // m_initial_sequence
     m_measures          (0),                            // fixed below
@@ -579,8 +571,6 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     if (! usr().work_around_transpose_image())
         set_transpose_image(cantranspose);
 
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-
     /*
      * Chord button and combox-box.  See c_chord_table_text[c_chord_number][]
      * in the scales.h header file.
@@ -622,8 +612,6 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
         this, SLOT(update_chord(int))
     );
     set_chord(m_chord);
-
-#endif  // SEQ64_STAZED_CHORD_GENERATOR
 
     /*
      *  MIDI buss items discovered at startup-time.  Not sure if we want to
@@ -1531,8 +1519,6 @@ qseqeditframe64::set_transpose_image (bool istransposable)
     }
 }
 
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-
 /**
  *  Handles updates to the beats/measure for only the current sequences.
  *  See the similar function in qsmainwnd.
@@ -1600,8 +1586,6 @@ qseqeditframe64::set_chord (int chord)
             m_seqroll->set_chord(chord);
     }
 }
-
-#endif  // SEQ64_STAZED_CHORD_GENERATOR
 
 /**
  *  Sets the MIDI bus to use for output.

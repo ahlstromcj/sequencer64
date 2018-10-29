@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.96.1 and above
 Chris Ahlstrom
-2015-09-10 to 2018-10-13
+2015-09-10 to 2018-10-29
 
 Getting Sequencer64 requires building the code or going to the
 sequencer64-packages site on GitHub.  The bootstrapping setup is primarily
@@ -235,8 +235,6 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         SEQ64_LASH_SUPPORT
         SEQ64_JACK_SUPPORT
         SEQ64_JACK_SESSION
-        SEQ64_PAUSE_SUPPORT
-        SEQ64_STAZED_CHORD_GENERATOR
         SEQ64_JE_PATTERN_PANEL_SCROLLBARS
         SEQ64_MULTI_MAINWID
 
@@ -284,28 +282,6 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
         Undefines the SEQ64_JACK_SESSION macro, which is defined if JACK
         support is defined, and the jack/session.h file is found.
-
-    --disable-pause
-
-        Undefines the SEQ64_PAUSE_SUPPORT macro.  If this macro is defined,
-        then the application is built with support for a Pause button.  It
-        used to control the addition of pause functionality, but that
-        functionality is now permanent..  This means that, in ALSA mode, the
-        progress bars stay in place when Pause is activated (by click or
-        keystroke), and playback resumes where it left off.  The Stop button
-        still rewinds to the beginning.  The behavior of JACK transport, if
-        enabled, is (should be!) unchanged.  To go back to the legacy
-        stop/play behavior, use the --disable-pause option when running the
-        configure script.  Note that we are still working through issues with
-        the pause option, and there are a lot of situations to test.
-
-    --disable-chords
-
-        Undefines the SEQ64_STAZED_CHORD_GENERATOR macro.  If this macro is
-        defined, then the application is built with support for a Chord button
-        in the pattern editor, which enables entering whole chords with a
-        single click.  This feature is grabbed from
-        https://github.com/Stazed/seq32.
 
     --disable-seq32jack (obsolete, removed)
 
@@ -472,15 +448,6 @@ MANUALLY-DEFINED MACROS IN CODE:
         This new implementation uses std::vector and does not use pop_back()
         to retrieve the bytes for writing to a file.
 
-    SEQ64_SOLID_PIANOROLL_GRID:
-
-        Enabling this macro makes the grid lines for the piano rolls
-        more solid, with about the same perception of lightness.
-        It also calls in some other tweaks, such as the positioning of
-        markers.  We currently like this look a little better, and so it is
-        the default.  See the app_limits.h header file for the definition of
-        this variable.
-
     SEQ64_FOLLOW_PROGRESS_BAR:
 
         Now a permanent option.  This macro has been removed.
@@ -493,12 +460,6 @@ MANUALLY-DEFINED MACROS IN CODE:
             -   Tracking when controlled by the Song Mode, with a gap in the
                 pattern triggering, causes the alignment of paging and
                 progress to get out of whack.
-
-    SEQ64_STAZED_EXPORT_SONG:
-
-        Enables suppport for exporting a Sequencer64 song with performance
-        (Song Editor) data as a standard MIDI file (format 1).  Enabled in the
-        code (midifile.hpp).
 
     SEQ64_STAZED_EDIT_MENU:
 

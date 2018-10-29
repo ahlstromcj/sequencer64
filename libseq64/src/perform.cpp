@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-10-28
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -3147,9 +3147,8 @@ perform::stop ()
  *
  *      In ALSA mode, restarting the sequence moves the progress bar to the
  *      beginning of the sequence, even if just pausing.  This is fixed by
- *      compiling with SEQ64_PAUSE_SUPPORT, which disables calling
- *      off_sequences() when starting playback from the song editor /
- *      performance window.
+ *      compiling with pause support, which disables calling off_sequences()
+ *      when starting playback from the song editor / performance window.
  *
  * \param songmode
  *      Sets the playback mode, and, if true, turns off all of the sequences
@@ -4714,8 +4713,6 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         }
         break;
 
-#ifdef SEQ64_USE_MIDI_PLAYLIST
-
     case c_midi_control_reserved_1:
 
         result = false;
@@ -4772,8 +4769,6 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 
         result = false;
         break;
-
-#endif  // SEQ64_USE_MIDI_PLAYLIST
 
     default:
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-18
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -357,32 +357,18 @@ void
 perfroll::fill_background_pixmap ()
 {
     draw_rectangle(m_background, white_paint(), 0, 0, m_background_x, m_names_y);
-
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
     set_line(Gdk::LINE_SOLID);
     draw_line(m_background, light_grey_paint(), 0, 0, m_background_x, 0);
-#else
-    gint8 dash = 1;
-    m_gc->set_dashes(0, &dash, 1);
-    set_line(Gdk::LINE_ON_OFF_DASH);
-    draw_line(m_background, grey_paint(), 0, 0, m_background_x, 0);
-#endif
 
     int beats = m_measure_length / m_beat_length;
     m_gc->set_foreground(grey_paint());
     for (int i = 0; i < beats; /* inc'd in body */)     /* vertical lines   */
     {
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
         if (i == 0)
             m_gc->set_foreground(dark_grey_paint());    /* was black()      */
         else
             m_gc->set_foreground(light_grey_paint());
-#else
-        if (i == 0)
-            set_line(Gdk::LINE_SOLID);
-        else
-            set_line(Gdk::LINE_ON_OFF_DASH);
-#endif
+
         /*
          * Draw a solid vertical line, at every beat.
          */

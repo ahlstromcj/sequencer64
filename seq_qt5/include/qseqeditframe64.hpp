@@ -50,9 +50,6 @@
  * In the meantime....
  */
 
-#undef SEQ64_STAZED_CHORD_GENERATOR     // otherwise redefined !!! weird !!!
-#define SEQ64_STAZED_CHORD_GENERATOR
-
 /**
  *  Specifies the reported final size of the main window when the larger edit
  *  frame "kicks in".  See the comments for qsmainwnd::refresh().  The final
@@ -161,13 +158,11 @@ private slots:
     void next_measures ();
     void reset_measures ();
     void transpose (bool ischecked);
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
     void update_chord (int index);
 #ifdef SEQ64_QSEQEDIT_BUTTON_INCREMENT
     void increment_chord ();
 #else
     void reset_chord ();
-#endif
 #endif
     void update_midi_bus (int index);
     void reset_midi_bus ();
@@ -321,16 +316,12 @@ private:
 
     int m_scale;
 
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-
     /**
      *  Setting for the current chord generation; not now saved with the
      *  sequence.
      */
 
     int m_chord;
-
-#endif
 
     /**
      *  Setting for the music key, can now be saved with the sequence.
@@ -416,10 +407,7 @@ private:
 
     static int m_initial_snap;
     static int m_initial_note_length;
-
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
     static int m_initial_chord;
-#endif
 
 };          // class qseqeditframe64
 
@@ -432,5 +420,4 @@ private:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
-
 

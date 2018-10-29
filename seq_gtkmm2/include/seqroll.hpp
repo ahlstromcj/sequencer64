@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-11
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -155,16 +155,12 @@ protected:
 
     int m_scale;
 
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-
     /**
      *  Indicates the current chord in force for this sequence for inserting
      *  notes.
      */
 
     int m_chord;
-
-#endif
 
     /**
      *  Indicates the musical key in force for this sequence.
@@ -418,10 +414,7 @@ public:
 
     void set_key (int key);
     void set_scale (int scale);
-
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
     void set_chord (int chord);
-#endif
 
     /**
      *  Sets the status to the given parameter, and the CC value to the given

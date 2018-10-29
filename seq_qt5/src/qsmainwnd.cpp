@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-18
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -986,7 +986,6 @@ qsmainwnd::refresh ()
             set_tap_button(0);
         }
     }
-#ifdef SEQ64_USE_MIDI_PLAYLIST
     if (perf().playlist_mode())
     {
         if (not_nullptr(m_live_frame))
@@ -1005,7 +1004,6 @@ qsmainwnd::refresh ()
         m_is_title_dirty = false;
         update_window_title();
     }
-#endif
 }
 
 /**
@@ -1911,7 +1909,6 @@ qsmainwnd::keyPressEvent (QKeyEvent * event)
                 }
             }
         }
-#ifdef SEQ64_USE_MIDI_PLAYLIST
         if (! done)
         {
             if (k.is(SEQ64_Right))
@@ -1939,7 +1936,6 @@ qsmainwnd::keyPressEvent (QKeyEvent * event)
                 done = true;
             }
         }
-#endif
 
         if (! done && not_nullptr(m_live_frame))
             done = m_live_frame->handle_key_press(gdkkey);

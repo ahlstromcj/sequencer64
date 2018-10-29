@@ -863,7 +863,6 @@ enable_alsamidi
 enable_portmidi
 enable_highlight
 enable_eveditor
-enable_pause
 enable_multiwid
 enable_statistics
 enable_lfo
@@ -1554,7 +1553,6 @@ Optional Features:
   --enable-portmidi       Enable PortMidi build (for testing)
   --disable-highlight     Disable highlighting empty sequences
   --disable-eveditor      Disable using the event editor
-  --disable-pause         Disable pausing sequences and pause button
   --disable-multiwid      Disable multiple main window support
   --enable-statistics     Enable statistics gathering
   --disable-lfo           Disable using Seq32 LFO window
@@ -19700,26 +19698,6 @@ $as_echo "Event editor enabled." >&6; };
 else
     { $as_echo "$as_me:${as_lineno-$LINENO}: Event editor disabled." >&5
 $as_echo "$as_me: Event editor disabled." >&6;};
-fi
-
-
-# Check whether --enable-pause was given.
-if test "${enable_pause+set}" = set; then :
-  enableval=$enable_pause; pause=$enableval
-else
-  pause=yes
-fi
-
-
-if test "$pause" != "no"; then
-
-$as_echo "#define PAUSE_SUPPORT 1" >>confdefs.h
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: Pausing sequences and pause-button enabled." >&5
-$as_echo "Pausing sequences and pause-button enabled." >&6; };
-else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Pausing sequences and pause-button disabled." >&5
-$as_echo "$as_me: Pausing sequences and pause-button disabled." >&6;};
 fi
 
 

@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2018-10-02
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -188,7 +188,6 @@ main (int argc, char * argv [])
 
                 p.print_busses();
             }
-#ifdef SEQ64_USE_MIDI_PLAYLIST
             std::string playlistname = seq64::rc().playlist_filespec();
             if (seq64::rc().playlist_active() && ! playlistname.empty())
             {
@@ -203,7 +202,6 @@ main (int argc, char * argv [])
                     extant_msg_active = true;
                 }
             }
-#endif
             if (ok && optionindex < argc)           /* MIDI filename given?   */
             {
                 int ppqn = 0;

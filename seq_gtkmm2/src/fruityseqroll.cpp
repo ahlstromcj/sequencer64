@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-21
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -671,11 +671,11 @@ FruitySeqRollInput::on_motion_notify_event (GdkEventMotion * ev)
     }
     else if (m_painting)
     {
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
         if (m_chord != 0)     /* chord, don't allow move painting */
+        {
             result = true;
+        }
         else
-#endif
         {
             snap_x(m_current_x);
             convert_xy(current_x(), current_y(), tick, note);

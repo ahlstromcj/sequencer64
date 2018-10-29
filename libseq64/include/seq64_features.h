@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-09-27
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -121,9 +121,12 @@
  *  We're in the middle of adding playlist support.  Some might not like the
  *  overhead, so we're making it a compile-time header option.  However, the
  *  playlist class will still be compiled, but hopefully not linked.
+ *
+ *  Making this option permanent.  It is useful, and for seq64cli, mandatory.
+ *  Removed this macro from all modules.
+ *
+ *      #define SEQ64_USE_MIDI_PLAYLIST
  */
-
-#define SEQ64_USE_MIDI_PLAYLIST
 
 /**
  *  Currently, many macros are undefined as tentative or experimental.
@@ -163,17 +166,17 @@
 
 /**
  *  Adds a button to disable the main menu in the main window.  Adds a button
- *  to set the Song (versus Live) mode from  the main menu in the main window.
+ *  to set the Song (versus Live) mode from the main menu in the main window.
  *  There is also an other, less public macro, SEQ64_MENU_BUTTON_PIXMAPS,
  *  that selects between using pixmaps to represent the "Song"/"Live",
  *  "Muting", and "Menu" buttons in the mainwnd window, or the text
  *  equivalents.  That value can be found in the seq_gtkmm2/include/mainwnd.hpp
- *  file, should one want to use text instead.
+ *  file, should one want to use text instead.  Now permanent.
+ *
+ *      #ifndef SEQ64_QT5_USER_INTERFACE // include/qt/portmidi/seq64-config.h
+ *      #define SEQ64_STAZED_MENU_BUTTONS
+ *      #endif
  */
-
-#ifndef SEQ64_QT5_USER_INTERFACE    /* include/qt/portmidi/seq64-config.h   */
-#define SEQ64_STAZED_MENU_BUTTONS
-#endif
 
 /**
  *  If defined, this macro adds a small button next to the BPM setting that
@@ -252,8 +255,6 @@
  *    - SEQ64_JACK_SESSION
  *    - SEQ64_JACK_SUPPORT
  *    - SEQ64_LASH_SUPPORT
- *    - SEQ64_PAUSE_SUPPORT
- *    - SEQ64_STAZED_CHORD_GENERATOR
  *    - SEQ64_STAZED_LFO_SUPPORT
  *      Enables using the lfownd dialog to control the envelope of certain events
  *      in seqedit's seqdata pane.  We're not too keen on the user interface,
@@ -330,10 +331,11 @@
 
 /**
  *  Let's try using lighter solid lines in the piano rolls and see how it
- *  looks.  It looks a little better.
+ *  looks.  It looks a little better.  In fact, much better, make it
+ *  permanent.
+ *
+ *      #define SEQ64_SOLID_PIANOROLL_GRID
  */
-
-#define SEQ64_SOLID_PIANOROLL_GRID
 
 /**
  *  An option we've preserved from Seq24, but have disabled until we find a

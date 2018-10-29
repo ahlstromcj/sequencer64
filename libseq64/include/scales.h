@@ -27,14 +27,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-06
- * \updates       2016-11-13
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
- *  These values were moved from the globals module.  Now included the
- *  chord-generation data, enabled by defining the
- *  SEQ64_STAZED_CHORD_GENERATOR macro, which is defined by default in the
- *  configure.ac file.  It can be disabled by the command
- *  "./configure --disable-chords".
+ *  These values were moved from the globals module.  Now includes the
+ *  chord-generation data.
  */
 
 #include "easy_macros.h"                /* with platform_macros.h, too  */
@@ -359,8 +356,6 @@ const char c_chord_text[8][6] =
     "I", "II", "III", "IV", "V", "VI", "VII", "VIII"
 };
 
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-
 /**
  *  Additional support data for the chord-generation feature from Stazed's
  *  seq32 project.  The chord-number is a count of the number of entries in
@@ -445,8 +440,6 @@ const int c_chord_table[c_chord_number][c_chord_size] =
     { 0, 3, 7, 11, 17, -1 },    /* m-Maj7add11  */
     { 0, 3, 7, 11, 21, -1 }     /* m-Maj7add13  */
 };
-
-#endif      // SEQ64_STAZED_CHORD_GENERATOR
 
 }           // namespace seq64
 

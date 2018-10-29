@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-28
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -50,11 +50,11 @@
  *
  * Fixups:
  *
- *      As of version 0.9.11, a "Pause" key is added, if SEQ64_PAUSE_SUPPORT is
- *      defined.  One must fix up the sequencer64.rc file.  First, run
- *      Sequencer64.  Then open File / Options, and go to the Keyboard tab.
- *      Fix the Start, Stop, and Pause fields as desired.  The recommended
- *      character for Pause is the period (".").
+ *      As of version 0.9.11, a "Pause" key is added.  One must fix up the
+ *      sequencer64.rc file.  First, run Sequencer64.  Then open File /
+ *      Options, and go to the Keyboard tab.  Fix the Start, Stop, and Pause
+ *      fields as desired.  The recommended character for Pause is the period
+ *      (".").
  *
  *      Or better yet, add a Pause line to the sequencer.rc file after the
  *      "stop sequencer" line:
@@ -1961,7 +1961,6 @@ optionsfile::write_midi_control
             file << "# reserved for expansion:\n";      // still true???
             break;
 
-#ifdef SEQ64_USE_MIDI_PLAYLIST
         case c_midi_control_reserved_1:     // 84
             file << "# Reserved for expansion 1\n";
             break;
@@ -2019,8 +2018,6 @@ optionsfile::write_midi_control
          *     file << "# Reserved for expansion 9\n";
          *     break;
          */
-
-#endif  // SEQ64_USE_MIDI_PLAYLIST
 
         /*
          * case g_midi_control_limit:  74/8496, last value, not written.

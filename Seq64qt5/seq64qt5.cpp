@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-10-19
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -156,7 +156,6 @@ main (int argc, char * argv [])
         std::string errmsg = "unspecified error";
         if (ok)
         {
-#ifdef SEQ64_USE_MIDI_PLAYLIST
             std::string playlistname = seq64::rc().playlist_filespec();
             if (seq64::rc().playlist_active() && ! playlistname.empty())
             {
@@ -176,7 +175,6 @@ main (int argc, char * argv [])
                     ok = true;                      /* avoid early exit     */
                 }
             }
-#endif
             if (optionindex < argc)                 /* MIDI filename given? */
             {
                 std::string fname = argv[optionindex];

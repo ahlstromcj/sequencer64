@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-11
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -110,7 +110,6 @@
 #include <gtkmm/adjustment.h>
 #include <gtkmm/menu.h>
 
-#include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.     */
 #include "event.hpp"
 #include "gdk_basic_keys.h"
@@ -195,9 +194,7 @@ seqroll::seqroll
     m_snap                  (snap),
     m_note_length           (0),
     m_scale                 (0),
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
     m_chord                 (0),
-#endif
     m_key                   (0),
     m_adding                (false),
     m_selecting             (false),
@@ -468,17 +465,9 @@ seqroll::update_background ()
 {
     draw_rectangle(m_background, white_paint(), 0, 0, m_window_x, m_window_y);
 
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
     bool fruity_lines = true;
     m_gc->set_foreground(light_grey_paint());       /* draw horz grey lines */
     set_line(Gdk::LINE_SOLID);
-#else
-    bool fruity_lines = rc().interaction_method() == e_fruity_interaction;
-    m_gc->set_foreground(grey_paint());             /* draw horz grey lines */
-    set_line(Gdk::LINE_ON_OFF_DASH);
-    gint8 dash = 1;
-    m_gc->set_dashes(0, &dash, 1);
-#endif
 
     int octkey = SEQ64_OCTAVE_SIZE - m_key;         /* used three times     */
     for (int key = 0; key < (m_window_y / c_key_y) + 1; ++key)
@@ -499,13 +488,8 @@ seqroll::update_background ()
             }
             else if ((modkey % SEQ64_OCTAVE_SIZE) == (SEQ64_OCTAVE_SIZE-1))
             {
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
                 m_gc->set_foreground(light_grey_paint()); /* lighter line   */
                 set_line(Gdk::LINE_SOLID);
-#else
-                m_gc->set_foreground(grey_paint());       /* lighter lines  */
-                set_line(Gdk::LINE_ON_OFF_DASH);
-#endif
             }
         }
         int y = key * c_key_y;
@@ -549,11 +533,7 @@ seqroll::update_background ()
     {
         if (tick % ticks_per_major == 0)
         {
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
             set_line(Gdk::LINE_SOLID, 2);
-#else
-            set_line(Gdk::LINE_SOLID);
-#endif
             m_gc->set_foreground(black_paint());    /* solid line every beat */
         }
         else if (tick % ticks_per_beat == 0)
@@ -564,8 +544,6 @@ seqroll::update_background ()
         else
         {
             int tick_snap = tick - (tick % m_snap);
-
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
             if (tick == tick_snap)
             {
                 set_line(Gdk::LINE_SOLID);
@@ -578,23 +556,10 @@ seqroll::update_background ()
                 gint8 dash = 1;
                 m_gc->set_dashes(0, &dash, 1);
             }
-#else
-            set_line(Gdk::LINE_ON_OFF_DASH);
-            if (tick == tick_snap)
-                m_gc->set_foreground(dark_grey_paint());
-            else
-                m_gc->set_foreground(grey_paint());
-
-            gint8 dash = 1;
-            m_gc->set_dashes(0, &dash, 1);
-#endif
         }
         int x = (tick / m_zoom) - m_scroll_offset_x;
         draw_line(m_background, x, 0, x, m_window_y);
     }
-#if ! defined SEQ64_SOLID_PIANOROLL_GRID
-    set_line(Gdk::LINE_SOLID);                  /* reset the line style     */
-#endif
 }
 
 /**
@@ -632,8 +597,6 @@ seqroll::set_scale (int scale)
     }
 }
 
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-
 /**
  *  Sets the current chord to the given value.
  *
@@ -647,8 +610,6 @@ seqroll::set_chord (int chord)
     if (m_chord != chord)
         m_chord = chord;
 }
-
-#endif  // SEQ64_STAZED_CHORD_GENERATOR
 
 /**
  *  Sets the music key to the given value, and then resets the view.
@@ -1507,11 +1468,9 @@ seqroll::update_mouse_pointer (bool isadding)
 bool
 seqroll::add_note (midipulse tick, int note, bool paint)
 {
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
     if (m_chord > 0)
         return m_seq.add_chord(m_chord, tick, note_off_length(), note);
     else
-#endif
         return m_seq.add_note(tick, note_off_length(), note, paint);
 }
 
@@ -1879,12 +1838,11 @@ seqroll::motion_notify (GdkEventMotion * ev)
     }
     else if (m_painting)
     {
-
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
         if (m_chord != 0)               /* chord, don't allow move painting */
+        {
             result = true;
+        }
         else
-#endif
         {
             snap_x(m_current_x);
             convert_xy(m_current_x, m_current_y, tick, note);

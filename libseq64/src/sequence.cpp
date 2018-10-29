@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-26
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -3180,12 +3180,9 @@ sequence::add_note
     return result;
 }
 
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-
 /**
  *  Adds a chord of a given length and  note value, at a given tick
- *  location.  If SEQ64_STAZED_CHORD_GENERATOR is not defined, it
- *  devolves to add_note().
+ *  location.
  *
  * \todo
  *      Add the ability to preserve the incoming velocity.
@@ -3233,8 +3230,6 @@ sequence::add_chord (int chord, midipulse tick, midipulse len, int note)
 
     return result;
 }
-
-#endif
 
 /**
  *  Adds an event to the internal event list in a sorted manner.  Then it

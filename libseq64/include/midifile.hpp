@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-26
+ * \updates       2018-10-29
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -54,10 +54,10 @@
 
 /**
  *  A feature to use the song/performance triggers to write out the MIDI
- *  data as laid out in the perfedit window.
+ *  data as laid out in the perfedit window.  Now permanent.
+ *
+ *      #define SEQ64_STAZED_EXPORT_SONG
  */
-
-#define SEQ64_STAZED_EXPORT_SONG
 
 /**
  *  A manifest constant for controlling the length of a line-reading
@@ -308,9 +308,7 @@ public:
     virtual bool parse (perform & p, int screenset = 0, bool importing = false);
     virtual bool write (perform & p, bool doseqspec = true);
 
-#ifdef SEQ64_STAZED_EXPORT_SONG
     bool write_song (perform & p);
-#endif
 
     /**
      * \getter m_error_message

@@ -3,8 +3,8 @@
 ; File:         Seq64Setup.nsi
 ; Author:       Chris Ahlstrom
 ; Date:         2018-05-26
-; Updated:      2018-09-29
-; Version:      0.96.0
+; Updated:      2018-10-29
+; Version:      0.96.1
 ;
 ;       Installation is silent.
 ;
@@ -20,7 +20,7 @@
 ;       command to build the Release version of Seq64 using qmake and make,
 ;       and to create a 7-Zip "release" package that can be unpacked in
 ;       the root "sequencer64" directory.
-;           $ build_release_package.bat
+;           C:\Projects\sequencer64 build_release_package.bat
 ;    -  The resulting package is
 ;
 ;    -  Then run NSIS:

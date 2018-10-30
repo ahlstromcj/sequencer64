@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-29
+ * \updates       2018-10-30
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -2944,8 +2944,6 @@ sequence::change_event_data_relative
     return result;
 }
 
-#ifdef SEQ64_STAZED_LFO_SUPPORT
-
 /**
  *  Modifies data events according to the parameters active in the LFO window
  *  (lfownd).
@@ -3049,8 +3047,6 @@ sequence::change_event_data_lfo
         }
     }
 }
-
-#endif   // SEQ64_STAZED_LFO_SUPPORT
 
 /**
  *  Adds a note of a given length and  note value, at a given tick

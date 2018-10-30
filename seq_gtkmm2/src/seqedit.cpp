@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-29
+ * \updates       2018-10-30
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -135,11 +135,7 @@
 #include "sequence.hpp"
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
 #include "user_instrument.hpp"          /* seq64::user_instrument       */
-
-#ifdef SEQ64_STAZED_LFO_SUPPORT
 #include "lfownd.hpp"
-#endif
-
 #include "pixmaps/bus.xpm"
 #include "pixmaps/down.xpm"
 #include "pixmaps/drum.xpm"
@@ -330,10 +326,8 @@ seqedit::seqedit
                 )
         )
     ),
-#ifdef SEQ64_STAZED_LFO_SUPPORT
     m_button_lfo        (manage(new Gtk::Button("LFO"))),
     m_lfo_wnd           (new lfownd(p, m_seq, *m_seqdata_wid)),
-#endif
     m_table             (manage(new Gtk::Table(7, 4, false))),
     m_vbox              (manage(new Gtk::VBox(false, 2))),
     m_hbox              (manage(new Gtk::HBox(false, 2))),
@@ -476,13 +470,11 @@ seqedit::seqedit
     dhbox->pack_start(*m_button_minidata, false, false);
     dhbox->pack_start(*m_entry_data, true, true);
 
-#ifdef SEQ64_STAZED_LFO_SUPPORT
     dhbox->pack_start(*m_button_lfo, false, false);
     m_button_lfo->signal_clicked().connect
     (
         mem_fun(m_lfo_wnd, &lfownd::toggle_visible)
     );
-#endif
 
     m_toggle_transpose->add(*manage(new PIXBUF_IMAGE(transpose_xpm)));
     m_toggle_transpose->set_focus_on_click(false); // set_can_focus(false);
@@ -3000,10 +2992,7 @@ bool
 seqedit::on_delete_event (GdkEventAny *)
 {
     handle_close();
-
-#ifdef SEQ64_STAZED_LFO_SUPPORT
     delete m_lfo_wnd;
-#endif
 
     /*
      * We need to see if this object is in the map of seqedits so that we can
@@ -3139,12 +3128,10 @@ seqedit::on_key_press_event (GdkEventKey * ev)
             set_zoom(m_zoom * 2);
             result = true;
         }
-#ifdef SEQ64_STAZED_LFO_SUPPORT
         else if (k.is(SEQ64_l))
         {
             m_lfo_wnd->toggle_visible();
         }
-#endif
     }
     else if (is_shift_key(ev))
     {

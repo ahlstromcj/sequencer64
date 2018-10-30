@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-10-29
+dnl \update        2018-10-30
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -637,24 +637,6 @@ else
     AC_MSG_NOTICE([Highlighting empty sequences disabled.]);
 fi
 
-dnl Support for using the event editor.  It can cause issues if used, and adds
-dnl to the size of the application, so we want the option to disable it.  We
-dnl leave it in the code, but comment out the menu entries to access it, until
-dnl we can work out the issues.  Ah, finally worked them out, by adding calls
-dnl to verify_and_link().
-
-AC_ARG_ENABLE(eveditor,
-    [AS_HELP_STRING(--disable-eveditor, [Disable using the event editor])],
-    [eveditor=$enableval],
-    [eveditor=yes])
-
-if test "$eveditor" != "no"; then
-    AC_DEFINE(ENABLE_EVENT_EDITOR, 1, [Define to enable the event editor])
-    AC_MSG_RESULT([Event editor enabled.]);
-else
-    AC_MSG_NOTICE([Event editor disabled.]);
-fi
-
 dnl Support for multiple main windows. If enabled, SEQ64_MULTI_MAINWID defined.
 
 AC_ARG_ENABLE(multiwid,
@@ -688,36 +670,6 @@ dnl Support for using the stazed JACK support is now permanent.
 dnl No need to mention it, because we might disable JACK entirely
 dnl during configuration.
 dnl
-dnl AC_MSG_RESULT([Seq32 JACK support permanently enabled, if JACK is enabled.]);
-dnl
-dnl Support for using the stazed LFO window support.  Now enabled by default.
-
-AC_ARG_ENABLE(lfo,
-    [AS_HELP_STRING(--disable-lfo, [Disable using Seq32 LFO window])],
-    [lfo=$enableval],
-    [lfo=yes])
-
-if test "$lfo" != "no"; then
-    AC_DEFINE(STAZED_LFO_SUPPORT, 1, [Define to enable Seq32 LFO window support])
-    AC_MSG_RESULT([Seq32 LFO window support enabled.]);
-else
-    AC_MSG_NOTICE([Seq32 LFO window support disabled.]);
-fi
-
-dnl Support for using the stazed chord generator.
-
-AC_ARG_ENABLE(chords,
-    [AS_HELP_STRING(--disable-chords, [Disable using the chord generator])],
-    [chords=$enableval],
-    [chords=yes])
-
-if test "$chords" != "no"; then
-    AC_DEFINE(STAZED_CHORD_GENERATOR, 1, [Define to enable the chord generator])
-    AC_MSG_RESULT([Chord generator enabled.])
-else
-    AC_MSG_NOTICE([Chord generator disabled.]);
-fi
-
 dnl Support for using jean-emmanuel's scrollbars in the patterns panel.  We will
 dnl call this panel "main" for short.
 
@@ -752,7 +704,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-10-29"
+#define VERSION_DATE_SHORT "2018-10-30"
 #define VERSION "0.96.1"
 
 )

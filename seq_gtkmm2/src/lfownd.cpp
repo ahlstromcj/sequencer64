@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq42 team; modifications by Chris Ahlstrom
  * \date          2016-07-30
- * \updates       2018-07-03
+ * \updates       2018-10-30
  * \license       GNU GPLv2 or above
  *
  *  Created on: 22 mar 2013
@@ -239,7 +239,6 @@ lfownd::toggle_visible ()
 void
 lfownd::scale_lfo_change ()
 {
-#ifdef SEQ64_STAZED_LFO_SUPPORT
     int wtype = int(m_scale_wave->get_value());
     m_value = m_scale_value->get_value();
     m_range = m_scale_range->get_value();
@@ -254,7 +253,6 @@ lfownd::scale_lfo_change ()
     );
     m_seqdata.update_pixmap();
     m_seqdata.draw_pixmap_on_window();
-#endif
 }
 
 /**
@@ -267,13 +265,11 @@ lfownd::scale_lfo_change ()
 bool
 lfownd::on_focus_out_event (GdkEventFocus * /* p0 */)
 {
-#ifdef SEQ64_STAZED_LFO_SUPPORT
     if (m_seq.get_hold_undo())
     {
         m_seq.push_undo(true);
         m_seq.set_hold_undo(false);
     }
-#endif
     return true;
 }
 

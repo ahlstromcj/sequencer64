@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-29
+ * \updates       2018-10-30
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -82,10 +82,7 @@ namespace seq64
     class seqmenu;
     class seqroll;
     class seqtime;
-
-#ifdef SEQ64_STAZED_LFO_SUPPORT
     class lfownd;
-#endif
 
 /**
  *  Mouse actions, for the Pattern Editor.
@@ -278,12 +275,8 @@ private:
 
     seqroll * m_seqroll_wid;
 
-#ifdef SEQ64_STAZED_LFO_SUPPORT
-
     /**
-     *  The LFO button in the pattern editor.  This item will always be an
-     *  optional part of the build, enabled by defining
-     *  SEQ64_STAZED_LFO_SUPPORT.
+     *  The LFO button in the pattern editor.
      */
 
     Gtk::Button * m_button_lfo;
@@ -295,8 +288,6 @@ private:
      */
 
     lfownd * m_lfo_wnd;
-
-#endif
 
     /**
      *  More user-interface elements.  These items provide a number of buttons

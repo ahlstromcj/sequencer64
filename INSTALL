@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.96.1 and above
 Chris Ahlstrom
-2015-09-10 to 2018-10-29
+2015-09-10 to 2018-10-30
 
 Getting Sequencer64 requires building the code or going to the
 sequencer64-packages site on GitHub.  The bootstrapping setup is primarily
@@ -291,14 +291,6 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         clock fix from Seq24 v. 0.9.3.  It is now working pretty well, and
         probably the best option now.
 
-    --disable-lfo
-
-        Undefines the SEQ64_STAZED_LFO_SUPPORT macro, which is now defined by
-        default.  When enable, the pattern editor includes an "LFO" button
-        that brings up a small window to allow for the modulation of event
-        data (in the data pane) by simple periodic waveforms.  This feature
-        was adopted and improved from the Seq32 project.
-
     --enable-portmidi
     --enable-rtmidi
     --enable-alsamidi
@@ -475,11 +467,6 @@ MANUALLY-DEFINED MACROS IN CODE:
         that one can choose the mode directly, rather than focussing the
         main window versus the song-editor window.  Comes from the Seq32
         project.
-
-    SEQ64_STAZED_LFO_SUPPORT:
-
-        Enables a provisional windows to allow adding low-frequency modulation
-        to the pattern editor data panel.
 
     SEQ64_USE_DEBUG_OUTPUT:
 

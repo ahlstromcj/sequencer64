@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-10-29
+ * \updates       2018-10-30
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1649,15 +1649,11 @@ public:
         midibyte status, midibyte cc,
         int newval, bool useundo = false
     );
-
-#ifdef SEQ64_STAZED_LFO_SUPPORT
     void change_event_data_lfo
     (
         double value, double range, double speed, double phase,
         wave_type_t wave, midibyte status, midibyte cc, bool useundo = false
     );
-#endif
-
     void increment_selected (midibyte status, midibyte /*control*/);
     void decrement_selected (midibyte status, midibyte /*control*/);
     void grow_selected (midipulse deltatick);

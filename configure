@@ -862,11 +862,8 @@ enable_cli
 enable_alsamidi
 enable_portmidi
 enable_highlight
-enable_eveditor
 enable_multiwid
 enable_statistics
-enable_lfo
-enable_chords
 enable_mainscroll
 enable_coverage
 enable_profile
@@ -1552,11 +1549,8 @@ Optional Features:
   --enable-alsamidi       Enable legacy ALSA build (deprecated)
   --enable-portmidi       Enable PortMidi build (for testing)
   --disable-highlight     Disable highlighting empty sequences
-  --disable-eveditor      Disable using the event editor
   --disable-multiwid      Disable multiple main window support
   --enable-statistics     Enable statistics gathering
-  --disable-lfo           Disable using Seq32 LFO window
-  --disable-chords        Disable using the chord generator
   --enable-mainscroll     Enable main pattern scrollbars
   --enable-coverage=(no/yes) Turn on a test-coverage build (default=no)
   --enable-profile=(no/yes/gprof/prof) Turn on profiling builds (default=no, yes=gprof)
@@ -19681,26 +19675,6 @@ $as_echo "$as_me: Highlighting empty sequences disabled." >&6;};
 fi
 
 
-# Check whether --enable-eveditor was given.
-if test "${enable_eveditor+set}" = set; then :
-  enableval=$enable_eveditor; eveditor=$enableval
-else
-  eveditor=yes
-fi
-
-
-if test "$eveditor" != "no"; then
-
-$as_echo "#define ENABLE_EVENT_EDITOR 1" >>confdefs.h
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: Event editor enabled." >&5
-$as_echo "Event editor enabled." >&6; };
-else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Event editor disabled." >&5
-$as_echo "$as_me: Event editor disabled." >&6;};
-fi
-
-
 # Check whether --enable-multiwid was given.
 if test "${enable_multiwid+set}" = set; then :
   enableval=$enable_multiwid; multiwid=$enableval
@@ -19738,46 +19712,6 @@ $as_echo "Statistics gathering enabled." >&6; };
 else
     { $as_echo "$as_me:${as_lineno-$LINENO}: Statistics gathering disabled." >&5
 $as_echo "$as_me: Statistics gathering disabled." >&6;};
-fi
-
-
-# Check whether --enable-lfo was given.
-if test "${enable_lfo+set}" = set; then :
-  enableval=$enable_lfo; lfo=$enableval
-else
-  lfo=yes
-fi
-
-
-if test "$lfo" != "no"; then
-
-$as_echo "#define STAZED_LFO_SUPPORT 1" >>confdefs.h
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: Seq32 LFO window support enabled." >&5
-$as_echo "Seq32 LFO window support enabled." >&6; };
-else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Seq32 LFO window support disabled." >&5
-$as_echo "$as_me: Seq32 LFO window support disabled." >&6;};
-fi
-
-
-# Check whether --enable-chords was given.
-if test "${enable_chords+set}" = set; then :
-  enableval=$enable_chords; chords=$enableval
-else
-  chords=yes
-fi
-
-
-if test "$chords" != "no"; then
-
-$as_echo "#define STAZED_CHORD_GENERATOR 1" >>confdefs.h
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: Chord generator enabled." >&5
-$as_echo "Chord generator enabled." >&6; }
-else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Chord generator disabled." >&5
-$as_echo "$as_me: Chord generator disabled." >&6;};
 fi
 
 

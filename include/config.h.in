@@ -1,6 +1,6 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-#define VERSION_DATE_SHORT "2018-10-26"
+#define VERSION_DATE_SHORT "2018-10-30"
 #define VERSION "0.96.1"
 
 
@@ -24,9 +24,6 @@
 /* Define DBGFLAGS=-ggdb -O0 -DDEBUG -fno-inline if debug support is wanted.
    */
 #undef DBGFLAGS
-
-/* Define to enable the event editor */
-#undef ENABLE_EVENT_EDITOR
 
 /* Define to 1 if you have the <ctype.h> header file. */
 #undef HAVE_CTYPE_H
@@ -151,9 +148,6 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Define to enable pausing and pause button */
-#undef PAUSE_SUPPORT
-
 /* Indicates if PortMidi support is enabled */
 #undef PORTMIDI_SUPPORT
 
@@ -169,12 +163,6 @@
 
 /* Define to enable statistics gathering */
 #undef STATISTICS_SUPPORT
-
-/* Define to enable the chord generator */
-#undef STAZED_CHORD_GENERATOR
-
-/* Define to enable Seq32 LFO window support */
-#undef STAZED_LFO_SUPPORT
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-21
+ * \updates       2018-10-30
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -145,14 +145,11 @@ seqmenu::popup_menu ()
                 MenuElem("Edit...", mem_fun(*this, &seqmenu::seq_edit))
             );
 
-#if SEQ64_ENABLE_EVENT_EDITOR
-
             /**
-             * The new event editor seems to create far-reaching problems that
-             * we do not yet understand, so it is now possible to disable it at
-             * build time.  We have mitigated most of those problems by not
-             * allowing both a seq_edit() and a seq_event_edit() at the same
-             * time.
+             * The event editor seems to create problems that we do not yet
+             * understand, so it is now possible to disable it at build time.
+             * We have mitigated most of those problems by not allowing both a
+             * seq_edit() and a seq_event_edit() at the same time.
              */
 
             m_menu->items().push_back
@@ -162,7 +159,6 @@ seqmenu::popup_menu ()
                     "Event Edit...", mem_fun(*this, &seqmenu::seq_event_edit)
                 )
             );
-#endif
             m_menu->items().push_back(SeparatorElem());
         }
         m_menu->items().push_back

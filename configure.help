@@ -1,4 +1,4 @@
-`configure' configures Sequencer64 0.94.7 to adapt to many kinds of systems.
+`configure' configures Sequencer64 0.96.1 to adapt to many kinds of systems.
 
 Usage: ./configure [OPTION]... [VAR=VALUE]...
 
@@ -86,20 +86,15 @@ Optional Features:
   --disable-jack          Disable JACK support
   --disable-jack-session  Disable JACK session support
   --enable-lash           Enable LASH support (deprecated)
-  --enable-rtmidi         Enable rtmidi build, which is the default
+  --enable-rtmidi         Enable rtmidi build, the default engine
   --disable-alsatest      Do not try to compile and run a test Alsa program
-  --enable-qtmidi         Enable Qt5/rtmidi build
+  --enable-qt             Enable Qt5 user-interface build
   --enable-cli            Enable rtmidi command-line build
-  --enable-alsamidi       Enable standard ALSA build
-  --enable-portmidi       Enable PortMidi build (deprecated)
+  --enable-alsamidi       Enable legacy ALSA build (deprecated)
+  --enable-portmidi       Enable PortMidi build (for testing)
   --disable-highlight     Disable highlighting empty sequences
-  --disable-eveditor      Disable using the event editor
-  --disable-pause         Disable pausing sequences and pause button
   --disable-multiwid      Disable multiple main window support
   --enable-statistics     Enable statistics gathering
-  --disable-lfo           Disable using Seq32 LFO window
-  --disable-chords        Disable using the chord generator
-  --disable-transpose     Disable using global transpose
   --enable-mainscroll     Enable main pattern scrollbars
   --enable-coverage=(no/yes) Turn on a test-coverage build (default=no)
   --enable-profile=(no/yes/gprof/prof) Turn on profiling builds (default=no, yes=gprof)
@@ -140,14 +135,14 @@ Some influential environment variables:
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
-  GTKMM_CFLAGS
-              C compiler flags for GTKMM, overriding pkg-config
-  GTKMM_LIBS  linker flags for GTKMM, overriding pkg-config
   JACK_CFLAGS C compiler flags for JACK, overriding pkg-config
   JACK_LIBS   linker flags for JACK, overriding pkg-config
   LASH_CFLAGS C compiler flags for LASH, overriding pkg-config
   LASH_LIBS   linker flags for LASH, overriding pkg-config
   XMKMF       Path to xmkmf, Makefile generator for X Window System
+  GTKMM_CFLAGS
+              C compiler flags for GTKMM, overriding pkg-config
+  GTKMM_LIBS  linker flags for GTKMM, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.

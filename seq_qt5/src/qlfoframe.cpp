@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-26
+ * \updates       2018-10-30
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -321,7 +321,6 @@ qlfoframe::phase_text_change ()
 void
 qlfoframe::scale_lfo_change (int /*v*/)
 {
-#ifdef SEQ64_STAZED_LFO_SUPPORT
     m_value = to_double(ui->m_value_slider->value());
     m_range = to_double(ui->m_range_slider->value());
     m_speed = to_double(ui->m_speed_slider->value());
@@ -342,7 +341,6 @@ qlfoframe::scale_lfo_change (int /*v*/)
     ui->m_speed_text->setText(tmp);
     snprintf(tmp, sizeof tmp, "%g", m_phase);
     ui->m_phase_text->setText(tmp);
-#endif
 }
 
 #if 0
@@ -359,13 +357,11 @@ qlfoframe::scale_lfo_change (int /*v*/)
 bool
 qlfoframe::on_focus_out_event (GdkEventFocus * /* p0 */)
 {
-#ifdef SEQ64_STAZED_LFO_SUPPORT
     if (m_seq.get_hold_undo())
     {
         m_seq.push_undo(true);
         m_seq.set_hold_undo(false);
     }
-#endif
     return true;
 }
 

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-10-29
+ * \updates       2018-10-30
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -315,7 +315,11 @@ s_lookup_zoom (int zoom)
 /**
  *  Looks up a chord name and returns its index.  Note that the chord names
  *  are defined in the scales.h file.
+ *
+ *  CURRENTLY NOT NEEDED.  Macroed out to avoid a warning.
  */
+
+#ifdef USE_S_LOOKUP_CHORD
 
 static int
 s_lookup_chord (const std::string & chordname)
@@ -331,6 +335,8 @@ s_lookup_chord (const std::string & chordname)
     }
     return result;
 }
+
+#endif  // USE_S_LOOKUP_CHORD
 
 /**
  *
@@ -976,19 +982,15 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     repopulate_mini_event_menu(buss, channel);
 
     /*
-     * LFO Button.  This window is not yet ported to Qt 5.
+     * LFO Button.
      */
 
-#ifdef SEQ64_STAZED_LFO_SUPPORT
      ui->m_button_lfo->setEnabled(true);
      connect
      (
         ui->m_button_lfo, SIGNAL(clicked(bool)),
         this, SLOT(show_lfo_frame())
      );
-#else
-     ui->m_button_lfo->setEnabled(false);
-#endif
 
     /*
      * Enable (unmute) Play Button.

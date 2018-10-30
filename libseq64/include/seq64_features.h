@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-10-29
+ * \updates       2018-10-30
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -255,11 +255,6 @@
  *    - SEQ64_JACK_SESSION
  *    - SEQ64_JACK_SUPPORT
  *    - SEQ64_LASH_SUPPORT
- *    - SEQ64_STAZED_LFO_SUPPORT
- *      Enables using the lfownd dialog to control the envelope of certain events
- *      in seqedit's seqdata pane.  We're not too keen on the user interface,
- *      though.  However, it is now a configure option, and is now enabled by
- *      default.
  *    - SEQ64_MULTI_MAINWID
  *      Provides support for up to a 3 x 2 array of mainwids.  Now a configure
  *      option.

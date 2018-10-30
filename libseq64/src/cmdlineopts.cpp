@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-10-13
+ * \updates       2018-10-30
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -1167,9 +1167,7 @@ build_details ()
 #ifdef SEQ64_PORTMIDI_SUPPORT
         << "PortMIDI support on" << std::endl
 #endif
-#ifdef SEQ64_ENABLE_EVENT_EDITOR
         << "Event editor on" << std::endl
-#endif
 #ifdef SEQ64_USE_EVENT_MAP
         << "Event multimap (vs list) on" << std::endl
 #endif
@@ -1193,9 +1191,7 @@ build_details ()
         << "MIDI vector (vs list) on" << std::endl
 #endif
         << "Seq32 chord generator on" << std::endl
-#ifdef SEQ64_STAZED_LFO_SUPPORT
         << "Seq32 LFO window on" << std::endl
-#endif
         << "Seq32 menu buttons on" << std::endl
         << "Seq32 transpose on" << std::endl
         << "BPM Tap button on" << std::endl

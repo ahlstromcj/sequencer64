@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-04-08
- * \updates       2018-08-26
+ * \updates       2018-10-30
  * \license       GNU GPLv2 or above
  *
  *  Qt Portmidi Linux version.
@@ -103,18 +103,6 @@
 
 #ifndef SEQ64_DBGFLAGS
 #define SEQ64_DBGFLAGS -O3 -DDEBUG -D_DEBUG -fno-inline
-#endif
-
-/*
- * Define to enable the event editor.
- *
- *      NOT AVAILABLE YET IN QT USER INTERFACE.
- */
-
-#ifndef SEQ64_QT5_USER_INTERFACE
-#ifndef SEQ64_ENABLE_EVENT_EDITOR
-#define SEQ64_ENABLE_EVENT_EDITOR 1
-#endif
 #endif
 
 /* Define to 1 if you have the <ctype.h> header file. */
@@ -378,14 +366,6 @@
 
 /* Define to enable statistics gathering */
 /* #undef STATISTICS_SUPPORT */
-
-/*
- * Define to enable Seq32 LFO window support.
- */
-
-#ifndef SEQ64_STAZED_LFO_SUPPORT
-#define SEQ64_STAZED_LFO_SUPPORT 1
-#endif
 
 /*
  * Define to 1 if you have the ANSI C header files.

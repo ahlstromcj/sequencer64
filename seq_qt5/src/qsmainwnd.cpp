@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-29
+ * \updates       2018-10-31
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -402,12 +402,12 @@ qsmainwnd::qsmainwnd
         this, SLOT(learn_toggle())
     );
     qt_set_icon(learn_xpm, ui->button_learn);
-    ui->button_learn->setToolTip
-    (
-        "Mute Group Learn.\n"
-        "Click the 'L' button, then press a mute-group key to store\n"
-        "the mute state of the sequences in the Shift of that key.\n"
-    );
+    // ui->button_learn->setToolTip
+    // (
+    //     "Mute Group Learn.\n"
+    //     "Click the 'L' button, then press a mute-group key to store\n"
+    //     "the mute state of the sequences in the Shift of that key.\n"
+    // );
 
     /*
      * Tap BPM button.
@@ -418,12 +418,12 @@ qsmainwnd::qsmainwnd
         ui->button_tap_bpm, SIGNAL(clicked(bool)),
         this, SLOT(tap())
     );
-    ui->button_tap_bpm->setToolTip
-    (
-        "Tap in time to set the beats per minute (BPM) value.\n"
-        "After 5 seconds of no taps, the tap-counter will reset to 0.\n"
-        "The default keystroke for tap-BPM is F9."
-    );
+    // ui->button_tap_bpm->setToolTip
+    // (
+    //     "Tap in time to set the beats per minute (BPM) value.\n"
+    //     "After 5 seconds of no taps, the tap-counter will reset to 0.\n"
+    //     "The default keystroke for tap-BPM is F9."
+    // );
 
     /*
      * Keep Queue button.
@@ -434,11 +434,11 @@ qsmainwnd::qsmainwnd
         ui->button_keep_queue, SIGNAL(clicked(bool)),
         this, SLOT(queue_it())
     );
-    ui->button_keep_queue->setToolTip
-    (
-        "Shows and toggles the keep-queue status.\n"
-        "Does not show one-shot queue status."
-    );
+    // ui->button_keep_queue->setToolTip
+    // (
+    //     "Shows and toggles the keep-queue status.\n"
+    //     "Does not show one-shot queue status."
+    // );
     ui->button_keep_queue->setCheckable(true);
 
     /*

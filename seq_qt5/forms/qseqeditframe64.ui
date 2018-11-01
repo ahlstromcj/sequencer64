@@ -259,6 +259,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Chord generation. Increments to next value.</string>
+       </property>
        <property name="text">
         <string>Ch</string>
        </property>
@@ -290,6 +293,9 @@
          <width>32</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Resets output MIDI buss number to 0.</string>
        </property>
        <property name="text">
         <string>Buss</string>
@@ -335,6 +341,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Resets output MIDI channel number to 1.</string>
+       </property>
        <property name="text">
         <string>C</string>
        </property>
@@ -371,6 +380,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Undo the last operation(s).</string>
+       </property>
        <property name="text">
         <string>U</string>
        </property>
@@ -383,6 +395,9 @@
          <width>24</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Redo the last operation(s).</string>
        </property>
        <property name="text">
         <string>R</string>
@@ -397,6 +412,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Quantize the selected notes.</string>
+       </property>
        <property name="text">
         <string>Q</string>
        </property>
@@ -409,6 +427,9 @@
          <width>24</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Brings up the Tools popup menus.</string>
        </property>
        <property name="text">
         <string>T</string>
@@ -423,6 +444,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>If active, the pattern piano roll scrolls to follow the progress bar in playback.</string>
+       </property>
        <property name="text">
         <string>F</string>
        </property>
@@ -435,6 +459,9 @@
          <width>34</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Snap size. Resets to default snap size.</string>
        </property>
        <property name="text">
         <string>S</string>
@@ -457,6 +484,9 @@
          <width>64</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Selects the snap size for drawing events.</string>
        </property>
       </widget>
      </item>
@@ -490,6 +520,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Selects the note length for drawing notes.</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -499,6 +532,9 @@
          <width>24</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>&quot;Zoom level. Resets to the default zoom value, 2.&quot;</string>
        </property>
        <property name="text">
         <string>Z</string>
@@ -519,6 +555,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Zoom level in 'pixels:ticks', the number of ticks or pulses represented by 1 pixel.  A lower value zooms 'in'.</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -528,6 +567,9 @@
          <width>24</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Musical key selection. Resets key selection to 'C'.</string>
        </property>
        <property name="text">
         <string>K</string>
@@ -542,6 +584,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Selects the desired musical key to apply.</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -551,6 +596,9 @@
          <width>32</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Musical scale selection. Resets the scale selection to none.</string>
        </property>
        <property name="text">
         <string>Scale</string>
@@ -571,6 +619,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Selects the musical scale to show on the piano roll background.</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -580,6 +631,9 @@
          <width>34</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Background sequence popup menu.</string>
        </property>
        <property name="text">
         <string>Seq</string>
@@ -608,6 +662,9 @@
          <width>148</width>
          <height>16777215</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>The other pattern/sequence to show on the background of the piano roll.</string>
        </property>
        <property name="text">
         <string>Off</string>
@@ -857,6 +914,9 @@
            <height>32</height>
           </size>
          </property>
+         <property name="toolTip">
+          <string>Toggles the drum mode of event entry.</string>
+         </property>
          <property name="text">
           <string>Drum</string>
          </property>
@@ -923,6 +983,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Event to show in data panel, popup menu.</string>
+       </property>
        <property name="text">
         <string>Event</string>
        </property>
@@ -935,6 +998,9 @@
          <width>32</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Present events to show, popup menu.</string>
        </property>
        <property name="text">
         <string>Data</string>
@@ -952,6 +1018,9 @@
          <height>16777215</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Displays the name of the event being shown.</string>
+       </property>
        <property name="text">
         <string>Note On</string>
        </property>
@@ -963,7 +1032,7 @@
      <item>
       <widget class="QPushButton" name="m_button_lfo">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="maximumSize">
         <size>
@@ -972,7 +1041,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>LFO window not yet ready.</string>
+        <string>Brings up an LFO window to modulate the data values.</string>
        </property>
        <property name="text">
         <string>LFO</string>
@@ -992,6 +1061,9 @@
          <width>40</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>When active, the pattern is unmuted.</string>
        </property>
        <property name="text">
         <string>Play</string>
@@ -1018,6 +1090,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>When active, incoming MIDI goes through to output.</string>
+       </property>
        <property name="text">
         <string>Thru</string>
        </property>
@@ -1042,6 +1117,9 @@
          <width>42</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>When active, incoming MIDI is recorded.</string>
        </property>
        <property name="text">
         <string>Record</string>
@@ -1068,6 +1146,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>When active, incoming MIDI is quantize recorded.</string>
+       </property>
        <property name="text">
         <string>QRecord</string>
        </property>
@@ -1090,6 +1171,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Select recording type for loop patterns: merge events (legacy); overwrite events; or expand the pattern length while recording.</string>
+       </property>
        <property name="currentText">
         <string/>
        </property>
@@ -1102,6 +1186,9 @@
          <width>28</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Resets recording volume to 'Free', which means whatever volume is incoming.</string>
        </property>
        <property name="text">
         <string>Vol</string>

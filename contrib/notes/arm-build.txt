@@ -1,0 +1,37 @@
+
+Date: Mon, 08 Oct 2018 16:24:32 -0700
+From: jonaseberle <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] Seq64 launching without GUI on ARM
+        (Raspberry Pi) platform (#160)
+
+[-- Autoview using elinks -dump '/tmp/mutt.html' --]
+   btw, 0.96 does not have the GUI problem. But 0.96 on arm needs this block
+   in the Makefile
+
+ .c.lo:
+       $(AM_V_CC)$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+       $(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+
+   (thanks to [1]https://stackoverflow.com/a/21642830/2819581)
+   or it will moan that it's missing event_list.lo
+
+   Thanks to the developers. I am majorly impressed by the build system!
+
+-MD
+
+    Similar to "-M -MF file".  Generates a dependency output file as a
+    side-effect of compilation.
+
+-MP
+
+    Cpp will add a phony target for each dependency other than the main file,
+    causing each to depend on nothing.
+
+-MT target
+
+    Change the target of the rule emitted by dependency generation.
+    Sets the target exactly to the specified string.
+
+    

@@ -434,7 +434,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
         this, SLOT(increment_beats_per_measure())
     );
 #else
-    ui->m_button_bpm->setToolTip("Beats per bar. Resets to default value.");
+    // ui->m_button_bpm->setToolTip("Beats per bar. Resets to default value.");
     connect
     (
         ui->m_button_bpm, SIGNAL(clicked(bool)),
@@ -475,10 +475,10 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
         this, SLOT(next_beat_width())
     );
 #else
-    ui->m_button_bw->setToolTip
-    (
-        "Beats width (denominator). Resets to default value."
-    );
+    // ui->m_button_bw->setToolTip
+    // (
+    //     "Beats width (denominator). Resets to default value."
+    // );
     connect
     (
         ui->m_button_bw, SIGNAL(clicked(bool)),
@@ -521,10 +521,10 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
         this, SLOT(next_measures())
     );
 #else
-    ui->m_button_length->setToolTip
-    (
-        "Pattern length (bars). Resets to default value."
-    );
+    // ui->m_button_length->setToolTip
+    // (
+    //     "Pattern length (bars). Resets to default value."
+    // );
     connect
     (
         ui->m_button_length, SIGNAL(clicked(bool)),
@@ -559,10 +559,10 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     qt_set_icon(transpose_xpm, ui->m_toggle_transpose);
     ui->m_toggle_transpose->setCheckable(true);
     ui->m_toggle_transpose->setChecked(cantranspose);
-    ui->m_toggle_transpose->setToolTip
-    (
-        "Sequence is allowed to be transposed if button is highighted/checked."
-    );
+    // ui->m_toggle_transpose->setToolTip
+    // (
+    //     "Sequence is allowed to be transposed if button is highighted/checked."
+    // );
 
     /*
      * Qt::NoFocus is the default focus policy.
@@ -595,10 +595,10 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     );
 #else
     qt_set_icon(chord3_inv_xpm, ui->m_button_chord);
-    ui->m_button_chord->setToolTip
-    (
-        "Chord generation. Resets chord generation to Off."
-    );
+    // ui->m_button_chord->setToolTip
+    // (
+    //     "Chord generation. Resets chord generation to Off."
+    // );
     connect
     (
         ui->m_button_chord, SIGNAL(clicked(bool)),
@@ -625,7 +625,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
      */
 
     qt_set_icon(bus_xpm, ui->m_button_bus);
-    ui->m_button_bus->setToolTip("Resets output MIDI buss number to 0.");
+    // ui->m_button_bus->setToolTip("Resets output MIDI buss number to 0.");
     connect
     (
         ui->m_button_bus, SIGNAL(clicked(bool)),
@@ -664,7 +664,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
 #endif
 
     qt_set_icon(midi_xpm, ui->m_button_channel);
-    ui->m_button_channel->setToolTip("Resets output MIDI channel number to 1.");
+    // ui->m_button_channel->setToolTip("Resets output MIDI channel number to 1.");
     connect
     (
         ui->m_button_channel, SIGNAL(clicked(bool)),
@@ -677,11 +677,11 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
      */
 
     qt_set_icon(undo_xpm, ui->m_button_undo);
-    ui->m_button_undo->setToolTip("Undo.");
+    // ui->m_button_undo->setToolTip("Undo.");
     connect(ui->m_button_undo, SIGNAL(clicked(bool)), this, SLOT(undo()));
 
     qt_set_icon(redo_xpm, ui->m_button_redo);
-    ui->m_button_redo->setToolTip("Redo.");
+    // ui->m_button_redo->setToolTip("Redo.");
     connect(ui->m_button_redo, SIGNAL(clicked(bool)), this, SLOT(redo()));
 
     /*
@@ -692,7 +692,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
      */
 
     qt_set_icon(quantize_xpm, ui->m_button_quantize);
-    ui->m_button_quantize->setToolTip("Quantize.");
+    // ui->m_button_quantize->setToolTip("Quantize.");
     connect
     (
         ui->m_button_quantize, &QPushButton::clicked,
@@ -704,7 +704,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
      */
 
     qt_set_icon(tools_xpm, ui->m_button_tools);
-    ui->m_button_tools->setToolTip("Tools popup menu.");
+    // ui->m_button_tools->setToolTip("Tools popup menu.");
     connect(ui->m_button_tools, SIGNAL(clicked(bool)), this, SLOT(tools()));
     popup_tool_menu();
 
@@ -715,11 +715,11 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     qt_set_icon(follow_xpm, ui->m_toggle_follow);
     ui->m_toggle_follow->setEnabled(true);
     ui->m_toggle_follow->setCheckable(true);
-    ui->m_toggle_follow->setToolTip
-    (
-        "If active, the pattern piano roll scrolls to "
-        "follow the progress bar in playback."
-    );
+    // ui->m_toggle_follow->setToolTip
+    // (
+    //     "If active, the pattern piano roll scrolls to "
+    //     "follow the progress bar in playback."
+    // );
 
     /*
      * Qt::NoFocus is the default focus policy.
@@ -777,7 +777,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
 #ifdef SEQ64_QSEQEDIT_BUTTON_INCREMENT
     // No increment code at this time.
 #endif
-    ui->m_button_snap->setToolTip("Snap size. Resets to default snap size.");
+    // ui->m_button_snap->setToolTip("Snap size. Resets to default snap size.");
     connect
     (
         ui->m_button_snap, SIGNAL(clicked(bool)),
@@ -786,10 +786,11 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     set_snap(m_initial_snap * perf().get_ppqn() / SEQ64_DEFAULT_PPQN);
 
     qt_set_icon(note_length_xpm, ui->m_button_note);
+
 #ifdef SEQ64_QSEQEDIT_BUTTON_INCREMENT
     // No increment code at this time.
 #endif
-    ui->m_button_note->setToolTip("Note length. Resets to default note length.");
+    // ui->m_button_note->setToolTip("Note length. Resets to default note length.");
     connect
     (
         ui->m_button_note, SIGNAL(clicked(bool)),
@@ -802,8 +803,9 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
      *  a combo-box.
      */
 
-#ifdef SEQ64_QSEQEDIT_BUTTON_INCREMENT
     qt_set_icon(zoom_xpm, ui->m_button_zoom);
+
+#ifdef SEQ64_QSEQEDIT_BUTTON_INCREMENT
     ui->m_button_zoom->setToolTip("Next zoom level. Wraps around.");
     connect
     (
@@ -811,11 +813,11 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
         this, SLOT(zoom_out())
     );
 #else
-    qt_set_icon(zoom_xpm, ui->m_button_zoom);
-    ui->m_button_zoom->setToolTip
-    (
-        "Zoom level. Resets to the default zoom value, 2."
-    );
+    // qt_set_icon(zoom_xpm, ui->m_button_zoom);
+    // ui->m_button_zoom->setToolTip
+    // (
+    //     "Zoom level. Resets to the default zoom value, 2."
+    // );
     connect
     (
         ui->m_button_zoom, SIGNAL(clicked(bool)),
@@ -835,11 +837,11 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
             ui->m_combo_zoom->insertItem(zi, combo_text);
         }
     }
-    ui->m_combo_zoom->setToolTip
-    (
-        "Zoom level in 'pixels:ticks', the number of ticks or pulses "
-        "represented by 1 pixel.  A lower value zooms 'in'."
-    );
+    // ui->m_combo_zoom->setToolTip
+    // (
+    //     "Zoom level in 'pixels:ticks', the number of ticks or "
+    //     "pulses represented by 1 pixel.  A lower value zooms 'in'."
+    // );
     ui->m_combo_zoom->setCurrentIndex(1);
     connect
     (
@@ -862,10 +864,10 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     // No key-incrementing functionality at this time
 #endif
     qt_set_icon(key_xpm, ui->m_button_key);
-    ui->m_button_key->setToolTip
-    (
-        "Musical key selection. Resets key selection to 'C'."
-    );
+    // ui->m_button_key->setToolTip
+    // (
+    //     "Musical key selection. Resets key selection to 'C'."
+    // );
     connect
     (
         ui->m_button_key, SIGNAL(clicked(bool)),
@@ -897,10 +899,10 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     // No scale-incrementing functionality at this time
 #endif
     qt_set_icon(scale_xpm, ui->m_button_scale);
-    ui->m_button_scale->setToolTip
-    (
-        "Musical scale selection. Resets scale selection to 'C'."
-    );
+    // ui->m_button_scale->setToolTip
+    // (
+    //     "Musical scale selection. Resets the scale selection to none."
+    // );
     connect
     (
         ui->m_button_scale, SIGNAL(clicked(bool)),
@@ -928,7 +930,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
      */
 
     qt_set_icon(sequences_xpm, ui->m_button_sequence);
-    ui->m_button_sequence->setToolTip("Background sequence popup menu.");
+    // ui->m_button_sequence->setToolTip("Background sequence popup menu.");
     connect
     (
         ui->m_button_sequence, SIGNAL(clicked(bool)),
@@ -957,7 +959,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
      * Event Selection Button and Popup Menu for qseqdata.
      */
 
-    ui->m_button_event->setToolTip("Event to show in data panel, popup menu.");
+    // ui->m_button_event->setToolTip("Event to show in data panel, popup menu.");
     connect
     (
         ui->m_button_event, SIGNAL(clicked(bool)),
@@ -973,7 +975,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
      * Event Data Presence-Indicator Button and Popup Menu.
      */
 
-    ui->m_button_data->setToolTip("Present events to show, popup menu.");
+    // ui->m_button_data->setToolTip("Present events to show, popup menu.");
     connect
     (
         ui->m_button_data, SIGNAL(clicked(bool)),
@@ -998,7 +1000,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
 
     qt_set_icon(play_xpm, ui->m_toggle_play);
     ui->m_toggle_play->setCheckable(true);
-    ui->m_toggle_play->setToolTip("When active, the pattern is unmuted.");
+    // ui->m_toggle_play->setToolTip("When active, the pattern is unmuted.");
     connect
     (
         ui->m_toggle_play, SIGNAL(toggled(bool)),
@@ -1011,10 +1013,10 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
 
     qt_set_icon(thru_xpm, ui->m_toggle_thru);
     ui->m_toggle_thru->setCheckable(true);
-    ui->m_toggle_thru->setToolTip
-    (
-        "When active, incoming MIDI goes through to output."
-    );
+    // ui->m_toggle_thru->setToolTip
+    // (
+    //     "When active, incoming MIDI goes through to output."
+    // );
     connect
     (
         ui->m_toggle_thru, SIGNAL(toggled(bool)),
@@ -1027,10 +1029,10 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
 
     qt_set_icon(rec_xpm, ui->m_toggle_record);
     ui->m_toggle_record->setCheckable(true);
-    ui->m_toggle_record->setToolTip
-    (
-        "When active, incoming MIDI is recorded."
-    );
+    // ui->m_toggle_record->setToolTip
+    // (
+    //     "When active, incoming MIDI is recorded."
+    // );
     connect
     (
         ui->m_toggle_record, SIGNAL(toggled(bool)),
@@ -1043,10 +1045,10 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
 
     qt_set_icon(q_rec_xpm, ui->m_toggle_qrecord);
     ui->m_toggle_qrecord->setCheckable(true);
-    ui->m_toggle_qrecord->setToolTip
-    (
-        "When active, incoming MIDI is quantize recorded."
-    );
+    // ui->m_toggle_qrecord->setToolTip
+    // (
+    //     "When active, incoming MIDI is quantize recorded."
+    // );
     connect
     (
         ui->m_toggle_qrecord, SIGNAL(toggled(bool)),
@@ -1060,11 +1062,11 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
      * and "expand" (increase the size of the loop to accomodate new events).
      */
 
-    ui->m_combo_rec_type->setToolTip
-    (
-        "Select recording type for loop patterns: merge events (legacy); "
-        "overwrite events; or expand the pattern length while recording."
-    );
+    // ui->m_combo_rec_type->setToolTip
+    // (
+    //     "Select recording type for loop patterns: merge events (legacy); "
+    //     "overwrite events; or expand the pattern length while recording."
+    // );
     ui->m_combo_rec_type->insertItem(int(LOOP_RECORD_LEGACY), "Merge");
     ui->m_combo_rec_type->insertItem(int(LOOP_RECORD_OVERWRITE), "Replace");
     ui->m_combo_rec_type->insertItem(int(LOOP_RECORD_EXPAND), "Expand");
@@ -1079,11 +1081,11 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
      * Recording Volume Button and Combo Box
      */
 
-    ui->m_button_rec_vol->setToolTip
-    (
-        "Resets recording volume to 'Free', "
-        "which means whatever volume is incoming."
-    );
+    // ui->m_button_rec_vol->setToolTip
+    // (
+    //     "Resets recording volume to 'Free', "
+    //     "which means whatever volume is incoming."
+    // );
     connect
     (
         ui->m_button_rec_vol, SIGNAL(clicked(bool)),

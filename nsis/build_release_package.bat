@@ -8,7 +8,7 @@
 :: \library     Sequencer64 for Windows
 :: \author      Chris Ahlstrom
 :: \date        2018-05-26
-:: \update      2018-10-29
+:: \update      2018-10-31
 :: \license     $XPC_SUITE_GPL_LICENSE$
 ::
 ::      This script sets up and creates a release build of Sequencer64 for
@@ -132,12 +132,15 @@ echo copy %PROJECT_ROOT%\%AUX_DIR%\qpseq64.* %OUTPUT_DIR%\%AUX_DIR%
 echo copy %PROJECT_ROOT%\%AUX_DIR%\*.midi %OUTPUT_DIR%\%AUX_DIR%
 echo copy %PROJECT_ROOT%\%AUX_DIR%\*.pdf %OUTPUT_DIR%\%AUX_DIR%
 echo copy %PROJECT_ROOT%\%AUX_DIR%\*.txt %OUTPUT_DIR%\%AUX_DIR%
+echo copy %PROJECT_ROOT%\%AUX_DIR%\*.playlist %OUTPUT_DIR%\%AUX_DIR%
 
 mkdir %OUTPUT_DIR%\%AUX_DIR%
-copy %PROJECT_ROOT%\%AUX_DIR%\qpseq64.* %OUTPUT_DIR%\%AUX_DIR%
+copy %PROJECT_ROOT%\%AUX_DIR%\*.rc %OUTPUT_DIR%\%AUX_DIR%
+copy %PROJECT_ROOT%\%AUX_DIR%\*.usr %OUTPUT_DIR%\%AUX_DIR%
 copy %PROJECT_ROOT%\%AUX_DIR%\*.midi %OUTPUT_DIR%\%AUX_DIR%
 copy %PROJECT_ROOT%\%AUX_DIR%\*.pdf %OUTPUT_DIR%\%AUX_DIR%
 copy %PROJECT_ROOT%\%AUX_DIR%\*.txt %OUTPUT_DIR%\%AUX_DIR%
+copy %PROJECT_ROOT%\%AUX_DIR%\*.playlist %OUTPUT_DIR%\%AUX_DIR%
 
 :: This section takes the generated build and data files and packs them
 :: up into a 7-zip archive.  This archive should be copied to the root

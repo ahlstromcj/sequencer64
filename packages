@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2018-09-29
-# \update     	2018-10-29
+# \update     	2018-10-31
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -29,9 +29,9 @@ if [ "$1" == "--help" ] || [ "$1" == "help" ] ; then
 
    cat << E_O_F
 
-packages 0.2 2018-10-29
+packages 0.3 2018-10-31
 
-Usage:  ./pack [--dry-run] [--release 0.96.0]
+Usage:  ./packages [--dry-run] [--release [0.96.0] ]
 
 This script packs the contents of the current directory into the following
 packages:
@@ -59,7 +59,7 @@ else
         --release)
             shift
             DORELEASE="yes"
-            RELEASENUMBER="$RELEASEMAJOR.$RELEASEMINOR"
+            RELEASENUMBER="$1"
             ;;
 
         *)
@@ -77,6 +77,7 @@ ZIPNAME="qpseq64-portable-$RELEASENUMBER-$REVNUMBER.zip"
 TARNAME="sequencer64-master-rtmidi-$RELEASENUMBER.tar.xz"
 
 if [ "$DODRYRUN" == "yes" ] ; then
+
    echo "Extracting Windows deployment package..."
    echo "$ 7z x $PACKAGENAME"
    echo "$ mv $PACKAGENAME .."
@@ -89,13 +90,22 @@ if [ "$DODRYRUN" == "yes" ] ; then
    echo "$ mv release/ qpseq64"
    echo "$ zip -q -u -r $ZIPNAME qpseq64/"
    echo "$ mv $ZIPNAME ../sequencer64-packages/latest"
-   echo "Making a standard Linux source/configure tarball..."
-#  echo "$ ./bootstrap --full-clean"
-   echo "$ ./pack --release rtmidi 0.96.0"
-   echo "$ mv ../$TARNAME ../sequencer64-packages/latest"
-#  echo "$ rm -rf qpseq64/"
+
+   if [ -f configure ] ; then
+      echo " "
+      echo "Making a standard Linux source/configure tarball..."
+      echo "$ ./pack --release rtmidi 0.96.0"
+      echo "$ mv ../$TARNAME ../sequencer64-packages/latest"
+   else
+      echo " "
+      echo "WARNING:  'configure' does not exist, cannot make a standard Linux"
+      echo "          source tarball!!!"
+   fi
+
    echo "$ ls -lrt ../sequencer64-packages/latest"
+
 else
+
    echo "Extracting Windows deployment package..."
    7z x $PACKAGENAME
    mv $PACKAGENAME ..
@@ -108,12 +118,20 @@ else
    mv release/ qpseq64
    zip -u -r $ZIPNAME qpseq64/
    mv $ZIPNAME ../sequencer64-packages/latest
-   echo "Making a standard Linux source/configure tarball..."
-#  ./bootstrap --full-clean
-   ./pack --release rtmidi $RELEASENUMBER
-   mv ../$TARNAME ../sequencer64-packages/latest
-#  rm -rf qpseq64/
+
+   if [ -f configure ] ; then
+      echo " "
+      echo "Making a standard Linux source/configure tarball..."
+      ./pack --release rtmidi $RELEASENUMBER
+      mv ../$TARNAME ../sequencer64-packages/latest
+   else
+      echo " "
+      echo "WARNING:  'configure' does not exist, cannot make a standard Linux"
+      echo "          source tarball!!!"
+   fi
+
    ls -lrt ../sequencer64-packages/latest
+
 fi
 
 #******************************************************************************

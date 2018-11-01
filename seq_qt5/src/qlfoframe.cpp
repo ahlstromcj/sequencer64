@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-30
+ * \updates       2018-10-31
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -127,20 +127,20 @@ qlfoframe::qlfoframe
         [=](int id) { m_wave = wave_type_t(id); }
     );
 
-    ui->m_wave_type_group->setToolTip
-    (
-        "Wave type: 1 = sine; 2 = ramp sawtooth; 3 = decay sawtooth; "
-        "4 = triangle."
-    );
+    // ui->m_wave_type_group->setToolTip
+    // (
+    //     "Wave type: 1 = sine; 2 = ramp sawtooth; 3 = decay sawtooth; "
+    //     "4 = triangle."
+    // );
 
     /*
      * Order of calls is important here.
      */
 
-    ui->m_value_slider->setToolTip
-    (
-        "Value: a kind of DC offset for the data value. Range: 0 to 127."
-    );
+    // ui->m_value_slider->setToolTip
+    // (
+    //     "Value: a kind of DC offset for the data value. Range: 0 to 127."
+    // );
     ui->m_value_slider->setMinimum(to_slider(m_value_min));
     ui->m_value_slider->setMaximum(to_slider(m_value_max));
     ui->m_value_slider->setValue(to_slider(m_value));
@@ -160,10 +160,10 @@ qlfoframe::qlfoframe
      * Order of calls is important here.
      */
 
-    ui->m_range_slider->setToolTip
-    (
-        "Range: controls the depth of modulation. Range: 0 to 127."
-    );
+    // ui->m_range_slider->setToolTip
+    // (
+    //     "Range: controls the depth of modulation. Range: 0 to 127."
+    // );
     ui->m_range_slider->setMinimum(to_slider(m_range_min));
     ui->m_range_slider->setMaximum(to_slider(m_range_max));
     ui->m_range_slider->setValue(to_slider(m_range));
@@ -183,14 +183,14 @@ qlfoframe::qlfoframe
      * Order of calls is important here.
      */
 
-    ui->m_speed_slider->setToolTip
-    (
-        "Speed: the number of periods per pattern (divided by beat width, "
-        "normally 4).  For long patterns, this parameter needs to be set "
-        "high in some cases.  Also subject to an 'anti-aliasing' effect in "
-        "some parts of the range, especially for short patterns. "
-        "Try it.  For short patterns, try a value of 1."
-    );
+    // ui->m_speed_slider->setToolTip
+    // (
+    //     "Speed: the number of periods per pattern (divided by beat width, "
+    //     "normally 4).  For long patterns, this parameter needs to be set "
+    //     "high in some cases.  Also subject to an 'anti-aliasing' effect in "
+    //     "some parts of the range, especially for short patterns. "
+    //     "Try it.  For short patterns, try a value of 1."
+    // );
     ui->m_speed_slider->setMinimum(to_slider(m_speed_min));
     ui->m_speed_slider->setMaximum(to_slider(m_speed_max));
     ui->m_speed_slider->setValue(to_slider(m_speed));
@@ -210,11 +210,11 @@ qlfoframe::qlfoframe
      * Order of calls is important here.
      */
 
-    ui->m_phase_slider->setToolTip
-    (
-        "Phase: phase shift in a beat width (quarter note). "
-        "A value of 1 is a phase shift of 360 degrees."
-    );
+    // ui->m_phase_slider->setToolTip
+    // (
+    //     "Phase: phase shift in a beat width (quarter note). "
+    //     "A value of 1 is a phase shift of 360 degrees."
+    // );
     ui->m_phase_slider->setMinimum(to_slider(m_phase_min));
     ui->m_phase_slider->setMaximum(to_slider(m_phase_max));
     ui->m_phase_slider->setValue(to_slider(m_phase));

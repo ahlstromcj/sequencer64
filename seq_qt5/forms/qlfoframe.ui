@@ -113,6 +113,9 @@
      <height>191</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Sets the DC offset of the modulating waveform.</string>
+   </property>
    <property name="orientation">
     <enum>Qt::Vertical</enum>
    </property>
@@ -126,6 +129,9 @@
      <height>191</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Sets the phase of the LFO.</string>
+   </property>
    <property name="orientation">
     <enum>Qt::Vertical</enum>
    </property>
@@ -138,6 +144,9 @@
      <width>16</width>
      <height>191</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Sets the depth of the LFO modulation.</string>
    </property>
    <property name="orientation">
     <enum>Qt::Vertical</enum>
@@ -238,6 +247,9 @@
      <height>191</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>The number of periods per pattern divided by beat width.  For long patterns, set it higher.  Subject to an anti-aliasing effect, especially for short patterns.</string>
+   </property>
    <property name="orientation">
     <enum>Qt::Vertical</enum>
    </property>
@@ -252,7 +264,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>DC Value</string>
+    <string>DC Offset</string>
    </property>
   </widget>
   <widget class="QLabel" name="m_range_label">

@@ -47,6 +47,9 @@
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
+         <property name="statusTip">
+          <string>Undo the last operation(s).</string>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -63,6 +66,9 @@
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
+         <property name="toolTip">
+          <string>Redo the last operations(s).</string>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -75,6 +81,9 @@
            <width>28</width>
            <height>32</height>
           </size>
+         </property>
+         <property name="toolTip">
+          <string>If active, the song piano roll scrolls to follow the progress bar in playback.</string>
          </property>
          <property name="text">
           <string/>
@@ -96,6 +105,12 @@
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
+         <property name="toolTip">
+          <string>Zoom out horizontally in the piano roll.</string>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -111,6 +126,9 @@
          </property>
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="toolTip">
+          <string>Zoom in horizontally in the piano roll.</string>
          </property>
          <property name="text">
           <string/>
@@ -128,6 +146,9 @@
            <width>60</width>
            <height>16777215</height>
           </size>
+         </property>
+         <property name="toolTip">
+          <string>Snap it!</string>
          </property>
          <property name="text">
           <string>Snap</string>
@@ -154,6 +175,9 @@
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
+         <property name="toolTip">
+          <string>Selects the desired movement and sizing snap value.</string>
+         </property>
          <property name="currentIndex">
           <number>-1</number>
          </property>
@@ -169,6 +193,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Transpose</string>
+       </property>
        <property name="text">
         <string>Trans</string>
        </property>
@@ -176,6 +203,9 @@
      </item>
      <item>
       <widget class="QComboBox" name="comboTranspose">
+       <property name="toolTip">
+        <string>Selects the number of semitones to transpose the performance, for transposable patterns.</string>
+       </property>
        <property name="currentText">
         <string/>
        </property>
@@ -191,6 +221,9 @@
        </property>
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>Sets looping between the L and R markers.</string>
        </property>
        <property name="text">
         <string/>
@@ -232,6 +265,9 @@
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
+         <property name="toolTip">
+          <string>Collapse pattern between L and R markers.</string>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -253,6 +289,9 @@
          </property>
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="toolTip">
+          <string>Expand space between L and R markers.</string>
          </property>
          <property name="text">
           <string/>
@@ -281,6 +320,9 @@
          </property>
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="toolTip">
+          <string>Expand and copy between the L and R markers.</string>
          </property>
          <property name="text">
           <string/>
@@ -328,6 +370,9 @@
          <width>148</width>
          <height>24</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>TIme-line and L and R markers.</string>
        </property>
        <property name="text">
         <string/>

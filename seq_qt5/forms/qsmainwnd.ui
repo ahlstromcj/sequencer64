@@ -141,7 +141,7 @@
        <enum>Qt::NoFocus</enum>
       </property>
       <property name="toolTip">
-       <string>Beat Width (length of beat)</string>
+       <string>Global Beat Width (length of beat)</string>
       </property>
      </widget>
     </item>
@@ -158,6 +158,9 @@
         <width>64</width>
         <height>64</height>
        </size>
+      </property>
+      <property name="toolTip">
+       <string>Switch between BBT and HMS timing in the clock at the top.</string>
       </property>
       <property name="text">
        <string>H:M:S</string>
@@ -411,7 +414,7 @@
        <enum>Qt::NoFocus</enum>
       </property>
       <property name="toolTip">
-       <string>Beats Per Measure</string>
+       <string>Global Beats Per Measure</string>
       </property>
       <property name="currentIndex">
        <number>-1</number>
@@ -439,6 +442,9 @@
         <width>44</width>
         <height>32</height>
        </size>
+      </property>
+      <property name="toolTip">
+       <string>Changes the PPQN value of the current song.  Not yet ready at all.</string>
       </property>
      </widget>
     </item>
@@ -470,6 +476,9 @@
           <width>48</width>
           <height>64</height>
          </size>
+        </property>
+        <property name="toolTip">
+         <string>Tap in time to set the beats per minute (BPM) value. After 5 seconds of no taps, the tap-counter will reset to 0. The default keystroke for tap-BPM is F9.</string>
         </property>
         <property name="text">
          <string>0</string>
@@ -511,6 +520,9 @@
         </property>
         <property name="focusPolicy">
          <enum>Qt::ClickFocus</enum>
+        </property>
+        <property name="toolTip">
+         <string>Allows the setting of the Beats Per Minute.</string>
         </property>
         <property name="layoutDirection">
          <enum>Qt::LeftToRight</enum>
@@ -600,7 +612,7 @@
          <enum>Qt::NoFocus</enum>
         </property>
         <property name="toolTip">
-         <string>Stop playback</string>
+         <string>Stop playback.</string>
         </property>
         <property name="text">
          <string/>
@@ -656,7 +668,7 @@
          <enum>Qt::NoFocus</enum>
         </property>
         <property name="toolTip">
-         <string>Start playback</string>
+         <string>Start playback.</string>
         </property>
         <property name="text">
          <string/>
@@ -696,7 +708,7 @@
          <enum>Qt::NoFocus</enum>
         </property>
         <property name="toolTip">
-         <string>Record live sequence changes into the Song Editor</string>
+         <string>Record live sequence changes into the Song Editor.</string>
         </property>
         <property name="text">
          <string/>
@@ -733,7 +745,7 @@
          <enum>Qt::NoFocus</enum>
         </property>
         <property name="toolTip">
-         <string>Snap newly drawn sequence blocks to their length in the Song Editor</string>
+         <string>Snap newly drawn sequence blocks to their length in the Song Editor.</string>
         </property>
         <property name="text">
          <string/>
@@ -757,6 +769,9 @@
           <height>64</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>Shows and toggles the keep-queue status. Does not show one-shot queue status.</string>
+        </property>
         <property name="text">
          <string>Q</string>
         </property>
@@ -775,6 +790,9 @@
           <width>48</width>
           <height>64</height>
          </size>
+        </property>
+        <property name="toolTip">
+         <string>Mute Group Learn. Click the L button, then press a mute-group key to store the mute state of the sequences in the Shift of that key.</string>
         </property>
         <property name="text">
          <string>L</string>
@@ -800,6 +818,9 @@
         <width>36</width>
         <height>32</height>
        </size>
+      </property>
+      <property name="toolTip">
+       <string>Shows the number of the active screen-set, including any active external live frame.</string>
       </property>
       <property name="readOnly">
        <bool>true</bool>

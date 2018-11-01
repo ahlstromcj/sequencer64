@@ -2997,7 +2997,7 @@ sequence::change_event_data_lfo
     if (m_length == 0)                      /* should never happen, though  */
         dlength = double(m_ppqn);
 
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
     printf("DC %g Mod %g Period %g Phase %g\n", value, range, speed, phase);
 #endif
 

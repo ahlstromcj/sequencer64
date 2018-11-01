@@ -22,13 +22,12 @@
 /**
  * \file          qskeymaps.hpp
  *
- *  The time bar shows markers and numbers for the measures of the song,
- *  and also depicts the left and right markers.
+ *  Provides functions to map between the Qt and Gtkmm versions of key-codes.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-03-24
- * \updates       2018-10-18
+ * \updates       2018-10-31
  * \license       GNU GPLv2 or above
  *
  */

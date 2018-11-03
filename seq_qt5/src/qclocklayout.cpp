@@ -97,23 +97,22 @@ qclocklayout::qclocklayout
 }
 
 /*
-    The tool-tips
-
-"This setting disables the usage of this output port, completely.  "
-"It is needed in some cases for devices that are detected, but "
-"cannot be used (e.g. devices locked by another application)."
-
-"MIDI Clock will be disabled. Used for conventional playback."
-
-"MIDI Clock will be sent. MIDI Song Position and MIDI Continue "
-"will be sent if starting after tick 0 in song mode; otherwise "
-"MIDI Start is sent."
-
-"MIDI Clock will be sent.  MIDI Start will be sent and clocking "
-"will begin once the song position has reached the modulo of "
-"the specified Size. Use for gear that doesn't respond to Song "
-"Position."
-
+ *  The tool-tips.
+ *
+ *  "This setting disables the usage of this output port, completely.  "
+ *  "It is needed in some cases for devices that are detected, but "
+ *  "cannot be used (e.g. devices locked by another application)."
+ *
+ *  "MIDI Clock will be disabled. Used for conventional playback."
+ *
+ *  "MIDI Clock will be sent. MIDI Song Position and MIDI Continue "
+ *  "will be sent if starting after tick 0 in song mode; otherwise "
+ *  "MIDI Start is sent."
+ *
+ *  "MIDI Clock will be sent.  MIDI Start will be sent and clocking "
+ *  "will begin once the song position has reached the modulo of "
+ *  "the specified Size. Use for gear that doesn't respond to Song "
+ *  "Position."
  */
 
 void

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-05-20
+ * \updates       2018-11-03
  * \license       GNU GPLv2 or above
  *
  *  Defines some midibus constants and the clock_e enumeration
@@ -110,6 +110,16 @@ enum clock_e
     e_clock_mod
 
 };          // enum clock_e
+
+/*
+ *  Inline free functions.
+ */
+
+inline bool
+clock_is_disabled (clock_e ce)
+{
+    return ce == e_clock_disabled;
+}
 
 }           // namespace seq64
 

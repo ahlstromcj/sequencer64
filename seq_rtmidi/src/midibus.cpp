@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-02-19
+ * \updates       2018-11-03
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -351,7 +351,7 @@ midibus::api_init_in_sub ()
 bool
 midibus::api_deinit_in ()
 {
-    return m_rt_midi->api_deinit_in();
+    return not_nullptr(m_rt_midi) ? m_rt_midi->api_deinit_in() : false ;
 }
 
 /**
@@ -374,7 +374,8 @@ midibus::api_deinit_in ()
 void
 midibus::api_play (event * e24, midibyte channel)
 {
-    m_rt_midi->api_play(e24, channel);
+    if (not_nullptr(m_rt_midi))
+        m_rt_midi->api_play(e24, channel);
 }
 
 /**
@@ -395,7 +396,8 @@ midibus::api_play (event * e24, midibyte channel)
 void
 midibus::api_continue_from (midipulse tick, midipulse beats)
 {
-    m_rt_midi->api_continue_from(tick, beats);
+    if (not_nullptr(m_rt_midi))
+        m_rt_midi->api_continue_from(tick, beats);
 }
 
 /**
@@ -406,7 +408,8 @@ midibus::api_continue_from (midipulse tick, midipulse beats)
 void
 midibus::api_start ()
 {
-    m_rt_midi->api_start();
+    if (not_nullptr(m_rt_midi))
+        m_rt_midi->api_start();
 }
 
 /**
@@ -417,7 +420,8 @@ midibus::api_start ()
 void
 midibus::api_stop ()
 {
-    m_rt_midi->api_stop();
+    if (not_nullptr(m_rt_midi))
+        m_rt_midi->api_stop();
 }
 
 /**
@@ -432,7 +436,8 @@ midibus::api_stop ()
 void
 midibus::api_clock (midipulse tick)
 {
-    m_rt_midi->api_clock(tick);
+    if (not_nullptr(m_rt_midi))
+        m_rt_midi->api_clock(tick);
 }
 
 }           // namespace seq64

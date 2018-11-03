@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-30
+ * \updates       2018-11-03
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1470,15 +1470,23 @@ seqedit::popup_midibus_menu ()
 
 #define SET_BUS         mem_fun(*this, &seqedit::set_midi_bus)
 
-    for (int i = 0; i < masterbus.get_num_out_buses(); ++i)
+    for (int b = 0; b < masterbus.get_num_out_buses(); ++b)
     {
-        m_menu_midibus->items().push_back
-        (
-            MenuElem
+        /*
+         * \change ca 2018-11-03 Do not add disabled output busses.
+         */
+
+        if (! clock_is_disabled(masterbus.get_clock(b)))
+        {
+            m_menu_midibus->items().push_back
             (
-                masterbus.get_midi_out_bus_name(i), sigc::bind(SET_BUS, i, true)
-            )
-        );
+                MenuElem
+                (
+                    masterbus.get_midi_out_bus_name(b),
+                    sigc::bind(SET_BUS, b, true)
+                )
+            );
+        }
     }
     m_menu_midibus->popup(0, 0);
 }

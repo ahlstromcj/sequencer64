@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-28
+ * \updates       2018-11-03
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -98,13 +98,6 @@
 
 /*
  *  All Sequencer64 library code is in the seq64 namespace.
- */
-
-/**
- *  A new option to improve how the main window's new Mute button
- *  works.  It works, this is now a permanent option.
- *
- *      #define SEQ64_TOGGLE_PLAYING
  */
 
 /**

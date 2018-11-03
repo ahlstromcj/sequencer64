@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-10-30
+ * \updates       2018-11-03
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -314,37 +314,11 @@
  */
 
 /**
- * \obsolete
- *      Now a permanent setting.
- *
- *  Currently enabled by default, this macro turns on code that scrolls the
- *  sequence/pattern editor horizontally to keep the progress bar in view for
- *  long patterns, as the tune plays.
- *
- *      #define SEQ64_HANDLE_TIMESIG_AND_TEMPO
- */
-
-/**
- *  Let's try using lighter solid lines in the piano rolls and see how it
- *  looks.  It looks a little better.  In fact, much better, make it
- *  permanent.
- *
- *      #define SEQ64_SOLID_PIANOROLL_GRID
- */
-
-/**
  *  An option we've preserved from Seq24, but have disabled until we find a
  *  need for it, is to tally some "statistics" about recording and playback.
  */
 
 #undef  SEQ64_STATISTICS_SUPPORT
-
-/**
- *  Provides additional sequence menu entries from Seq32 that we think are
- *  pretty useful no matter what.  Now a permanent option.
- *
- *  #define SEQ64_STAZED_EDIT_MENU
- */
 
 /**
  *  A color option.
@@ -378,13 +352,6 @@
  */
 
 #undef SEQ64_USE_EVENT_MAP              /* map seems to work well! But...   */
-
-/**
- *  Determins which implementation of a MIDI byte container is used.
- *  See the midifile module.
- */
-
-#define SEQ64_USE_MIDI_VECTOR           /* as opposed to the MIDI list      */
 
 /**
  *  Enables some mute-group patches contributed by a Sequencer64 user.

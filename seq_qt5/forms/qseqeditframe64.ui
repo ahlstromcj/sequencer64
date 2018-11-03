@@ -61,7 +61,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>Sequence number.</string>
+        <string>Pattern/sequence number.</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::NoFrame</enum>
@@ -92,6 +92,9 @@
          <bold>true</bold>
         </font>
        </property>
+       <property name="toolTip">
+        <string>Pattern/Sequence name/title.  Keep it short.</string>
+       </property>
        <property name="text">
         <string>Untitled</string>
        </property>
@@ -112,7 +115,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>Increments the beats/bar selection.  Will wrap around to the beginning of the combo-box.</string>
+        <string>Resets the beats/bar to 4.</string>
        </property>
        <property name="text">
         <string>B</string>
@@ -153,7 +156,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>Increments the beat width, the denominator of the time signature. Will wrap around to the beginning of the combo-box.</string>
+        <string>Resets the beat-width to 4.</string>
        </property>
        <property name="text">
         <string>W</string>
@@ -194,7 +197,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>Increments the length of the pattern.  Will wrap around to the beginning of the combo-box.</string>
+        <string>Resets the pattern length to 1.</string>
        </property>
        <property name="text">
         <string>L</string>
@@ -260,7 +263,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>Chord generation. Increments to next value.</string>
+        <string>Resets the selected chord generation to Off.</string>
        </property>
        <property name="text">
         <string>Ch</string>
@@ -325,6 +328,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Selects the MIDI output buss for this pattern. It is stored with the pattern.</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -362,6 +368,9 @@
          <width>42</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Selects the MIDI output channel for this pattern. It is stored with the pattern.</string>
        </property>
       </widget>
      </item>
@@ -598,7 +607,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>Musical scale selection. Resets the scale selection to none.</string>
+        <string>Musical scale selection. Resets the scale selection to Off (Chromatic).</string>
        </property>
        <property name="text">
         <string>Scale</string>
@@ -902,6 +911,9 @@
       <layout class="QHBoxLayout" name="dataHorizLayout">
        <item>
         <widget class="QPushButton" name="m_toggle_drum">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="minimumSize">
           <size>
            <width>54</width>
@@ -1188,10 +1200,10 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>Resets recording volume to 'Free', which means whatever volume is incoming.</string>
+        <string>Resets recording velocity to 'Free', which means whatever velocity is incoming.</string>
        </property>
        <property name="text">
-        <string>Vol</string>
+        <string>Vel</string>
        </property>
       </widget>
      </item>
@@ -1208,6 +1220,9 @@
          <width>96</width>
          <height>16777215</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Selects the Free mode of recording (incoming velocity preserved, or other velocities to force upon input.</string>
        </property>
       </widget>
      </item>

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-26
+ * \updates       2018-11-03
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -66,20 +66,14 @@
 #include <fstream>                      /* std::ifstream and std::ofstream  */
 #include <memory>                       /* std::unique_ptr<>                */
 
-#include "app_limits.h"                 /* SEQ64_USE_MIDI_VECTOR            */
 #include "calculations.hpp"             /* seq64::bpm_from_tempo_us()       */
 #include "file_functions.hpp"           /* seq64::get_full_path()           */
 #include "perform.hpp"                  /* must precede midifile.hpp !      */
 #include "midifile.hpp"                 /* seq64::midifile                  */
+#include "midi_vector.hpp"              /* seq64::midi_vector container     */
 #include "sequence.hpp"                 /* seq64::sequence                  */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 #include "wrkfile.hpp"                  /* seq64::wrkfile class             */
-
-#ifdef SEQ64_USE_MIDI_VECTOR
-#include "midi_vector.hpp"              /* seq64::midi_vector container     */
-#else
-#include "midi_list.hpp"                /* seq64::midi_list container       */
-#endif
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -2075,15 +2069,15 @@ midifile::write_prop_header
     write_long(control_tag);                /* use legacy output call       */
 }
 
+/**
+ *  Write a MIDI track to the file.
+ *
+ * \param lst
+ *      The MIDI vector containing the events.
+ */
+
 void
-midifile::write_track
-(
-#if defined SEQ64_USE_MIDI_VECTOR
-    const midi_vector & lst
-#else
-    const midi_list & lst
-#endif
-)
+midifile::write_track (const midi_vector & lst)
 {
     midilong tracksize = midilong(lst.size());
     write_long(SEQ64_MTRK_TAG);             /* magic number 'MTrk'          */
@@ -2196,12 +2190,7 @@ midifile::write (perform & p, bool doseqspec)
                 if (not_nullptr(s))
                 {
                     sequence & seq = *s;
-
-#if defined SEQ64_USE_MIDI_VECTOR
                     midi_vector lst(seq);
-#else
-                    midi_list lst(seq);
-#endif
 
                     /*
                      * midi_container::fill() also handles the time-signature
@@ -2353,13 +2342,7 @@ midifile::write_song (perform & p)
                 if (not_nullptr(s))
                 {
                     sequence & seq = *s;
-
-#if defined SEQ64_USE_MIDI_VECTOR
                     midi_vector lst(seq);
-#else
-                    midi_list lst(seq);
-#endif
-
                     lst.fill_seq_number(track);
                     lst.fill_seq_name(seq.name());
                     if (track == 0 && ! rc().legacy_format())

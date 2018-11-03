@@ -1,11 +1,11 @@
 INSTALL for Sequencer64 v. 0.96.1 and above
 Chris Ahlstrom
-2015-09-10 to 2018-10-30
+2015-09-10 to 2018-11-03
 
 Getting Sequencer64 requires building the code or going to the
-sequencer64-packages site on GitHub.  The bootstrapping setup is primarily
-aimed at developers.  Starting with version 0.90.4, six different versions of
-the program can be built:
+sequencer64-packages site on GitHub.  The bootstrap setup is primarily
+aimed at developers, but is easy to use with the instructions below.
+Six different versions of the program can be built:
 
     -   seq64. Native JACK; the default build after a simple bootstrap
         command. JACK MIDI with optional JACK transport; fall-back to ALSA;
@@ -226,17 +226,7 @@ Qmake-based Install:
 
 CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
-    These options undefine the following build macros:
-
-        SEQ64_RTMIDI_SUPPORT
-        SEQ64_ALSAMIDI_SUPPORT
-        SEQ64_PORTMIDI_SUPPORT
-        SEQ64_HIGHLIGHT_EMPTY_SEQS
-        SEQ64_LASH_SUPPORT
-        SEQ64_JACK_SUPPORT
-        SEQ64_JACK_SESSION
-        SEQ64_JE_PATTERN_PANEL_SCROLLBARS
-        SEQ64_MULTI_MAINWID
+    These options define or undefine various build macros:
 
     --enable-rtmidi
 
@@ -265,7 +255,7 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
         Undefines the SEQ64_HIGHLIGHT_EMPTY_SEQS  macro, which is otherwise
         defined by default.  If defined, the application will highlight empty
-        sequences/patterns by coloring them yellow.
+        sequences/patterns by coloring them yellow. Gtkmm only.
 
     --enable-lash
 
@@ -282,14 +272,6 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
         Undefines the SEQ64_JACK_SESSION macro, which is defined if JACK
         support is defined, and the jack/session.h file is found.
-
-    --disable-seq32jack (obsolete, removed)
-
-        The code that used to be marked with the SEQ64_STAZED_JACK_SUPPORT
-        macro is now permanent.  It enables Seq32 JACK handling, which
-        incorporates many improvements to JACK transport, including the MIDI
-        clock fix from Seq24 v. 0.9.3.  It is now working pretty well, and
-        probably the best option now.
 
     --enable-portmidi
     --enable-rtmidi
@@ -318,7 +300,7 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         Undefines SEQ64_MULTI_MAINWID.  This macro enables showing multiple
         main window sets in up to a 3-row by 2-column matrix, with Set
         spinners for each windows, or one for the whole group.  This option
-        is not perfect, but can be useful.
+        is not perfect, but can be useful.  Gtkmm only.
 
 MANUALLY-DEFINED MACROS IN CODE:
 
@@ -348,17 +330,6 @@ MANUALLY-DEFINED MACROS IN CODE:
         a lot trying to get it to work.  However, it is available if
         building for Qt support (i.e. SEQ64_QTMIDI_SUPPORT is defined).
 
-    SEQ64_STAZED_EXPAND_RECORD:     (now a permanent, unmacroed feature)
-
-        This macro, now permanent, turns on the ability to specify
-        different behavior in recording.  Normally, when a pattern loops to
-        the beginning, and new events are received, then these new events are
-        added to the events already there.  If this macro is defined, then
-        the seqedit window provides a record modification button which lets
-        the user select "Overwrite", which deletes the events in the pattern
-        at the beginning of the loop, and "Expand", which adds measures to the
-        pattern as the progress of recording moves forward.
-
     SEQ64_EDIT_SEQUENCE_HIGHLIGHT:
 
         Provides the option to highlight the currently-editing sequence
@@ -367,30 +338,6 @@ MANUALLY-DEFINED MACROS IN CODE:
         it is unmuted, it is highlighted in cyan text on a black background.
         The highlighting follows whichever pattern editor or event editor has
         the focus.
-
-    SEQ64_HANDLE_TIMESIG_AND_TEMPO:
-
-        OBSOLETE:  It is now a permanent option, unchangeable.
-
-        Provides a new option to save the Time Signature and Tempo data
-        that may be present in a MIDI file (in the first track) in the
-        sequence object, and write them back to the MIDI file when saved
-        again, in Sequencer64 format.  The SeqSpec events that Seq24 and
-        Sequencer64 save for these "events" are not readable by other MIDI
-        applications, such as QTractor.  By enabling this macro, other
-        sequencers can read the correct time-signature and tempo values from
-        Sequencer64 MIDI files.
-
-    SEQ64_USE_NEW_FONT:
-
-        OBSOLETE:  now a run-time option that can be changed in the
-        user-settings ("user") configuration file.
-
-        Already defined in the font module.  If defined, a new, anti-aliased,
-        bold font is used in the user-interface.  This new font is implemented
-        in new XPM files in resources/pixmaps directory: wen*.xpm.  The font
-        is slightly larger, but changes the user-interface sizes only to an
-        infinitesmal degree.  Using this new font is the default.
 
     SEQ64_USE_EVENT_MAP:
 
@@ -416,51 +363,6 @@ MANUALLY-DEFINED MACROS IN CODE:
         with, which slows simple iteration down.  There are many
         complications, though.
 
-    SEQ64_USE_EVENTEDIT_MAP:
-
-        For the event editor (editable_events, etc.), this macro replaces the
-        std::list with std::multimap.
-
-    SEQ64_PRESORT_EVENT_CONTAINER (obsolete):
-
-        If using the std::list MIDI implementation (from Seq24), also
-        sort the MIDI event container after every event is inserted, even
-        when reading a MIDI file.  This greatly slows down the reading
-        of large MIDI files, though; our largest file then takes on the order
-        of 10 minutes to load!  So this option is a fallback in case bugs are
-        found related to NOT using SEQ64_USE_EVENT_MAP, but delaying sorting
-        until all sequence events have been loaded.
-
-    SEQ64_USE_MIDI_VECTOR:
-
-        Defined and used in the midifile module.  It provides the preferred
-        alternative to the list for storing and counting the bytes of MIDI
-        data.  It is an attempt to stop reversing certain events due to the
-        peculiarities of using std::list to store MIDI bytes from a sequence.
-        This new implementation uses std::vector and does not use pop_back()
-        to retrieve the bytes for writing to a file.
-
-    SEQ64_FOLLOW_PROGRESS_BAR:
-
-        Now a permanent option.  This macro has been removed.
-
-        Currently enabled by default in the seqroll.cpp module, this macro
-        turns on code that scrolls the sequence/pattern editor horizontally to
-        keep the progress bar in view for long patterns, as the tune plays.
-        It currently has the following issue:
-
-            -   Tracking when controlled by the Song Mode, with a gap in the
-                pattern triggering, causes the alignment of paging and
-                progress to get out of whack.
-
-    SEQ64_STAZED_EDIT_MENU:
-
-        Enables a new Edit menu, used for accessing features such as
-        whole-song transposition and exporting performances to normal MIDI
-        files.
-
-        Obsolete:  Now a permanent, unmacroed feature.
-
     SEQ64_STAZED_SONG_MODE_BUTTON:
 
         Enables a Live/Song-mode toggle-button on the main window, so
@@ -481,20 +383,6 @@ MANUALLY-DEFINED MACROS IN CODE:
             optionsfile
             user_settings
             And more...
-
-    SEQ64_TOGGLE_PLAYING:
-
-        This is now a PERMANENT option.  The macro is removed, the
-        functionality remains.
-
-        If defined (in the perform module), this macro makes the Mute button
-        of the Main window toggle only the tracks that are armed.  The
-        armed status of these tracks are saved, and then turned off.  Toggling
-        again turns only the armed tracks back on.  Please note that any
-        tracks that are armed while the previously-armed tracks are toggled
-        off will stay armed when the previously-armed tracks are toggled back
-        on.  This feature currently is not a strict "restore previous state"
-        button.
 
     USE_xxxxxx:
     SEQ64_xxxxxx_XXX:
@@ -589,8 +477,8 @@ DEPENDENCIES:
          Please note that we have not yet tested a mingw build on Linux,
          and we use qmake and the mingw tools, instead of automake/autoconf,
          on Windows.
-      -  Qt 5.  We do not want to install qtcreator, as it installs 650 Mb
-         worth of files.  Just install the bare minimum:
+      -  Qt 5.  Install qtcreator only if you want it, as it installs 650 Mb
+         worth of files.  One can just install the bare minimum:
          -  qt5-default
          -  qtbase5-dev
          -  qtbase5-dev-tools
@@ -619,7 +507,6 @@ DEPENDENCIES:
       -  doxygen and doxygen-latex
       -  graphviz
       -  texlive
-      -  More?
 
       To build the documentation manually, change to the doc/dox
       directory and run:
@@ -638,24 +525,22 @@ DEPENDENCIES:
       -  debhelper
       -  dh-autoreconf (Perl)
       -  fakeroot
-      -  More?
 
    MingW:
 
     Avoid use of AC_CYGWIN and AC_MINGW32.
 
+   Other:
+
+     -  git
+     -  vim or emacs
+
 https://mail.gnome.org/archives/commits-list/2013-January/msg03009.html
-
 https://www.gnu.org/software/autoconf/manual/autoconf-2.69/html_node/Obsolete-Macros.html
-
 http://mingw-cross.sourceforge.net/hello_autotools.html#mingw
-
 https://www.tinc-vpn.org/examples/cross-compiling-windows-binary/
-
 https://wiki.wxwidgets.org/Compiling_wxWidgets_with_MinGW
-
 https://github.com/Alexpux/MINGW-packages/blob/master/mingw-w64-gimp/PKGBUILD
-
 https://mail.gnome.org/archives/gimp-developer-list/2016-March/msg00014.html
 
    JACK Testing (optional):

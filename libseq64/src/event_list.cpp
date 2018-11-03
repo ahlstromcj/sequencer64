@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2018-10-18
+ * \updates       2018-11-03
  * \license       GNU GPLv2 or above
  *
  *  This container now can indicate if certain Meta events (time-signaure or
@@ -35,7 +35,7 @@
  *  main MIDI container are now back to using std::list (with sorting after
  *  loading), the editable_events object is now back to using std::multimap,
  *  for easier management and automatic sorting of events.  See
- *  SEQ64_USE_EVENT_MAP versus SEQ64_USE_EVENTEDIT_MAP.
+ *  SEQ64_USE_EVENT_MAP.
  */
 
 #include <stdio.h>                      /* C::printf()                  */

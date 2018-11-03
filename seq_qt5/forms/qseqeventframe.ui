@@ -40,6 +40,9 @@
      <height>200</height>
     </size>
    </property>
+   <property name="toolTip">
+    <string>Shows the events in the pattern/sequence.  Events can be edited only with the controls at the right of this table.</string>
+   </property>
    <property name="sizeAdjustPolicy">
     <enum>QAbstractScrollArea::AdjustIgnored</enum>
    </property>
@@ -337,6 +340,9 @@
           <height>24</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>Shows the current time in bars:beats:pulses.  Can be edited to insert or modify events.</string>
+        </property>
         <property name="text">
          <string>000:00:00000</string>
         </property>
@@ -374,6 +380,9 @@
           <width>16777215</width>
           <height>24</height>
          </size>
+        </property>
+        <property name="toolTip">
+         <string>The name of the currently-selected event.  Can be edited, but strict notation is necessary. Event statuses are set by name, not by number.</string>
         </property>
         <property name="text">
          <string>Event Name</string>
@@ -429,6 +438,9 @@
          <height>24</height>
         </size>
        </property>
+       <property name="statusTip">
+        <string>Shows the first data byte, if applicable.  Can be changed using decimal or hex (0xnn) notation.</string>
+       </property>
        <property name="text">
         <string>0x00</string>
        </property>
@@ -463,6 +475,9 @@
          <height>24</height>
         </size>
        </property>
+       <property name="statusTip">
+        <string>Shows the second data byte, if applicable.  Can be changed using decimal or hex (0xnn) notation.</string>
+       </property>
        <property name="text">
         <string>0x00</string>
        </property>
@@ -496,6 +511,9 @@
          <height>24</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Deletes the currently-selected MIDI event.</string>
+       </property>
        <property name="text">
         <string>Delete</string>
        </property>
@@ -515,6 +533,9 @@
          <width>72</width>
          <height>24</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Inserts a new event at the time shown above, with the data items shown above.</string>
        </property>
        <property name="text">
         <string>Insert</string>
@@ -536,6 +557,9 @@
          <height>24</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Deletes the current event, and then inserts a new event at the time shown above, with the data items shown above.</string>
+       </property>
        <property name="text">
         <string>Modify</string>
        </property>
@@ -546,6 +570,9 @@
      <widget class="QPushButton" name="button_clear">
       <property name="enabled">
        <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Deletes all of the events in this pattern.</string>
       </property>
       <property name="text">
        <string>Clear</string>
@@ -573,6 +600,9 @@
          <height>24</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Saves the currently-existing events to the pattern/sequence.</string>
+       </property>
        <property name="text">
         <string>Save to Sequence</string>
        </property>
@@ -592,6 +622,9 @@
          <width>16777215</width>
          <height>24</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Closes this editor without saving.</string>
        </property>
        <property name="text">
         <string>Close</string>

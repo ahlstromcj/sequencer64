@@ -68,8 +68,7 @@
  *
  * Toggle playing:
  *
- *      This feature was keyed by SEQ64_TOGGLE_PLAYING, but is now permanent.
- *      See the INSTALL file for more information.
+ *      Now a permanent feature.
  *
  *  User jean-emmanuel made the main window resizable if his scroll-bar
  *  feature is enable, pull #84.  We might eventually make resizability

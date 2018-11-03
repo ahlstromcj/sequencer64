@@ -1187,9 +1187,7 @@ build_details ()
 #ifdef SEQ64_LASH_SUPPORT
         << "LASH support on" << std::endl
 #endif
-#ifdef SEQ64_USE_MIDI_VECTOR
         << "MIDI vector (vs list) on" << std::endl
-#endif
         << "Seq32 chord generator on" << std::endl
         << "Seq32 LFO window on" << std::endl
         << "Seq32 menu buttons on" << std::endl

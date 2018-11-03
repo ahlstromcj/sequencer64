@@ -52,21 +52,6 @@
 #include "triggers.hpp"                 /* seq64::triggers, etc.        */
 
 /**
- * \obsolete
- *      Now a permanent option.
- *
- *  Provides a new option to save the Time Signature and Tempo data that may
- *  be present in a MIDI file (in the first track) in the sequence object, and
- *  write them back to the MIDI file when saved again, in Sequencer64 format.
- *  The SeqSpec events that Seq24 and Sequencer64 save for these "events" are
- *  not readable by other MIDI applications, such as QTractor.  By enabling
- *  this macro, other sequencers can read the correct time-signature and tempo
- *  values.
- *
- *      #define SEQ64_HANDLE_TIMESIG_AND_TEMPO
- */
-
-/**
  *  Provides an integer value for color that matches PaletteColor::NONE
  */
 

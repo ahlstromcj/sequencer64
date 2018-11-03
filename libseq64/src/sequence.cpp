@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-30
+ * \updates       2018-11-03
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -33,6 +33,13 @@
  *
  *  We had added null-pointer checks for the master MIDI buss pointer, but
  *  these just take up needless time, in most cases.
+ *
+ *  Provides an option to save the Time Signature and Tempo data that may be
+ *  present in a MIDI file (in the first track) in the sequence object, and
+ *  write them back to the MIDI file when saved again, in Sequencer64 format.
+ *  The SeqSpec events that Seq24 and Sequencer64 save for these "events" are
+ *  not readable by other MIDI applications, such as QTractor.  So other
+ *  sequencers can read the correct time-signature and tempo values.
  *
  * \note
  *      We leave a small gap in various functions where mark_selected() locks

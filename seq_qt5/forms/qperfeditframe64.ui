@@ -47,8 +47,11 @@
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
+         <property name="toolTip">
+          <string>Undo the previous operation(s).</string>
+         </property>
          <property name="statusTip">
-          <string>Undo the last operation(s).</string>
+          <string/>
          </property>
          <property name="text">
           <string/>
@@ -194,7 +197,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>Transpose</string>
+        <string>Transpose.</string>
        </property>
        <property name="text">
         <string>Trans</string>

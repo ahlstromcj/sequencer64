@@ -42,6 +42,12 @@
      <height>301</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Shows the existing play-lists read from the play-list file.</string>
+   </property>
+   <property name="statusTip">
+    <string/>
+   </property>
    <property name="rowCount">
     <number>10</number>
    </property>
@@ -161,6 +167,9 @@
      <width>291</width>
      <height>301</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Shows the MIDI tunes in the currently-selected play-list.</string>
    </property>
    <property name="rowCount">
     <number>10</number>

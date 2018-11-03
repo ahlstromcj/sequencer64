@@ -125,6 +125,9 @@
        <property name="focusPolicy">
         <enum>Qt::ClickFocus</enum>
        </property>
+       <property name="toolTip">
+        <string>Enter the (memorable) name of the screen-set/bank here.  Be careful of inadvertent hot-keys toggling the patterns.</string>
+       </property>
        <property name="verticalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
        </property>
@@ -212,6 +215,9 @@
        </property>
        <property name="focusPolicy">
         <enum>Qt::ClickFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>Sets the active screen-set/bank.  Normally ranges from 0 to 31.</string>
        </property>
        <property name="layoutDirection">
         <enum>Qt::LeftToRight</enum>

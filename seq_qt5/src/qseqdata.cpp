@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-14
+ * \updates       2018-11-04
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -144,6 +144,7 @@ qseqdata::paintEvent (QPaintEvent *)
 
             midibyte d0, d1;
             int event_x = tick / zoom();        /* + c_keyboard_padding_x;  */
+            bool selected = cev->is_selected();
             cev->get_data(d0, d1);
 
             int event_height = d1;              /* generate the value       */
@@ -151,6 +152,11 @@ qseqdata::paintEvent (QPaintEvent *)
                 event_height = d0;
 
             pen.setWidth(2);                    /* draw vertical grid lines */
+            if (selected)
+                pen.setColor("orange");
+            else
+                pen.setColor(Qt::black);
+
             painter.setPen(pen);
             painter.drawLine
             (

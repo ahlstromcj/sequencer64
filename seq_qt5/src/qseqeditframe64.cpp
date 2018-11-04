@@ -1132,7 +1132,7 @@ qseqeditframe64::initialize_panels ()
     ui->dataScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     /*
-     * qstriggereditor
+     * qstriggereditor (the narrow event pane)
      */
 
     m_seqevent = new qstriggereditor

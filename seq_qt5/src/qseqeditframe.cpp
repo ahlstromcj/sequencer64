@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Oli Kester; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-24
+ * \updates       2018-11-04
  * \license       GNU GPLv2 or above
  *
  *  This version of the qseqedit-frame class is basically the Kepler34
@@ -263,14 +263,14 @@ qseqeditframe::qseqeditframe
 #endif
 
     ui->cmbRecVol->addItem("Free",       0);
-    ui->cmbRecVol->addItem("Fixed 127",  127);
-    ui->cmbRecVol->addItem("Fixed 111",  111);
-    ui->cmbRecVol->addItem("Fixed 95",   95);
-    ui->cmbRecVol->addItem("Fixed 79",   79);
-    ui->cmbRecVol->addItem("Fixed 63",   63);
-    ui->cmbRecVol->addItem("Fixed 47",   47);
-    ui->cmbRecVol->addItem("Fixed 31",   31);
-    ui->cmbRecVol->addItem("Fixed 15",   15);
+    ui->cmbRecVol->addItem("127",  127);
+    ui->cmbRecVol->addItem("112",  112);
+    ui->cmbRecVol->addItem("96",   96);
+    ui->cmbRecVol->addItem("80",   80);
+    ui->cmbRecVol->addItem("64",   64);
+    ui->cmbRecVol->addItem("48",   48);
+    ui->cmbRecVol->addItem("32",   32);
+    ui->cmbRecVol->addItem("16",   16);
 
     m_popup = new QMenu(this);
     QMenu * menuSelect = new QMenu(tr("Select..."), m_popup);

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-11-03
+ * \updates       2018-11-04
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -766,35 +766,35 @@ seqedit::create_menus ()
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed: 127", sigc::bind(SET_REC_VOL, 127))
+        MenuElem("127", sigc::bind(SET_REC_VOL, 127))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed: 112", sigc::bind(SET_REC_VOL, 112))
+        MenuElem("112", sigc::bind(SET_REC_VOL, 112))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed:  96", sigc::bind(SET_REC_VOL, 96))
+        MenuElem("96", sigc::bind(SET_REC_VOL, 96))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed:  80", sigc::bind(SET_REC_VOL, 80))
+        MenuElem("80", sigc::bind(SET_REC_VOL, 80))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed:  64", sigc::bind(SET_REC_VOL, 64))
+        MenuElem("64", sigc::bind(SET_REC_VOL, 64))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed:  48", sigc::bind(SET_REC_VOL, 48))
+        MenuElem("48", sigc::bind(SET_REC_VOL, 48))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed:  32", sigc::bind(SET_REC_VOL, 32))
+        MenuElem("32", sigc::bind(SET_REC_VOL, 32))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed:  16", sigc::bind(SET_REC_VOL, 16))
+        MenuElem("16", sigc::bind(SET_REC_VOL, 16))
     );
 
     /**

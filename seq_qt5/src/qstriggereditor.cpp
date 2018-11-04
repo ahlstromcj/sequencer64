@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-29
+ * \updates       2018-11-04
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -193,7 +193,18 @@ qstriggereditor::paintEvent (QPaintEvent *)
             painter.setBrush(brush);
             painter.setPen(pen);
             painter.drawRect(x, y, qc_eventevent_x, qc_eventevent_y);
-            brush.setColor(selected ? Qt::red : Qt::white);
+
+            /*
+             * We like orange better:
+             *
+             *      brush.setColor(selected ? Qt::red : Qt::white);
+             */
+
+            if (selected)
+                brush.setColor("orange");
+            else
+                brush.setColor(Qt::white);
+
             painter.setBrush(brush);                /* draw event highlight */
             painter.drawRect(x, y, qc_eventevent_x - 1, qc_eventevent_y - 1);
         }

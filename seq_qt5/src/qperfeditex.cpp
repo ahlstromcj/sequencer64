@@ -106,8 +106,14 @@ void
 qperfeditex::closeEvent (QCloseEvent *)
 {
     if (not_nullptr(m_edit_parent))
-       m_edit_parent->remove_qperfedit();
+    {
+        /////// EXPERIMENT: just hide
+        // m_edit_parent->remove_qperfedit();
+
+        m_edit_parent->hide_qperfedit(true);
+    }
 }
+
 
 /**
  *  See usage in qsmainwnd.  It basically tells the edit-frame to update

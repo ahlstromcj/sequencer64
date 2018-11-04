@@ -127,13 +127,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>44</width>
+        <width>58</width>
         <height>32</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>44</width>
+        <width>58</width>
         <height>32</height>
        </size>
       </property>
@@ -400,13 +400,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>44</width>
+        <width>58</width>
         <height>32</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>44</width>
+        <width>58</width>
         <height>32</height>
        </size>
       </property>
@@ -835,7 +835,7 @@
      <x>0</x>
      <y>0</y>
      <width>864</width>
-     <height>20</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -968,7 +968,7 @@
   </action>
   <action name="actionQuit">
    <property name="text">
-    <string>Quit</string>
+    <string>&amp;Quit</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -1001,7 +1001,7 @@
   </action>
   <action name="actionExportMIDI">
    <property name="text">
-    <string>Export M&amp;IDI Only</string>
+    <string>Export &amp;MIDI Only</string>
    </property>
    <property name="toolTip">
     <string>Export without Seq64 SeqSpecs.</string>

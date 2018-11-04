@@ -197,11 +197,6 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
     qt_set_icon(follow_xpm, ui->m_toggle_follow);
     ui->m_toggle_follow->setEnabled(true);
     ui->m_toggle_follow->setCheckable(true);
-    // ui->m_toggle_follow->setToolTip
-    // (
-    //     "If active, the song piano roll scrolls to "
-    //     "follow the progress bar in playback."
-    // );
 
     /*
      * Qt::NoFocus is the default focus policy.

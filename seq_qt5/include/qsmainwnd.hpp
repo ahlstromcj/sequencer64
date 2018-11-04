@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-01
+ * \updates       2018-11-04
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -108,6 +108,7 @@ public:
     void show_message_box (const std::string & msg_text);
     void remove_editor (int seq);
     void remove_qperfedit ();
+    void hide_qperfedit (bool hide = false);
     void remove_live_frame (int ssnum);
 
     /**
@@ -279,6 +280,12 @@ private:
      */
 
     live_container m_open_live_frames;
+
+    /**
+     *  Indicates the visibility of the external performance-edit frame.
+     */
+
+    bool m_perf_frame_visible;
 
 private slots:
 

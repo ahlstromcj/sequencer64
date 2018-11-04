@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-31
+ * \updates       2018-11-04
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -150,7 +150,8 @@ qsmainwnd::qsmainwnd
     m_base_time_ms          (0),
     m_last_time_ms          (0),
     m_open_editors          (),
-    m_open_live_frames      ()
+    m_open_live_frames      (),
+    m_perf_frame_visible    (false)
 {
 #if ! defined PLATFORM_CPP_11
     initialize_key_map();
@@ -575,8 +576,8 @@ qsmainwnd::qsmainwnd
 
 qsmainwnd::~qsmainwnd ()
 {
-    delete ui;
     remove_qperfedit();     // hmmm, doesn't seem to work; see closeEvent()
+    delete ui;
 }
 
 /**
@@ -1489,7 +1490,7 @@ qsmainwnd::remove_all_editors ()
 
 /**
  * \param on
- *      If true, ???? Not yet in use.
+ *      Disabled for now.
  */
 
 void
@@ -1501,8 +1502,52 @@ qsmainwnd::load_qperfedit (bool /*on*/)
         if (not_nullptr(ex))
         {
             m_perfedit = ex;
-            ex->show();
-            ui->btnPerfEdit->setEnabled(false);
+            hide_qperfedit(false);
+
+            /*
+             * Leave it enabled now to do show versus hide to avoid a weird
+             * segfault.
+             *
+             * ui->btnPerfEdit->setEnabled(false);
+             */
+        }
+    }
+    else
+    {
+        hide_qperfedit();
+    }
+}
+
+/**
+ *  Shows or hides the external performance editor window.  We use to just
+ *  delete it, but somehow this started causing a segfault when X-ing
+ *  (closing) that window.  So now we just keep it around until the
+ *  application is exited.
+ *
+ * \param hide
+ *      If true, the performance editor is unconditionally hidden.  Otherwise,
+ *      it is shown if hidden, or hidden if showing.  The default value is
+ *      false.
+ */
+
+void
+qsmainwnd::hide_qperfedit (bool hide)
+{
+    if (not_nullptr(m_perfedit))
+    {
+        if (hide)
+        {
+            m_perfedit->hide();
+            m_perf_frame_visible = false;
+        }
+        else
+        {
+            if (m_perf_frame_visible)
+                m_perfedit->hide();
+            else
+                m_perfedit->show();
+
+            m_perf_frame_visible = ! m_perf_frame_visible;
         }
     }
 }
@@ -1517,8 +1562,9 @@ qsmainwnd::remove_qperfedit ()
 {
     if (not_nullptr(m_perfedit))
     {
-        delete m_perfedit;
+        qperfeditex * tmp = m_perfedit;
         m_perfedit = nullptr;
+        delete tmp;
         ui->btnPerfEdit->setEnabled(true);
     }
 }

@@ -198,9 +198,21 @@
     <rect>
      <x>310</x>
      <y>140</y>
-     <width>64</width>
+     <width>72</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>72</width>
+     <height>24</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>72</width>
+     <height>24</height>
+    </size>
    </property>
    <property name="toolTip">
     <string>Opens a dialog to select and open a play-list file.</string>
@@ -217,9 +229,21 @@
     <rect>
      <x>310</x>
      <y>220</y>
-     <width>64</width>
+     <width>72</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>72</width>
+     <height>24</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>72</width>
+     <height>24</height>
+    </size>
    </property>
    <property name="toolTip">
     <string>Saves the current play-list file.</string>
@@ -236,9 +260,21 @@
     <rect>
      <x>700</x>
      <y>140</y>
-     <width>64</width>
+     <width>72</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>72</width>
+     <height>24</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>72</width>
+     <height>24</height>
+    </size>
    </property>
    <property name="toolTip">
     <string>Opens a file dialog to select a MIDI song to add to the current play-list.</string>
@@ -253,7 +289,7 @@
      <x>10</x>
      <y>0</y>
      <width>751</width>
-     <height>29</height>
+     <height>30</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizPlaylistFileLayout">
@@ -291,9 +327,21 @@
     <rect>
      <x>700</x>
      <y>180</y>
-     <width>64</width>
+     <width>72</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>72</width>
+     <height>24</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>72</width>
+     <height>24</height>
+    </size>
    </property>
    <property name="toolTip">
     <string>Adds the song information specified above to the current play-list section.</string>
@@ -310,9 +358,21 @@
     <rect>
      <x>700</x>
      <y>220</y>
-     <width>64</width>
+     <width>72</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>72</width>
+     <height>24</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>72</width>
+     <height>24</height>
+    </size>
    </property>
    <property name="toolTip">
     <string>Removes the current song from the current play-list section.</string>
@@ -329,9 +389,21 @@
     <rect>
      <x>310</x>
      <y>180</y>
-     <width>64</width>
+     <width>72</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>72</width>
+     <height>24</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>72</width>
+     <height>24</height>
+    </size>
    </property>
    <property name="toolTip">
     <string>Adds the play-list defined by the entries above to the current play-list.</string>
@@ -343,7 +415,7 @@
   <widget class="QCheckBox" name="checkBoxPlaylistActive">
    <property name="geometry">
     <rect>
-     <x>710</x>
+     <x>700</x>
      <y>280</y>
      <width>81</width>
      <height>21</height>
@@ -362,7 +434,7 @@
      <x>90</x>
      <y>48</y>
      <width>281</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -378,7 +450,7 @@
      <x>90</x>
      <y>74</y>
      <width>36</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -394,7 +466,7 @@
      <x>130</x>
      <y>74</y>
      <width>241</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -410,7 +482,7 @@
      <x>480</x>
      <y>48</y>
      <width>281</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -426,7 +498,7 @@
      <x>480</x>
      <y>74</y>
      <width>36</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -442,7 +514,7 @@
      <x>520</x>
      <y>74</y>
      <width>241</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="toolTip">

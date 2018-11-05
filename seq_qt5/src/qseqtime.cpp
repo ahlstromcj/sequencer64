@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-29
+ * \updates       2018-11-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -129,7 +129,7 @@ qseqtime::paintEvent (QPaintEvent *)
     painter.setPen(pen);
     for (int tick = starttick; tick <= endtick; tick += ticks_per_step)
     {
-        char bar[8];
+        char bar[16];
         int x_offset = tick / zoom() + c_keyboard_padding_x - scroll_offset_x();
 
         /*

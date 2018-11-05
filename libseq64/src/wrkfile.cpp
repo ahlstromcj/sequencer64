@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-04
- * \updates       2018-09-20
+ * \updates       2018-11-05
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the WRK format, see, for example:
@@ -194,7 +194,9 @@ void
 wrkfile::not_supported (const std::string & tag)
 {
     if (rc().show_midi())
+    {
         warnprintf("! Cakewalk '%s' not supported\n", tag.c_str());
+    }
 }
 
 /**

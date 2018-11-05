@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-10-30
+dnl \update        2018-11-04
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -695,16 +695,11 @@ AM_CONDITIONAL([BUILD_WINDOWS], [test "$build_windows" = "yes"])
 
 dnl 6.0  Top portion of the config.h/seq64-config.h header files.  The
 dnl      seq64-config.h header file has "SEQ64_" prepended to these
-dnl      automatically for us.  Also, we can't use
-dnl      #define SEQ64_API_VERSION "${SEQ64_API_VERSION}",
-dnl      since the macro call in quotes does /not/ get expanded.
-dnl
-dnl Note: The AX_PREFIX_CONFIG_H macro called way above prepends
-dnl       "SEQ64_" to these values when it generated seq64-config.h.
+dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-10-30"
+#define VERSION_DATE_SHORT "2018-11-04"
 #define VERSION "0.96.1"
 
 )
@@ -737,18 +732,15 @@ COMMONFLAGS="$WARNFLAGS -D_REENTRANT $APIDEF $DBGFLAGS $STACKCHK $NOERRLOG $NOTH
 WARNINGS_DISABLED="-Wno-unused-parameter -Wno-non-virtual-dtor"
 
 dnl Check for MinGW. Workaround for libtool's DLL_EXPORT stupidity.
-dnl Temporarily, we add the -v option to gcc, so that we can see
-dnl what GCC options are in force for MingW builds.
-dnl
 dnl AX_PTHREAD leaves PTHREADS_LIBS empty for gcc, and sets PTHREADS_CFLAGS
 dnl to -pthread, which causes problems if we need -lpthread to appear in
 dnl pkgconfig files.
 dnl
 dnl AX_PTHREAD
-
-dnl VERBCFLAGS="-v"
+dnl
 dnl That macro will cause output of just what tools are being used to build
 dnl code.
+dnl VERBCFLAGS="-v"
 
 VERBCFLAGS=""
 
@@ -780,11 +772,7 @@ dnl stop g++ 5.2 from griping about usage of std::auto_ptr<>.
 dnl
 dnl 2015-10-02:  After a Debian Sid update, the configfile module wouldn't
 dnl compile because, we think, the sigc++ now required C++11 support.
-dnl So we put that requirement back, and had to fix some issues with
-dnl conditional compilation.
-dnl
-dnl 2017-08-25:  Removed the already-configured (above) -Wl,--as-needed option.
-dnl 2017-09-14:  Replaced c++11 with c++14 to support glibmm-2.24 update.
+dnl Note the c++14 option.
 
 CFLAGS="$CFLAGS $COMMONFLAGS"
 CXXFLAGS="$CFLAGS -std=c++14 -Wno-variadic-macros -Wno-deprecated-declarations"
@@ -812,8 +800,7 @@ AH_BOTTOM(
 
 )
 
-dnl Set up the Makefiles.  First, add Doxygen support conditionally, not using
-dnl doc/dox/Makefile.  Then do the rest.
+dnl Set up the Makefiles.
 dnl
 dnl We decided to build the Doxygen documentation only manually, and have
 dnl removed the doc directory from the Makefile.am, and commented out the

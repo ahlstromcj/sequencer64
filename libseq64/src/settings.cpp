@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-05-17
- * \updates       2018-08-04
+ * \updates       2018-11-05
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -140,8 +140,9 @@ choose_ppqn (int ppqn)
         if (result < SEQ64_MINIMUM_PPQN || result > SEQ64_MAXIMUM_PPQN)
         {
             if (result > SEQ64_USE_FILE_PPQN)
+            {
                 warnprint("Default & file PPQN out of range, setting PPQN = 192");
-
+            }
             result = SEQ64_DEFAULT_PPQN;
         }
     }

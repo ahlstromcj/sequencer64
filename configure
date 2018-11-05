@@ -19973,7 +19973,6 @@ COMMONFLAGS="$WARNFLAGS -D_REENTRANT $APIDEF $DBGFLAGS $STACKCHK $NOERRLOG $NOTH
 WARNINGS_DISABLED="-Wno-unused-parameter -Wno-non-virtual-dtor"
 
 
-
 VERBCFLAGS=""
 
 case "$host_os" in

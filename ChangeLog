@@ -1,5 +1,225 @@
+2018-11-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/seqedit.cpp, seq_qt5/forms/qplaylistframe.ui,
+	seq_qt5/forms/qseqeditframe.ui, seq_qt5/forms/qseqeditframe64.ui,
+	seq_qt5/forms/qsmainwnd.ui, seq_qt5/include/qsmainwnd.hpp,
+	seq_qt5/src/qperfeditex.cpp, seq_qt5/src/qperfeditframe64.cpp,
+	seq_qt5/src/qseqdata.cpp, seq_qt5/src/qseqeditframe.cpp,
+	seq_qt5/src/qseqeditframe64.cpp, seq_qt5/src/qsmainwnd.cpp,
+	seq_qt5/src/qstriggereditor.cpp: Fixed user-interface sizing,
+	segfault, and selection coloring.
+
+2018-11-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/midibus_common.hpp,
+	libseq64/src/optionsfile.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_qt5/src/qclocklayout.cpp, seq_qt5/src/qseqeditframe64.cpp,
+	seq_rtmidi/src/midibus.cpp: Fixed optionsfile reading of midi-clock
+	and handling of disabled ports in the seqedit windows.
+	* INSTALL, libseq64/include/midifile.hpp,
+	libseq64/include/perform.hpp, libseq64/include/seq64_features.h,
+	libseq64/include/sequence.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/event_list.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_qt5/forms/qperfeditframe64.ui, seq_qt5/forms/qplaylistframe.ui,
+	seq_qt5/forms/qseqeditframe.ui, seq_qt5/forms/qseqeditframe64.ui,
+	seq_qt5/forms/qseqeventframe.ui, seq_qt5/forms/qsliveframe.ui: 
+	Updated tooltips and feature macros.
+
+2018-11-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* bootstrap, contrib/notes/arm-build.txt,
+	libseq64/src/sequence.cpp, nsis/build_release_package.bat,
+	packages, seq_qt5/forms/qlfoframe.ui,
+	seq_qt5/forms/qperfeditframe64.ui,
+	seq_qt5/forms/qseqeditframe64.ui, seq_qt5/forms/qsmainwnd.ui,
+	seq_qt5/include/qskeymaps.hpp, seq_qt5/src/qlfoframe.cpp,
+	seq_qt5/src/qperfeditframe64.cpp, seq_qt5/src/qseqeditframe64.cpp,
+	seq_qt5/src/qsmainwnd.cpp: Moved tooltips to the ui files, and
+	packaging improvements.
+
+2018-10-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, configure, configure.ac, configure.help,
+	doc/dox/doxy-notes.cfg, doc/dox/doxy-reference.cfg,
+	include/config.h.in, include/qt/portmidi/seq64-config.h,
+	libseq64/include/seq64_features.h, libseq64/include/sequence.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/lfownd.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqmenu.cpp,
+	seq_qt5/src/qlfoframe.cpp, seq_qt5/src/qseqeditframe64.cpp: Removed
+	a few more feature macros to make features permanent.
+
+2018-10-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, Seq64cli/seq64rtcli.cpp, Seq64qt5/seq64qt5.cpp,
+	Seq64rtmidi/seq64rtmidi.cpp, TODO, configure, configure.ac,
+	data/license.txt, data/readme.txt, doc/dox/doxy-notes.cfg,
+	doc/dox/doxy-reference.cfg, include/qt/portmidi/seq64-config.h,
+	libseq64/include/midi_control.hpp, libseq64/include/midifile.hpp,
+	libseq64/include/scales.h, libseq64/include/seq64_features.h,
+	libseq64/include/sequence.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	nsis/Seq64Constants.nsh, nsis/Seq64Setup.nsi,
+	nsis/build_release_package.bat, packages,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqkeys.cpp, seq_gtkmm2/src/seqroll.cpp,
+	seq_gtkmm2/src/seqtime.cpp, seq_qt5/forms/qseqeditframe64.ui,
+	seq_qt5/include/qseqeditframe64.hpp, seq_qt5/include/qseqroll.hpp,
+	seq_qt5/src/qseqeditframe64.cpp, seq_qt5/src/qseqroll.cpp,
+	seq_qt5/src/qseqtime.cpp, seq_qt5/src/qsmainwnd.cpp,
+	seq_qt5/src/qstriggereditor.cpp: Mandated a number of long-standing
+	SEQ64 macros to make their features permanent.
+	* README, data/rowclipsmap.rc, libseq64/include/perform.hpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_qt5/forms/qperfeditframe64.ui,
+	seq_qt5/forms/qplaylistframe.ui, seq_qt5/forms/qseqeditframe.ui,
+	seq_qt5/forms/qseqeventframe.ui, seq_qt5/src/qperfbase.cpp,
+	seq_qt5/src/qperftime.cpp, seq_qt5/src/qplaylistframe.cpp,
+	seq_qt5/src/qseqbase.cpp, seq_qt5/src/qsliveframe.cpp: Tweaks to Qt
+	user-interface sizes.
+
+2018-10-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/midi/README, data/rowclipsmap.rc,
+	libseq64/src/perform.cpp, seq_qt5/forms/qlfoframe.ui: Tentatively
+	fixed GitHub issue #170 where MIDI controls used for handling
+	multiple patterns only handled the first pattern.
+
+2018-10-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/midi/README, libseq64/include/globals.h,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/lfownd.cpp,
+	seq_qt5/forms/qlfoframe.ui, seq_qt5/forms/qseqeditframe64.ui,
+	seq_qt5/src/qlfoframe.cpp, seq_qt5/src/qseqkeys.cpp: Removed some
+	MIDI files and cleaned up the LFO, keys, and edit frames.
+	* README, configure.ac, include/config.h.in,
+	libseq64/include/globals.h, seq_gtkmm2/src/seqkeys.cpp,
+	seq_qt5/forms/qperfeditframe64.ui,
+	seq_qt5/forms/qseqeditframe64.ui, seq_qt5/include/qperfnames.hpp,
+	seq_qt5/include/qseqkeys.hpp, seq_qt5/src/qperfeditframe64.cpp,
+	seq_qt5/src/qperfnames.cpp, seq_qt5/src/qscrollmaster.cpp,
+	seq_qt5/src/qseqeditframe.cpp, seq_qt5/src/qseqeditframe64.cpp,
+	seq_qt5/src/qseqframe.cpp, seq_qt5/src/qseqkeys.cpp: Fixed qseqkey
+	vertical scrolling.
+
+2018-10-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64rtmidi/seq64rtmidi.cpp, libseq64/include/palette.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/src/font.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_qt5/src/gui_palette_qt5.cpp,
+	seq_qt5/src/qsliveframe.cpp, strap_functions: Fixes to coloring,
+	seqkeys and perfnames still need fixing.
+
+2018-10-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64qt5/seq64qt5.cpp, Seq64rtmidi/seq64rtmidi.cpp,
+	data/sample.playlist, libseq64/include/palette.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_qt5/forms/qseditoptions.ui,
+	seq_qt5/include/qsliveframe.hpp, seq_qt5/src/gui_palette_qt5.cpp,
+	seq_qt5/src/qseditoptions.cpp, seq_qt5/src/qsliveframe.cpp: Fixing
+	sequence coloring and color menus.
+
+2018-10-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure.ac, libseq64/include/easy_macros.h,
+	libseq64/include/palette.hpp, libseq64/include/perform.hpp,
+	libseq64/include/platform_macros.h,
+	libseq64/src/editable_events.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/perform.cpp, libseq64/src/playlist.cpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_qt5/include/gui_palette_qt5.hpp,
+	seq_qt5/include/qskeymaps.hpp, seq_qt5/include/qsliveframe.hpp,
+	seq_qt5/src/gui_palette_qt5.cpp, seq_qt5/src/qskeymaps.cpp,
+	seq_qt5/src/qsliveframe.cpp, seq_qt5/src/qsmainwnd.cpp: Playlist
+	fixes and macro cleanup.
+
+2018-10-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* aux-files/compile, aux-files/depcomp, aux-files/missing,
+	configure, include/config.h.in, libseq64/include/perform.hpp,
+	libseq64/include/playlist.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/playlist.cpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, seq_qt5/include/gui_palette_qt5.hpp,
+	seq_qt5/include/qplaylistframe.hpp,
+	seq_qt5/include/qsliveframe.hpp, seq_qt5/src/qplaylistframe.cpp,
+	seq_qt5/src/qsliveframe.cpp, seq_qt5/src/qsmainwnd.cpp: Interim
+	check-in, fixed playlist handling, frame-display.
+
+2018-10-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, libseq64/include/configfile.hpp,
+	libseq64/include/easy_macros.hpp, libseq64/include/palette.hpp,
+	libseq64/include/perform.hpp, libseq64/include/playlist.hpp,
+	libseq64/include/settings.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/palette.cpp, libseq64/src/playlist.cpp,
+	libseq64/src/userfile.cpp, seq_qt5/forms/qplaylistframe.ui,
+	seq_qt5/include/gui_palette_qt5.hpp,
+	seq_qt5/include/qplaylistframe.hpp,
+	seq_qt5/include/qsliveframe.hpp, seq_qt5/include/qsmainwnd.hpp,
+	seq_qt5/src/gui_palette_qt5.cpp, seq_qt5/src/qplaylistframe.cpp,
+	seq_qt5/src/qseqeditframe64.cpp, seq_qt5/src/qsliveframe.cpp,
+	seq_qt5/src/qsmainwnd.cpp: Fixes to Qt coloring and playlists.
+
+2018-10-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, libseq64/include/perform.hpp, libseq64/libseq64.pro,
+	libseq64/src/cmdlineopts.cpp, qpseq64.pro,
+	seq_qt5/src/qlfoframe.cpp, seq_qt5/src/qseqeditframe64.cpp: Tried
+	and failed to get a good 32-bit build on an older system.
+
+2018-10-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, VERSION, configure.ac, seq_qt5/src/qperfeditframe64.cpp,
+	seq_qt5/src/qsliveframe.cpp: More fixes, interim check-in while
+	still on vacation.
+
+2018-10-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/rc_settings.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_qt5/forms/qplaylistframe.ui, seq_qt5/src/qsliveframe.cpp,
+	seq_qt5/src/qsmainwnd.cpp: Interim check-in of minor Qt fixes.
+
+2018-10-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, libseq64/include/palette.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/palette.cpp,
+	libseq64/src/userfile.cpp, seq_qt5/forms/qsmainwnd.ui,
+	seq_qt5/include/gui_palette_qt5.hpp,
+	seq_qt5/include/qsliveframe.hpp, seq_qt5/src/gui_palette_qt5.cpp,
+	seq_qt5/src/qsliveframe.cpp, seq_qt5/src/qsmainwnd.cpp: Fixes to
+	live-frame handling, MIDI import, and coloring.
+
+2018-10-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64cli/seq64rtcli.cpp, aux-files/compile, aux-files/depcomp,
+	aux-files/missing, configure, data/ca-sample.playlist,
+	libseq64/include/user_settings.hpp, libseq64/src/perform.cpp,
+	libseq64/src/playlist.cpp, man/sequencer64.1,
+	seq_qt5/include/qsmainwnd.hpp, seq_qt5/src/qliveframeex.cpp,
+	seq_qt5/src/qseqeditframe64.cpp, seq_qt5/src/qsliveframe.cpp,
+	seq_qt5/src/qsmainwnd.cpp: Fixes to multiset, file import, and CLI.
+
+2018-09-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : commit 5fded88314422264bb954c33bede4888fc6f09e5 Author: Chris
+	Ahlstrom <ahlstromcj@gmail.com> Date:   Sun Sep 30 18:17:56 2018
+	-0400
+
 2018-09-29  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* ChangeLog: Update ChangeLog.
 	* data/erroneous.rc, data/erroneous.usr, data/license.txt,
 	data/readme.txt, data/readme.windows,
 	nsis/build_release_package.bat, packages: Version 0.96.0 ready to

@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2018-09-29
-# \update     	2018-10-31
+# \update     	2018-11-07
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -29,9 +29,9 @@ if [ "$1" == "--help" ] || [ "$1" == "help" ] ; then
 
    cat << E_O_F
 
-packages 0.3 2018-10-31
+packages 0.4 2018-11-07
 
-Usage:  ./packages [--dry-run] [--release [0.96.0] ]
+Usage:  ./packages [--dry-run] [--release [0.96.1] ]
 
 This script packs the contents of the current directory into the following
 packages:
@@ -59,7 +59,9 @@ else
         --release)
             shift
             DORELEASE="yes"
-            RELEASENUMBER="$1"
+            if [ "$1" != "" ] ; then
+               RELEASENUMBER="$1"
+            fi
             ;;
 
         *)
@@ -72,52 +74,51 @@ else
 fi
 
 PACKAGENAME="qpseq64-release-package-$RELEASENUMBER.7z"
-INSTALLERNAME="sequencer64_setup_$RELEASENUMBER-$REVNUMBER.exe"
-ZIPNAME="qpseq64-portable-$RELEASENUMBER-$REVNUMBER.zip"
+# INSTALLERNAME="sequencer64_setup_$RELEASENUMBER-$REVNUMBER.exe"
+# ZIPNAME="qpseq64-portable-$RELEASENUMBER-$REVNUMBER.zip"
+INSTALLERNAME="sequencer64_setup_$RELEASENUMBER.exe"
+ZIPNAME="qpseq64-portable-$RELEASENUMBER.zip"
 TARNAME="sequencer64-master-rtmidi-$RELEASENUMBER.tar.xz"
 
 if [ "$DODRYRUN" == "yes" ] ; then
 
-   echo "Extracting Windows deployment package..."
-   echo "$ 7z x $PACKAGENAME"
-   echo "$ mv $PACKAGENAME .."
-   echo "$ pushd nsis"
-   echo "Building NSIS installer for release $RELEASENUMBER..."
-   echo "$ makensis Seq64Setup.nsi"
-   echo "$ popd"
-   echo "$ cp release/$INSTALLERNAME ../sequencer64-packages/latest"
-   echo "Making a portable Zip package..."
-   echo "$ mv release/ qpseq64"
-   echo "$ zip -q -u -r $ZIPNAME qpseq64/"
-   echo "$ mv $ZIPNAME ../sequencer64-packages/latest"
+   echo "DRY RUN, release = '$RELEASENUMBER'...."
 
    if [ -f configure ] ; then
       echo " "
       echo "Making a standard Linux source/configure tarball..."
-      echo "$ ./pack --release rtmidi 0.96.0"
+      echo "$ ./pack --release rtmidi $RELEASENUMBER"
       echo "$ mv ../$TARNAME ../sequencer64-packages/latest"
    else
       echo " "
       echo "WARNING:  'configure' does not exist, cannot make a standard Linux"
-      echo "          source tarball!!!"
+      echo "          source tarball! Aborting."
+      exit 1
    fi
 
+   echo "Extracting Windows deployment package..."
+   echo "$ 7z x -y $PACKAGENAME"
+
+#  echo "$ mv $PACKAGENAME .."
+
+   echo "$ pushd nsis"
+   echo "Building NSIS installer for release $RELEASENUMBER..."
+   echo "$ makensis Seq64Setup.nsi"
+   echo "$ popd"
+
+   echo "$ mkdir -p qpseq64"
+   echo "$ cp -r release/* qpseq64"
+   echo "$ rm -rf release"
+   echo "$ cp qpseq64/$INSTALLERNAME ../sequencer64-packages/latest"
+   echo "Copying qpseq64/$INSTALLERNAME to ../sequencer64-packages/latest..."
+
+   echo "Making a portable Zip package..."
+   echo "$ zip -q -u -r $ZIPNAME qpseq64/"
+   echo "Copying qpseq64/$ZIPNAME to ../sequencer64-packages/latest..."
+   echo "$ cp $ZIPNAME ../sequencer64-packages/latest"
    echo "$ ls -lrt ../sequencer64-packages/latest"
 
 else
-
-   echo "Extracting Windows deployment package..."
-   7z x $PACKAGENAME
-   mv $PACKAGENAME ..
-   pushd nsis
-   echo "Building NSIS installer for release $RELEASENUMBER..."
-   makensis Seq64Setup.nsi
-   popd
-   cp release/$INSTALLERNAME ../sequencer64-packages/latest
-   echo "Making a portable Zip package..."
-   mv release/ qpseq64
-   zip -u -r $ZIPNAME qpseq64/
-   mv $ZIPNAME ../sequencer64-packages/latest
 
    if [ -f configure ] ; then
       echo " "
@@ -127,9 +128,31 @@ else
    else
       echo " "
       echo "WARNING:  'configure' does not exist, cannot make a standard Linux"
-      echo "          source tarball!!!"
+      echo "          source tarball! Aborting."
+      exit 1
    fi
 
+   echo "Extracting Windows deployment package..."
+   7z x -y $PACKAGENAME
+
+#  mv $PACKAGENAME ..
+
+   pushd nsis
+   echo "Building NSIS installer for release $RELEASENUMBER..."
+   makensis Seq64Setup.nsi
+   popd
+
+   mkdir -p qpseq64
+   cp -r release/* qpseq64
+   rm -rf release/
+
+   echo "Copying qpseq64/$INSTALLERNAME to ../sequencer64-packages/latest..."
+   cp qpseq64/$INSTALLERNAME ../sequencer64-packages/latest
+
+   echo "Making a portable Zip package..."
+   zip -q -u -r $ZIPNAME qpseq64/
+   echo "Copying qpseq64/$ZIPNAME to ../sequencer64-packages/latest..."
+   cp $ZIPNAME ../sequencer64-packages/latest
    ls -lrt ../sequencer64-packages/latest
 
 fi

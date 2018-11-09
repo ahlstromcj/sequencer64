@@ -107,7 +107,9 @@ private:
     };
 
     /**
-     *  A type for holding a numerically ordered list of songs.
+     *  A type for holding a numerically-ordered list of songs, each
+     *  represented by a song_spec_t structure.  The key value is an integer
+     *  representing the MIDI control number that can call up the song.
      */
 
     typedef std::map<int, song_spec_t> song_list;
@@ -122,15 +124,15 @@ private:
     struct play_list_t
     {
         /**
-         *  Provides an ordinal value that indicates the offset of the playlist
-         *  in the play-list file.
+         *  Provides an ordinal value that indicates the offset of the
+         *  playlist in the play-list file.
          */
 
         int ls_index;
 
         /**
-         *  Provides a copy of the key, which is the MIDI control number that the
-         *  user has applied to this playlist in the play-list file.
+         *  Provides a copy of the key, which is the MIDI control number that
+         *  the user has applied to this playlist in the play-list file.
          */
 
         int ls_midi_number;
@@ -164,7 +166,9 @@ private:
     };
 
     /**
-     *  A type for holding a numerically ordered list of playlists.
+     *  A type for holding a numerically ordered list of playlists, each
+     *  represent by a play_list_t structure.  The key value is an integer
+     *  representing the MIDI control number that can call up the play-list.
      */
 
     typedef std::map<int, play_list_t> play_list;

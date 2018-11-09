@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-09-04
- * \updates       2018-10-28
+ * \updates       2018-11-08
  * \license       GNU GPLv2 or above
  *
  */
@@ -87,39 +87,55 @@ qplaylistframe::qplaylistframe
     songcolumns << "MIDI#" << "Song File";
     ui->tablePlaylistSongs->setHorizontalHeaderLabels(songcolumns);
     ui->tablePlaylistSongs->setSelectionBehavior(QAbstractItemView::SelectRows);
-
     set_row_heights(SEQ64_PLAYLIST_ROW_HEIGHT);
     set_column_widths();
-
     connect
     (
         ui->tablePlaylistSections, SIGNAL(currentCellChanged(int, int, int, int)),
         this, SLOT(handle_list_click_ex(int, int, int, int))
     );
-
     connect
     (
         ui->tablePlaylistSongs, SIGNAL(currentCellChanged(int, int, int, int)),
         this, SLOT(handle_song_click_ex(int, int, int, int))
     );
-
     connect
     (
         ui->buttonPlaylistLoad, SIGNAL(clicked(bool)),
         this, SLOT(handle_list_load_click())
     );
-
-#if 0
-    QPushButton *buttonPlaylistLoad;
-    QPushButton *buttonPlaylistAdd;
-    QPushButton *buttonPlaylistRemove;
-    QPushButton *buttonPlaylistSave;
-    QPushButton *buttonSongLoad;
-    QPushButton *buttonSongAdd;
-    QPushButton *buttonSongRemove;
-    QCheckBox *checkBoxPlaylistActive;
-#endif  // 0
-
+    connect
+    (
+        ui->buttonPlaylistAdd, SIGNAL(clicked(bool)),
+        this, SLOT(handle_list_add_click())
+    );
+    /*
+    connect
+    (
+        ui->buttonPlaylistRemove, SIGNAL(clicked(bool)),
+        this, SLOT(handle_list_remove_click())
+    );
+    */
+    connect
+    (
+        ui->buttonPlaylistSave, SIGNAL(clicked(bool)),
+        this, SLOT(handle_list_save_click())
+    );
+    connect
+    (
+        ui->buttonSongAdd, SIGNAL(clicked(bool)),
+        this, SLOT(handle_song_add_click())
+    );
+    connect
+    (
+        ui->buttonSongRemove, SIGNAL(clicked(bool)),
+        this, SLOT(handle_song_remove_click())
+    );
+    connect
+    (
+        ui->checkBoxPlaylistActive, SIGNAL(clicked(bool)),
+        this, SLOT(handle_playlist_active_click())
+    );
     if (perf().playlist_mode())
         reset_playlist();
 
@@ -457,6 +473,91 @@ qplaylistframe::handle_list_load_click ()
 {
     if (not_nullptr(m_parent))
         m_parent->open_playlist();
+}
+
+/**
+ *
+ */
+
+void
+qplaylistframe::handle_list_add_click ()
+{
+    // if (not_nullptr(m_parent))
+    //    m_parent->open_playlist();
+}
+
+/**
+ *
+ */
+
+void
+qplaylistframe::handle_list_remove_click ()
+{
+    // if (not_nullptr(m_parent))
+    //    m_parent->open_playlist();
+}
+
+/**
+ *
+ */
+
+void
+qplaylistframe::handle_list_save_click ()
+{
+    // if (not_nullptr(m_parent))
+    //    m_parent->open_playlist();
+}
+
+/**
+ *
+ */
+
+void
+qplaylistframe::handle_song_add_click ()
+{
+    if (not_nullptr(m_parent))
+    {
+        /*
+         * These values depend on correct information edited into the Song
+         * text fields.  We should support loading a song from a
+         * file-selection dialog.
+         */
+
+        std::string name = ui->editSongFilename->text().toStdString();
+        std::string directory = ui->editSongPath->text().toStdString();
+        std::string nstr = ui->editSongNumber->text().toStdString();
+        int midinumber = std::stoi(nstr);
+        int index = perf().song_count() + 1;
+        if (! perf().add_song(index, midinumber, name, directory))
+        {
+            // report error
+        }
+    }
+
+
+    //  m_parent->xxxxxxxxx();
+}
+
+/**
+ *
+ */
+
+void
+qplaylistframe::handle_song_remove_click ()
+{
+    // if (not_nullptr(m_parent))
+    //    m_parent->open_playlist();
+}
+
+/**
+ *
+ */
+
+void
+qplaylistframe::handle_playlist_active_click ()
+{
+    // if (not_nullptr(m_parent))
+    //    m_parent->open_playlist();
 }
 
 /**

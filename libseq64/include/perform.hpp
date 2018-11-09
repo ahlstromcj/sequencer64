@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-11-03
+ * \updates       2018-11-08
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1299,6 +1299,10 @@ public:
         return bool(m_play_list) ? m_play_list->open_current_song() : false ;
     }
 
+    /**
+     *
+     */
+
     bool open_select_list (int index, bool opensong = true)
     {
         bool result = bool(m_play_list);
@@ -1311,11 +1315,41 @@ public:
         return result;
     }
 
+    /**
+     * NEWWWWWWWWWWWWWWWWWWWWWWWWW
+     */
+
+    bool add_song
+    (
+        int index, int midinumber,
+        const std::string & name,
+        const std::string & directory
+    )
+    {
+        bool result = bool(m_play_list);
+        if (result)
+        {
+            result = m_play_list->add_song
+            (
+                index, midinumber, name, directory
+            );
+        }
+        return result;
+    }
+
+    /**
+     *
+     */
+
     bool open_next_list (bool opensong = true)
     {
         return bool(m_play_list) ?
             m_play_list->open_next_list(opensong) : false ;
     }
+
+    /**
+     *
+     */
 
     bool open_previous_list (bool opensong = true)
     {
@@ -1323,17 +1357,29 @@ public:
             m_play_list->open_previous_list(opensong) : false ;
     }
 
+    /**
+     *
+     */
+
     bool open_select_song (int index, bool opensong = true)
     {
         return bool(m_play_list) ?
             m_play_list->open_select_song(index, opensong) : false ;
     }
 
+    /**
+     *
+     */
+
     bool open_next_song (bool opensong = true)
     {
         return bool(m_play_list) ?
             m_play_list->open_next_song(opensong) : false ;
     }
+
+    /**
+     *
+     */
 
     bool open_previous_song (bool opensong = true)
     {

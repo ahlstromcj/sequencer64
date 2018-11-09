@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-10-18
+ * \updates       2018-11-08
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -1043,9 +1043,12 @@ playlist::previous_list (bool selectsong)
  */
 
 /**
- *  An overloaded function to encapsulare adding a playlist and make the
+ *  An overloaded function to encapsulate adding a playlist and make the
  *  callers simpler.  The inserted list has an empty song-list.  This function
  *  is intended for use by a playlist editor.
+ *
+ * \todo
+ *      Add the ability to replace a play-list as well.
  *
  * \param index
  *      Provides the location of the active list in the table.  The actual
@@ -1412,7 +1415,14 @@ playlist::previous_song ()
 }
 
 /**
- *  Adds a song to the current playlist, if available.
+ *  Adds a song to the current playlist, if available.  Calls the add_song()
+ *  overload taking the current song-list and the provided song-specification.
+ *
+ * \param sspec
+ *      Provides the infromation about the song to be added.
+ *
+ * \return
+ *      Returns true if the song was added.
  */
 
 bool
@@ -1426,7 +1436,17 @@ playlist::add_song (song_spec_t & sspec)
 }
 
 /**
+ *      Adds the given song to the given song-list.
  *
+ * \param slist
+ *      Provides the song-list to hold the new song.
+ *
+ * \param sspec
+ *      Provides the infromation about the song to be added.
+ *
+ * \return
+ *      Returns true if the song was added.  That is, if the size of the
+ *      song-list increased by 1.
  */
 
 bool
@@ -1447,7 +1467,17 @@ playlist::add_song (song_list & slist, song_spec_t & sspec)
 }
 
 /**
+ *      Adds the given song to the song-list of the given play-list.
  *
+ * \param plist
+ *      Provides the playlist whose song-list is to be updated.
+ *
+ * \param sspec
+ *      Provides the infromation about the song to be added.
+ *
+ * \return
+ *      Returns true if the song was added.  That is, the return value of the
+ *      song-list, song-specification add_song() overload.
  */
 
 bool
@@ -1459,8 +1489,9 @@ playlist::add_song (play_list_t & plist, song_spec_t & sspec)
 }
 
 /**
- *  An overloaded function to encapsulare adding a song and make the
+ *  An overloaded function to encapsulate adding a song and make the
  *  callers simpler.  This function is intended for use by a playlist editor.
+ *  It supports the replacement of existing songs.
  *
  * \param index
  *      Provides the location of the active item in the table.  The actual
@@ -1476,22 +1507,35 @@ playlist::add_song
     const std::string & directory
 )
 {
-    song_spec_t slist;                  /* will be copied upon insertion    */
-    slist.ss_index = index;             /* an ordinal value from song table */
-    slist.ss_midi_number = midinumber;  /* MIDI control number to use       */
-    slist.ss_song_directory = directory;
-    slist.ss_filename = name;
+    song_spec_t sspec;                  /* will be copied upon insertion    */
+    sspec.ss_index = index;             /* an ordinal value from song table */
+    sspec.ss_midi_number = midinumber;  /* MIDI control number to use       */
+    sspec.ss_song_directory = directory;
+    sspec.ss_filename = name;
 
     /*
      * Song list is empty at first, created by the playlist default constructor.
      *
-     *      plist.ls_song_list = slist;
+     *      plist.ls_song_list = sspec;
      */
 
-    bool result = add_song(slist);
+    bool result = add_song(sspec);
     if (result)
+    {
         reorder_song_list(m_current_list->second.ls_song_list);
+    }
+    else
+    {
+        /*
+         * Remove the current entry and add this one.
+         */
 
+        if (remove_song(index))
+        {
+            result = add_song(sspec);
+            reorder_song_list(m_current_list->second.ls_song_list);
+        }
+    }
     return result;
 }
 
@@ -1509,7 +1553,7 @@ playlist::add_song
  *      The ordinal value (not a key) of the desired table row.
  *
  * \return
- *      Returns true if the desired list was found and removed.
+ *      Returns true if the desired song was found and removed.
  */
 
 bool
@@ -1520,11 +1564,7 @@ playlist::remove_song (int index)
     {
         int count = 0;
         song_list & slist = m_current_list->second.ls_song_list;
-        for
-        (
-            song_iterator sci = slist.begin(); sci != slist.end();
-            /*++sci,*/ ++count
-        )
+        for (song_iterator sci = slist.begin(); sci != slist.end(); ++count)
         {
             if (count == index)
             {

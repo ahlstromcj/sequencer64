@@ -1148,7 +1148,7 @@ optionsfile::write (const perform & p)
         std::string fspec = rc().midi_control_filespec();
         std::ofstream ctlfile(fspec, std::ios::out | std::ios::trunc);
         ctlfile
-            << "# Sequencer64 0.96.0 (and above) midi-control "
+            << "# Sequencer64 0.96.1 (and above) midi-control "
                    "configuration file\n"
             << "#\n"
             << "# " << fspec << "\n"

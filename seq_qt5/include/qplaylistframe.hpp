@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-09-04
- * \updates       2018-10-16
+ * \updates       2018-11-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -118,6 +118,12 @@ private slots:
     void handle_list_click_ex (int, int, int, int);
     void handle_song_click_ex (int, int, int, int);
     void handle_list_load_click ();
+    void handle_list_add_click ();
+    void handle_list_remove_click ();
+    void handle_list_save_click ();
+    void handle_song_add_click ();
+    void handle_song_remove_click ();
+    void handle_playlist_active_click ();
     void conditional_update ();
 
 protected:                          // overrides of event handlers

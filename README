@@ -1,6 +1,6 @@
-README for Sequencer64 0.96.1 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
+README for Sequencer64 0.96.2 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2018-11-05
+2015-09-10 to 2018-11-08
 
 Sequencer64 is a reboot of seq24, extending it with many new features.
 The heart of seq24 remains intact.  It is an old friend with a whole lot
@@ -43,6 +43,8 @@ and using a conventional source tarball.
 
 Recent changes:
 
+    -   Version 0.96.2:
+        -   Fixed issue with qsliveframe when expanding vertically.
     -   Version 0.96.1:
         -   Fixes to bugs in the Qt live-frame, including coloring.
         -   Varisets implemented in the Qt live-frame.

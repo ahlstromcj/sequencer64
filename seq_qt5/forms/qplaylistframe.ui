@@ -321,7 +321,7 @@
   </widget>
   <widget class="QPushButton" name="buttonSongAdd">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -433,7 +433,7 @@
     <rect>
      <x>90</x>
      <y>48</y>
-     <width>281</width>
+     <width>291</width>
      <height>22</height>
     </rect>
    </property>
@@ -465,7 +465,7 @@
     <rect>
      <x>130</x>
      <y>74</y>
-     <width>241</width>
+     <width>251</width>
      <height>22</height>
     </rect>
    </property>
@@ -481,7 +481,7 @@
     <rect>
      <x>480</x>
      <y>48</y>
-     <width>281</width>
+     <width>291</width>
      <height>22</height>
     </rect>
    </property>
@@ -513,7 +513,7 @@
     <rect>
      <x>520</x>
      <y>74</y>
-     <width>241</width>
+     <width>251</width>
      <height>22</height>
     </rect>
    </property>
@@ -527,7 +527,7 @@
   <widget class="QLabel" name="labelDirEmbedded">
    <property name="geometry">
     <rect>
-     <x>770</x>
+     <x>780</x>
      <y>50</y>
      <width>16</width>
      <height>20</height>

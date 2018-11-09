@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-28
+ * \updates       2018-11-08
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -526,6 +526,16 @@ qsliveframe::drawSequence (int seq)
 
         int rectangle_x = base_x + sc_base_x_offset;
         int rectangle_y = base_y + sc_base_y_offset;
+
+        /*
+         * EXPERIMENTAL
+         */
+
+        if (m_gtkstyle_border)
+        {
+            rectangle_y -= 6;
+            preview_h += 2 * 6;
+        }
         painter.setBrush(brush);
         painter.setPen(pen);                    /* inner box of notes   */
         painter.drawRect
@@ -568,7 +578,7 @@ qsliveframe::drawSequence (int seq)
             )
             {
                 int tick_s_x = (tick_s * preview_w) / length;
-                int tick_f_x = (tick_f * preview_h) / length;
+                int tick_f_x = (tick_f * preview_w) / length;
                 int note_y;
                 if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
                     tick_f_x = tick_s_x + 1;

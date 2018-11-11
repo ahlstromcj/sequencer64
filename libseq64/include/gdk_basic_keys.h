@@ -68,7 +68,7 @@
 #define SEQ64_BackSpace           0xff08
 #define SEQ64_Tab                 0xff09
 #define SEQ64_Linefeed            0xff0a
-#define SEQ64_Clear               0xff0b
+#define SEQ64_Clear               0xff0b    /* in Qt 5, a musical note! */
 #define SEQ64_Return              0xff0d
 #define SEQ64_Pause               0xff13
 #define SEQ64_Scroll_Lock         0xff14

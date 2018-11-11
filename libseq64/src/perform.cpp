@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-10-29
+ * \updates       2018-11-10
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -6342,7 +6342,12 @@ perform::lookup_keyevent_key (int seqnum)
     if (seqnum >= c_max_keys)
         seqnum -= c_max_keys;
 
-    if (seqnum < c_max_keys)
+    if (seqnum < 0)
+    {
+        result = keys().lookup_keyevent_key(seqnum);
+        fprintf(stderr, "? key lookup(seqnum = %d): 0x%x\n", seqnum, result);
+    }
+    else if (seqnum < c_max_keys)
         result = keys().lookup_keyevent_key(seqnum);
 
     return result;

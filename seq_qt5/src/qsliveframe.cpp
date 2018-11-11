@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-11-08
+ * \updates       2018-11-10
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -253,7 +253,7 @@ qsliveframe::calculate_base_sizes (int seqnum, int & basex, int & basey)
  *  provided via m_last_metro.
  *
  * \param seq
- *      The number of pattern to be drawn.
+ *      The number of the pattern/sequence to be drawn.
  */
 
 void
@@ -434,15 +434,15 @@ qsliveframe::drawSequence (int seq)
             {
                 pen.setColor(Qt::white);
             }
-            else if (s->get_playing())          /* playing, no queueing */
+            else if (s->get_playing())          /* playing, no queueing     */
             {
                 pen.setColor(Qt::white);
             }
-            else if (s->get_queued())           /* not playing, queued  */
+            else if (s->get_queued())           /* not playing, queued      */
             {
                 pen.setColor(Qt::black);
             }
-            else if (s->one_shot())             /* one-shot queued      */
+            else if (s->one_shot())             /* one-shot queued          */
             {
                 pen.setColor(Qt::white);
             }
@@ -453,7 +453,7 @@ qsliveframe::drawSequence (int seq)
         }
         else
         {
-            pen.setColor(Qt::black);            // or the best contrasting color?
+            pen.setColor(Qt::black);            /* or best contrast color?  */
         }
         pen.setWidth(1);
         pen.setStyle(Qt::SolidLine);
@@ -465,15 +465,23 @@ qsliveframe::drawSequence (int seq)
         painter.drawText(base_x + 8, base_y + m_slot_h - 5, label);
         if (perf().show_ui_sequence_key())
         {
-            QString key;
-            key[0] = (char) perf().lookup_keyevent_key
-            (
-                seq - perf().screenset() * c_seqs_in_set
-            );
-            painter.drawText
-            (
-                base_x + m_slot_w - 10, base_y + m_slot_h - 5, key
-            );
+            /*
+             * Fixes a bug where an external frame > screenset 0 would
+             * should, ironically, a note key (0xff0b), as returned by
+             * perf().lookup_keyevent_key().
+             *
+             * int kvalue = seq - m_bank_id * c_seqs_in_set; // perf().screenset()
+             * char k = (char) perf().lookup_keyevent_key(kvalue);
+             */
+
+            char k = (char) perf().lookup_slot_key(seq);    // kvalue
+            char ktemp[4];
+            ktemp[0] = k;
+            ktemp[1] = 0;
+            QString key = ktemp;
+            int x = base_x + m_slot_w - 15;                 /* was "- 10"   */
+            int y = base_y + m_slot_h - 5;
+            painter.drawText(x, y, key);
         }
 
         /*
@@ -698,11 +706,12 @@ qsliveframe::drawSequence (int seq)
 void
 qsliveframe::drawAllSequences ()
 {
-#ifdef USE_KEPLER34_REDRAW_ALL
+#ifdef USE_KEPLER34_REDRAW_ALL                  /* too much multiplication  */
     for (int i = 0; i < m_screenset_slots; ++i)
     {
-        drawSequence(i + (m_bank_id * m_screenset_slots));
-        m_last_tick_x[i + (m_bank_id * m_screenset_slots)] = 0;
+        int seq = i + (m_bank_id * m_screenset_slots);
+        drawSequence(seq);
+        m_last_tick_x[seq] = 0;
     }
 #else
     int send = m_screenset_offset + m_screenset_slots;
@@ -957,10 +966,12 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
         {
             if (m_curr_seq < usr().max_sets())
             {
-                QAction * liveframe = new QAction
+                char temp[32];
+                snprintf
                 (
-                    tr("Extern &live frame"), m_popup
+                    temp, sizeof temp, "Extern &live frame set %d", m_curr_seq
                 );
+                QAction * liveframe = new QAction(tr(temp), m_popup);
                 m_popup->addAction(liveframe);
                 QObject::connect
                 (

@@ -4,7 +4,7 @@
 "
 "  Language:      C/C++
 "  Maintainer:    Chris Ahlstrom <ahlstromcj@users.sourceforge.net>
-"  Last Change:   09/04/2006-08/04/2015
+"  Last Change:   2006-09-04 to 2018-11-10
 "  Project:       XPC Suite library project
 "  Usage:
 "
@@ -34,16 +34,7 @@
 " Our type definitions for new classes and types added by the XPCC++ library
 "------------------------------------------------------------------------------
 
-" syn keyword XPCC atomic_bool atomic_int autoclientthread autocritex
-" syn keyword XPCC autowrapclientthread averager
-" syn keyword XPCC client client_func_t clientlist clientthread condition critex
-" syn keyword XPCC inethostaddress linear_regression mutex
-" syn keyword XPCC ringbuffer semaphore server serverthread
-" syn keyword XPCC socketbase socketendpoint socketexception socketthread
-" syn keyword XPCC synchbase thread threadbase threadstacker
-" syn keyword XPCC UnitTest UnitTestFunction UnitTestOptions UnitTestStatus
-" syn keyword XPCC win32condition win32event
-" syn keyword XPCC xdr_base xdr_lookup xdr_stream
+syn keyword XPCC midistring
 
 "------------------------------------------------------------------------------
 " Our type definition for inside comments

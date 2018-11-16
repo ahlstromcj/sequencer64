@@ -5240,7 +5240,7 @@ perform::handle_playlist_control (int ctl, midi_control::action a, int v)
 
         if (a == midi_control::action_toggle)       /* select-by-value  */
         {
-            result = open_select_list(v);
+            result = open_select_list_by_midi(v);
         }
         else if (a == midi_control::action_on)      /* select-next      */
         {
@@ -5256,7 +5256,7 @@ perform::handle_playlist_control (int ctl, midi_control::action a, int v)
 
         if (a == midi_control::action_toggle)       /* select-by-value  */
         {
-            result = open_select_song(v);
+            result = open_select_song_by_midi(v);
         }
         else if (a == midi_control::action_on)      /* select-next      */
         {

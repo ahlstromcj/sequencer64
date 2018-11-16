@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-11-10
+ * \updates       2018-11-14
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -45,6 +45,10 @@
 #include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
 #include "qsmainwnd.hpp"                /* the true parent of this class    */
 #include "settings.hpp"                 /* usr().window_redraw_rate()       */
+
+#ifdef PLATFORM_DEBUG
+#include <qnamespace.h>
+#endif
 
 /*
  *  Qt's uic application allows a different output file-name, but not sure
@@ -1489,12 +1493,32 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
     unsigned kkey = event->key();
     unsigned gdkkey = qt_map_to_gdk(kkey, ktext);   /* remap to "legacy" keys   */
 
-#ifdef PLATFORM_DEBUG_TMI
+#ifdef PLATFORM_DEBUG
+    /* Qt::KeyboardModifier*/ unsigned kmods = event->modifiers();
+    std::string modstring = "Mods: ";
+    if (kmods & Qt::ShiftModifier)
+        modstring += "S";
+
+    if (kmods & Qt::ControlModifier)
+        modstring += "C";
+
+    if (kmods & Qt::AltModifier)
+        modstring += "A";
+
+    if (kmods & Qt::MetaModifier)
+        modstring += "M";
+
+    if (kmods & Qt::KeypadModifier)
+        modstring += "K";
+
+    if (kmods & Qt::GroupSwitchModifier)
+        modstring += "G";
+
     std::string kname = qt_key_name(kkey, ktext);
     printf
     (
-        "qsliveframe: name = %s; gdk = 0x%x; key = 0x%x; text = 0x%x\n",
-        kname.c_str(), gdkkey, kkey, ktext
+        "qsliveframe: name = %s; gdk = 0x%x; key = 0x%x; text = 0x%x; %s\n",
+        kname.c_str(), gdkkey, kkey, ktext, modstring.c_str()
     );
 #endif
 
@@ -1502,7 +1526,7 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
     if (done)
         update();
     else
-        QWidget::keyPressEvent(event);  // event->ignore();
+        QWidget::keyPressEvent(event);              /* event->ignore()      */
 }
 
 /**

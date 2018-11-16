@@ -79,7 +79,6 @@ main (int argc, char * argv [])
 {
     QApplication app(argc, argv);           /* main application object      */
     int exit_status = EXIT_SUCCESS;         /* EXIT_FAILURE                 */
-    // seq64::set_app_name("qseq64/qpseq64");
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
     (void) seq64::parse_log_option(argc, argv);   /* -o log=file.ext early  */

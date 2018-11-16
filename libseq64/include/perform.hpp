@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-11-08
+ * \updates       2018-11-11
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1303,20 +1303,24 @@ public:
      *
      */
 
-    bool open_select_list (int index, bool opensong = true)
+    bool open_select_list_by_index (int index, bool opensong = true)
     {
-        bool result = bool(m_play_list);
-        if (result)
-        {
-            result = m_play_list->select_list(index, opensong);
-            if (result && opensong)
-                result = open_current_song();
-        }
-        return result;
+        return bool(m_play_list) ?
+            m_play_list->open_select_list_by_index(index, opensong) : false ;
     }
 
     /**
-     * NEWWWWWWWWWWWWWWWWWWWWWWWWW
+     *
+     */
+
+    bool open_select_list_by_midi (int ctrl, bool opensong = true)
+    {
+        return bool(m_play_list) ?
+            m_play_list->select_list_by_midi(ctrl, opensong) : false ;
+    }
+
+    /**
+     *  Meant for the user-interface.
      */
 
     bool add_song
@@ -1328,12 +1332,8 @@ public:
     {
         bool result = bool(m_play_list);
         if (result)
-        {
-            result = m_play_list->add_song
-            (
-                index, midinumber, name, directory
-            );
-        }
+            result = m_play_list->add_song(index, midinumber, name, directory);
+
         return result;
     }
 
@@ -1361,10 +1361,20 @@ public:
      *
      */
 
-    bool open_select_song (int index, bool opensong = true)
+    bool open_select_song_by_index (int index, bool opensong = true)
     {
         return bool(m_play_list) ?
-            m_play_list->open_select_song(index, opensong) : false ;
+            m_play_list->open_select_song_by_midi(index, opensong) : false ;
+    }
+
+    /**
+     *
+     */
+
+    bool open_select_song_by_midi (int ctrl, bool opensong = true)
+    {
+        return bool(m_play_list) ?
+            m_play_list->open_select_song_by_midi(ctrl, opensong) : false ;
     }
 
     /**

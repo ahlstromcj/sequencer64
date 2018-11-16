@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-10-16
+ * \updates       2018-11-11
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -357,7 +357,8 @@ public:
         const std::string & directory
     );
     bool remove_list (int index);
-    bool select_list (int index, bool selectsong = false);
+    bool select_list_by_index (int index, bool selectsong = false);
+    bool select_list_by_midi (int ctrl, bool selectsong = false);
     bool next_list (bool selectsong = false);
     bool previous_list (bool selectsong = false);
     bool add_song
@@ -366,15 +367,20 @@ public:
         const std::string & name,
         const std::string & directory
     );
-    bool remove_song (int index);
-    bool select_song (int index);
+    bool remove_song_by_index (int index);
+    bool select_song_by_index (int index);
+    bool select_song_by_midi (int ctrl);
     bool next_song ();
     bool previous_song ();
+
     bool open_song (const std::string & filename, bool verifymode = false);
-    bool open_select_song (int index, bool opensong = true);
+    bool open_select_song_by_index (int index, bool opensong = true);
+    bool open_select_song_by_midi (int ctrl, bool opensong = true);
     bool open_current_song ();
     bool open_next_list (bool opensong = true);
     bool open_previous_list (bool opensong = true);
+    bool open_select_list_by_index (int index, bool opensong = true);
+    bool open_select_list_by_midi (int ctrl, bool opensong = true);
     bool open_next_song (bool opensong = true);
     bool open_previous_song (bool opensong = true);
 

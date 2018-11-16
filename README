@@ -44,7 +44,10 @@ and using a conventional source tarball.
 Recent changes:
 
     -   Version 0.96.2:
-        -   Fixed issue with qsliveframe when expanding vertically.
+        -   Fixed issue with qsliveframe when expanding vertically, and in
+            showing hot-keys when an external live-frame with set > 0 is
+            created..
+        -   Beefing up play-lists to support editing better.
     -   Version 0.96.1:
         -   Fixes to bugs in the Qt live-frame, including coloring.
         -   Varisets implemented in the Qt live-frame.

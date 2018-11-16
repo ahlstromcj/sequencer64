@@ -8,9 +8,9 @@
 . . .
 
 # MIDI Control to select playlist (value, next, previous)
-88 [0 0   0   0   0   0] [1 0 144   4   1 127] [1 0 144   0   1 127]
+88 [1 0 144   2   1 127] [1 0 144   4   1 127] [1 0 144   0   1 127]
 # MIDI Control to select song in current playlist (value, next, previous)
-89 [0 0   0   0   0   0] [1 0 144   3   1 127] [1 0 144   1   1 127]
+89 [1 0 144   5   1 127] [1 0 144   3   1 127] [1 0 144   1   1 127]
 
 
 [playlist]

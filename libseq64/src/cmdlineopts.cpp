@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-10-30
+ * \updates       2018-11-12
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -85,7 +85,7 @@ static const std::string versiontext = seq_version_text();
  *  short form.  Note the terminating null structure..
  */
 
-static struct option long_options [] =
+static struct option s_long_options [] =
 {
     {"help",                0, 0, 'h'},
     {"version",             0, 0, 'V'},
@@ -818,7 +818,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
         (
             argc, argv,
             s_arg_list.c_str(),             /* "Chlrb:q:Li:jJmaM:pPsSU:Vx:" */
-            long_options, &option_index
+            s_long_options, &option_index
         );
         if (c == -1)                        /* detect the end of options    */
             break;

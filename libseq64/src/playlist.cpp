@@ -26,19 +26,19 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-11-08
+ * \updates       2018-11-11
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
  *
  *      [playlist]
  *
- *      0                       # playlist number, which can be arbitrary
+ *      0                       # playlist number, a MIDI value (0 to 127)
  *      "Downtempo"             # playlist name, for display/selection
  *      /home/user/midifiles/   # directory where the songs are stored
- *      file1.mid
- *      file2.midi
- *      file3.midi
+ *      10 file1.mid            # MIDI value and file's base-name
+ *      11 file2.midi
+ *      12 file3.midi
  *       . . .
  *
  *  See the file data/sample.playlist for a more up-to-date example and
@@ -168,7 +168,7 @@ playlist::open (bool verify_it)
 }
 
 /**
- *  Parse the ~/.config/sequencer64/file.playlist file.
+ *  Parses the ~/.config/sequencer64/file.playlist file.
  *
  * The next_section() function is like line-after, but scans from the
  * current line in the file.  Necessary here because all the sections
@@ -176,8 +176,9 @@ playlist::open (bool verify_it)
  * following items need to be obtained:
  *
  *      -   Playlist number.  This number is used as the key value for
- *          the playlist. It can be any integer, and the order of the
- *          playlists is based on this integer.
+ *          the playlist. It can be any MIDI value (0 to 127), and the order
+ *          of the playlists is based on this number, and selectable via MIDI
+ *          control with this number.
  *      -   Playlist name.  A human-readable string describing the
  *          nick-name for the playlist.  This is an alternate way to
  *          look up the playlist.
@@ -627,10 +628,10 @@ playlist::open_song (const std::string & fname, bool verifymode)
 }
 
 /**
- *  Selects the current song, and optionally opens it.
+ *  Selects the song based on the index (row) value, and optionally opens it.
  *
  * \param index
- *      The location of the song within the current playlist.
+ *      The ordinal location of the song within the current playlist.
  *
  * \param opensong
  *      If true (the default), the song is opened.
@@ -641,9 +642,33 @@ playlist::open_song (const std::string & fname, bool verifymode)
  */
 
 bool
-playlist::open_select_song (int index, bool opensong)
+playlist::open_select_song_by_index (int index, bool opensong)
 {
-    bool result = select_song(index);
+    bool result = select_song_by_index(index);
+    if (result && opensong)
+        result = open_current_song();
+
+    return result;
+}
+
+/**
+ *  Selects the song based on the MIDI control value, and optionally opens it.
+ *
+ * \param ctrl
+ *      The MIDI control to access the song within the current playlist.
+ *
+ * \param opensong
+ *      If true (the default), the song is opened.
+ *
+ * \return
+ *      Returns true if the song is selected, and if specified, is opened
+ *      succesfully as well.
+ */
+
+bool
+playlist::open_select_song_by_midi (int ctrl, bool opensong)
+{
+    bool result = select_song_by_midi(ctrl);
     if (result && opensong)
         result = open_current_song();
 
@@ -779,6 +804,34 @@ playlist::open_previous_list (bool opensong)
  */
 
 bool
+playlist::open_select_list_by_index (int index, bool opensong)
+{
+    bool result = select_list_by_index(index, opensong);
+    if (result && opensong)
+        result = open_current_song();
+
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
+playlist::open_select_list_by_midi (int ctrl, bool opensong)
+{
+    bool result = select_list_by_midi(ctrl, opensong);
+    if (result && opensong)
+        result = open_current_song();
+
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
 playlist::open_next_song (bool opensong)
 {
     bool result = next_song();
@@ -849,7 +902,7 @@ playlist::reset ()
     if (result)
     {
         m_current_list = m_play_lists.begin();
-        result = select_song(0);
+        result = select_song_by_index(0);
     }
     else
         clear();
@@ -901,11 +954,10 @@ playlist::add_list (play_list_t & plist)
 }
 
 /**
- *  Selects a play-list with the given index.
+ *  Selects a play-list with the given index (i.e. a row value).
  *
  * \param index
- *      The index of the play-list re 0.  Generally should be restricted to
- *      the range of 0 to 127, to be suitable for MIDI control.
+ *      The index of the play-list re 0.
  *
  * \param selectsong
  *      If true, then the first (0th) song in the play-list is selected.
@@ -916,7 +968,7 @@ playlist::add_list (play_list_t & plist)
  */
 
 bool
-playlist::select_list (int index, bool selectsong)
+playlist::select_list_by_index (int index, bool selectsong)
 {
     bool result = false;
     int count = 0;
@@ -933,7 +985,49 @@ playlist::select_list (int index, bool selectsong)
 
             m_current_list = pci;
             if (selectsong)
-                select_song(0);
+                select_song_by_index(0);
+
+            result = true;
+        }
+    }
+    return result;
+}
+
+/**
+ *  Selects a play-list with the given MIDI control value.
+ *
+ * \param index
+ *      The MIDI control value of the play-list.  Generally should be
+ *      restricted to the range of 0 to 127, to be suitable for MIDI control.
+ *
+ * \param selectsong
+ *      If true, then the first (0th) song in the play-list is selected.
+ *
+ * \return
+ *      Returns true if the selected play-list is valid.  If true, then the
+ *      m_current_list iterator points to the current list.
+ */
+
+bool
+playlist::select_list_by_midi (int ctrl, bool selectsong)
+{
+    bool result = false;
+    int count = 0;
+    for
+    (
+        play_iterator pci = m_play_lists.begin(); pci != m_play_lists.end();
+        ++pci, ++count
+    )
+    {
+        int midinumber = pci->second.ls_midi_number;
+        if (midinumber == ctrl)
+        {
+            if (m_show_on_stdout)
+                show_list(pci->second);
+
+            m_current_list = pci;
+            if (selectsong)
+                select_song_by_index(0);
 
             result = true;
         }
@@ -969,7 +1063,7 @@ playlist::next_list (bool selectsong)
             show_list(m_current_list->second);
 
         if (selectsong)
-            select_song(0);
+            select_song_by_index(0);
     }
     return result;
 }
@@ -1003,7 +1097,7 @@ playlist::previous_list (bool selectsong)
             show_list(m_current_list->second);
 
         if (selectsong)
-            select_song(0);
+            select_song_by_index(0);
     }
     return result;
 }
@@ -1329,11 +1423,11 @@ playlist::current_song () const
 }
 
 /**
- *  Selects a song with the given index.
+ *  Selects a song with the given index (i.e. its ordinal position in the
+ *  playlist or in a table in a GUI).
  *
  * \param index
- *      The index of the song re 0.  Generally should be restricted to the
- *      range of 0 to 127, to be suitable for MIDI control.
+ *      The index of the song re 0.
  *
  * \return
  *      Returns true if the current play-list and the current song are valid.
@@ -1341,7 +1435,7 @@ playlist::current_song () const
  */
 
 bool
-playlist::select_song (int index)
+playlist::select_song_by_index (int index)
 {
     bool result = false;
     if (m_current_list != m_play_lists.end())
@@ -1355,6 +1449,46 @@ playlist::select_song (int index)
         )
         {
             if (count == index)
+            {
+                if (m_show_on_stdout)
+                    show_song(sci->second);
+
+                m_current_song = sci;
+                result = true;
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ *  Selects a song with the given MIDI control value (the key of the map).
+ *
+ * \param index
+ *      The MIDI control value.  Generally should be restricted to the
+ *      range of 0 to 127, to be suitable for MIDI control.
+ *
+ * \return
+ *      Returns true if the current play-list and the current song are valid.
+ *      If true, then the m_current_song iterator points to the current song.
+ */
+
+bool
+playlist::select_song_by_midi (int ctrl)
+{
+    bool result = false;
+    if (m_current_list != m_play_lists.end())
+    {
+        int count = 0;
+        song_list & slist = m_current_list->second.ls_song_list;
+        for
+        (
+            song_iterator sci = slist.begin(); sci != slist.end();
+            ++sci, ++count
+        )
+        {
+            int midinumber = sci->second.ss_midi_number;
+            if (midinumber == ctrl)
             {
                 if (m_show_on_stdout)
                     show_song(sci->second);
@@ -1530,7 +1664,7 @@ playlist::add_song
          * Remove the current entry and add this one.
          */
 
-        if (remove_song(index))
+        if (remove_song_by_index(index))
         {
             result = add_song(sspec);
             reorder_song_list(m_current_list->second.ls_song_list);
@@ -1541,10 +1675,9 @@ playlist::add_song
 
 /**
  *  This function removes a song from the current playlist at the given index.
- *  The index is an
- *  ordinal, not a key, therefore we have to iterate through the whole list
- *  until we encounter the desired index.  Useful for removing the selected
- *  song in a table.
+ *  The index is an ordinal, not a key, therefore we have to iterate through
+ *  the whole list until we encounter the desired index.  Useful for removing
+ *  the selected song in a table.
  *
  *  This function works by iterating to the index'th element in the song-list
  *  and deleting it.
@@ -1557,7 +1690,7 @@ playlist::add_song
  */
 
 bool
-playlist::remove_song (int index)
+playlist::remove_song_by_index (int index)
 {
     bool result = false;
     if (m_current_list != m_play_lists.end())

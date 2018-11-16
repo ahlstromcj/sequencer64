@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-09-04
- * \updates       2018-11-08
+ * \updates       2018-11-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -367,7 +367,7 @@ qplaylistframe::fill_songs ()
         for (int r = 0; r < rows; ++r)
         {
             std::string temp;
-            if (perf().open_select_song(r, false))
+            if (perf().open_select_song_by_index(r, false))
             {
                 QTableWidgetItem * qtip = cell(false, r, CID_MIDI_NUMBER);
                 ui->tablePlaylistSongs->setRowHeight
@@ -432,7 +432,7 @@ qplaylistframe::handle_list_click_ex
     }
     else
     {
-        if (perf().open_select_list(row, false))
+        if (perf().open_select_list_by_index(row, false))
         {
             fill_songs();
             set_current_playlist();
@@ -457,7 +457,7 @@ qplaylistframe::handle_song_click_ex
     }
     else
     {
-        if (perf().open_select_song(row, true))     /* open selected song   */
+        if (perf().open_select_song_by_index(row, true))
         {
             set_current_song();
         }

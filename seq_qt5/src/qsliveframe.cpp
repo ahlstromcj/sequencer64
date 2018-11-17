@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-11-14
+ * \updates       2018-11-16
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -1493,7 +1493,8 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
     unsigned kkey = event->key();
     unsigned gdkkey = qt_map_to_gdk(kkey, ktext);   /* remap to "legacy" keys   */
 
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
+
     /* Qt::KeyboardModifier*/ unsigned kmods = event->modifiers();
     std::string modstring = "Mods: ";
     if (kmods & Qt::ShiftModifier)
@@ -1520,7 +1521,8 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
         "qsliveframe: name = %s; gdk = 0x%x; key = 0x%x; text = 0x%x; %s\n",
         kname.c_str(), gdkkey, kkey, ktext, modstring.c_str()
     );
-#endif
+
+#endif  // PLATFORM_DEBUG_TMI
 
     bool done = handle_key_press(gdkkey);
     if (done)

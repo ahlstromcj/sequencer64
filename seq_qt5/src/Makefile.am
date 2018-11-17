@@ -42,6 +42,12 @@ EXTRA_DIST = qseq64.qrc
 #******************************************************************************
 # Items from configure.ac
 #-------------------------------------------------------------------------------
+#
+#  XPCCUT_LIBS is defined by the PKG_CHECK_MODULES macro.  The xpccut
+#  library must be installed officially in order to be used to build the
+#  unit-test application of the xpc library.
+#
+#-------------------------------------------------------------------------------
 
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
@@ -55,6 +61,12 @@ SEQ64_API_VERSION = @SEQ64_API_VERSION@
 SEQ64_LT_CURRENT = @SEQ64_LT_CURRENT@
 SEQ64_LT_REVISION = @SEQ64_LT_REVISION@
 SEQ64_LT_AGE = @SEQ64_LT_AGE@
+
+# XPCCUTPP_CFLAGS = @XPCCUTPP_CFLAGS@
+# XPCCUT_CFLAGS = @XPCCUT_CFLAGS@
+
+XPCCUTPP_LIBS = @XPCCUTPP_LIBS@
+XPCCUT_LIBS = @XPCCUT_LIBS@
 
 QT_CXXFLAGS = @QT_CXXFLAGS@
 
@@ -94,6 +106,16 @@ top_srcdir = @top_srcdir@
 builddir = @abs_top_builddir@
 
 #*****************************************************************************
+# git_version
+#-----------------------------------------------------------------------------
+# git_version = $(shell git describe --abbrev=7 --always --tags)
+#-----------------------------------------------------------------------------
+
+git_version = $(shell git describe --tags --long)
+git_branch = $(shell git branch | grep -e ^*)
+git_info = "$(git_version) $(git_branch)"
+
+#*****************************************************************************
 # Qt 5 results directories (avoid polluting the src directory)
 #-----------------------------------------------------------------------------
 #
@@ -114,16 +136,6 @@ pixdir = $(top_srcdir)/resources/pixmaps
 #-----------------------------------------------------------------------------
 
 version = $(SEQ64_API_MAJOR):$(SEQ64_API_MINOR):$(SEQ64_API_PATCH)
-
-#*****************************************************************************
-# git_version
-#-----------------------------------------------------------------------------
-# git_version = $(shell git describe --abbrev=7 --always --tags)
-#-----------------------------------------------------------------------------
-
-git_version = $(shell git describe --tags --long)
-git_branch = $(shell git branch | grep -e ^*)
-git_info = "$(git_version) $(git_branch)"
 
 #******************************************************************************
 # Compiler and linker flags (later, PortMidi)

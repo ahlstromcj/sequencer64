@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-21
- * \updates       2018-10-29
+ * \updates       2018-11-17
  * \license       GNU GPLv2 or above
  *
  *  This module defines a number of constants relating to control of the 32
@@ -77,41 +77,41 @@ namespace seq64
  *  c_midi_controls, though, for now, it has the same value.
  */
 
-const int c_midi_track_ctrl            = c_seqs_in_set * 2;      /* 64       */
-const int c_midi_control_bpm_up        = c_midi_track_ctrl;
-const int c_midi_control_bpm_dn        = c_midi_track_ctrl + 1;
-const int c_midi_control_ss_up         = c_midi_track_ctrl + 2;
-const int c_midi_control_ss_dn         = c_midi_track_ctrl + 3;
-const int c_midi_control_mod_replace   = c_midi_track_ctrl + 4;
-const int c_midi_control_mod_snapshot  = c_midi_track_ctrl + 5;
-const int c_midi_control_mod_queue     = c_midi_track_ctrl + 6;
-const int c_midi_control_mod_gmute     = c_midi_track_ctrl + 7;  /* andy      */
-const int c_midi_control_mod_glearn    = c_midi_track_ctrl + 8;  /* andy      */
-const int c_midi_control_play_ss       = c_midi_track_ctrl + 9;  /* andy      */
-const int c_midi_controls              = c_midi_track_ctrl + 10; /* old = 74  */
-const int c_midi_control_playback      = c_midi_track_ctrl + 10;
-const int c_midi_control_song_record   = c_midi_track_ctrl + 11; /* arm for   */
-const int c_midi_control_solo          = c_midi_track_ctrl + 12;
-const int c_midi_control_thru          = c_midi_track_ctrl + 13;
-const int c_midi_control_bpm_page_up   = c_midi_track_ctrl + 14;
-const int c_midi_control_bpm_page_dn   = c_midi_track_ctrl + 15;
-const int c_midi_control_ss_set        = c_midi_track_ctrl + 16; /* pull #85  */
-const int c_midi_control_record        = c_midi_track_ctrl + 17;
-const int c_midi_control_quan_record   = c_midi_track_ctrl + 18;
-const int c_midi_control_reset_seq     = c_midi_track_ctrl + 19; /* pull #150 */
-const int c_midi_control_reserved_1    = c_midi_track_ctrl + 20;
-const int c_midi_control_FF            = c_midi_track_ctrl + 21;
-const int c_midi_control_rewind        = c_midi_track_ctrl + 22;
-const int c_midi_control_top           = c_midi_track_ctrl + 23;
-const int c_midi_control_playlist      = c_midi_track_ctrl + 24;
-const int c_midi_control_playlist_song = c_midi_track_ctrl + 25;
-const int c_midi_control_reserved_7    = c_midi_track_ctrl + 26;
-const int c_midi_control_reserved_8    = c_midi_track_ctrl + 27;
-const int c_midi_control_reserved_9    = c_midi_track_ctrl + 28;
-const int c_midi_control_reserved_10   = c_midi_track_ctrl + 29;
-const int c_midi_control_reserved_11   = c_midi_track_ctrl + 30;
-const int c_midi_control_reserved_12   = c_midi_track_ctrl + 31;
-const int c_midi_controls_extended     = c_midi_track_ctrl + 32; /* new = 96  */
+const int c_midi_track_ctrl             = c_seqs_in_set * 2;      /* 64       */
+const int c_midi_control_bpm_up         = c_midi_track_ctrl;
+const int c_midi_control_bpm_dn         = c_midi_track_ctrl + 1;
+const int c_midi_control_ss_up          = c_midi_track_ctrl + 2;
+const int c_midi_control_ss_dn          = c_midi_track_ctrl + 3;
+const int c_midi_control_mod_replace    = c_midi_track_ctrl + 4;
+const int c_midi_control_mod_snapshot   = c_midi_track_ctrl + 5;
+const int c_midi_control_mod_queue      = c_midi_track_ctrl + 6;
+const int c_midi_control_mod_gmute      = c_midi_track_ctrl + 7;  /* andy      */
+const int c_midi_control_mod_glearn     = c_midi_track_ctrl + 8;  /* andy      */
+const int c_midi_control_play_ss        = c_midi_track_ctrl + 9;  /* andy      */
+const int c_midi_controls               = c_midi_track_ctrl + 10; /* old = 74  */
+const int c_midi_control_playback       = c_midi_track_ctrl + 10;
+const int c_midi_control_song_record    = c_midi_track_ctrl + 11; /* arm for   */
+const int c_midi_control_solo           = c_midi_track_ctrl + 12;
+const int c_midi_control_thru           = c_midi_track_ctrl + 13;
+const int c_midi_control_bpm_page_up    = c_midi_track_ctrl + 14;
+const int c_midi_control_bpm_page_dn    = c_midi_track_ctrl + 15;
+const int c_midi_control_ss_set         = c_midi_track_ctrl + 16; /* pull #85  */
+const int c_midi_control_record         = c_midi_track_ctrl + 17;
+const int c_midi_control_quan_record    = c_midi_track_ctrl + 18;
+const int c_midi_control_reset_seq      = c_midi_track_ctrl + 19; /* pull #150 */
+const int c_midi_control_mod_oneshot    = c_midi_track_ctrl + 20; // TODO
+const int c_midi_control_FF             = c_midi_track_ctrl + 21;
+const int c_midi_control_rewind         = c_midi_track_ctrl + 22;
+const int c_midi_control_top            = c_midi_track_ctrl + 23;
+const int c_midi_control_playlist       = c_midi_track_ctrl + 24;
+const int c_midi_control_playlist_song  = c_midi_track_ctrl + 25;
+const int c_midi_control_reserved_0     = c_midi_track_ctrl + 26;
+const int c_midi_control_start          = c_midi_track_ctrl + 27; // TODO
+const int c_midi_control_stop           = c_midi_track_ctrl + 28; // TODO
+const int c_midi_control_mod_snapshot_2 = c_midi_track_ctrl + 29; // TODO
+const int c_midi_control_toggle_mutes   = c_midi_track_ctrl + 30; // TODO
+const int c_midi_control_song_pointer   = c_midi_track_ctrl + 31; // TODO
+const int c_midi_controls_extended      = c_midi_track_ctrl + 32; /* new = 96  */
 
 extern int g_midi_control_limit;
 

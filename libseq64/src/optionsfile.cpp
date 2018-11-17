@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-11-03
+ * \updates       2018-11-17
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1958,11 +1958,11 @@ optionsfile::write_midi_control
             break;
 
         case c_midi_control_reset_seq:      // 83
-            file << "# reserved for expansion:\n";      // still true???
+            file << "# Set Replace versus Merge for loop recording:\n";
             break;
 
-        case c_midi_control_reserved_1:     // 84
-            file << "# Reserved for expansion 1\n";
+        case c_midi_control_mod_oneshot:     // 84
+            file << "# One-shot queueing and replacing.  TO DO.\n";
             break;
 
         case c_midi_control_FF:
@@ -1989,37 +1989,35 @@ optionsfile::write_midi_control
                 ;
             break;
 
-        case c_midi_control_reserved_7:
-            file << "# Reserved for expansion 7\n";
+        case c_midi_control_reserved_0:
+            file << "# Reserved for expansion 0\n";
             break;
 
-        case c_midi_control_reserved_8:
-            file << "# Reserved for expansion 8\n";
+        case c_midi_control_start:
+            file << "# A second control for starting playback. TODO.\n";
             break;
 
-        case c_midi_control_reserved_9:
-            file << "# Reserved for expansion 9\n";
+        case c_midi_control_stop:
+            file << "# A second control for stopping playback. TODO.\n";
             break;
 
-        case c_midi_control_reserved_10:
-            file << "# Reserved for expansion 10\n";
+        case c_midi_control_mod_snapshot_2:
+            file << "# A second snapshot control.  TODO.\n";
             break;
 
-        case c_midi_control_reserved_11:
-            file << "# Reserved for expansion 11\n";
+        case c_midi_control_toggle_mutes:
+            file << "# For toggling, muting, and unmuting.  TODO.\n";
             break;
 
-        case c_midi_control_reserved_12:
-            file << "# Reserved for expansion 12\n";
+        case c_midi_control_song_pointer:
+            file << "# For setting the position in the song.  TODO.\n";
             break;
 
         /*
          * case c_midi_controls_extended:
          *     file << "# Reserved for expansion 9\n";
          *     break;
-         */
-
-        /*
+         *
          * case g_midi_control_limit:  74/8496, last value, not written.
          */
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-11-10
+ * \updates       2018-11-17
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -4468,9 +4468,14 @@ perform::handle_midi_control (int ctl, bool state)
             unset_sequence_control_status(c_status_queue);
         break;
 
-    /*
-     * TODO:  c_status_oneshot
-     */
+    case c_midi_control_mod_oneshot:
+
+        result = true;
+        if (state)
+            set_sequence_control_status(c_status_oneshot);
+        else
+            unset_sequence_control_status(c_status_oneshot);
+        break;
 
     case c_midi_control_mod_gmute:
 
@@ -4713,7 +4718,7 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         }
         break;
 
-    case c_midi_control_reserved_1:
+    case c_midi_control_mod_oneshot:
 
         result = false;
         break;
@@ -4740,32 +4745,32 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         break;
 
 
-    case c_midi_control_reserved_7:
+    case c_midi_control_reserved_0:
 
         result = false;
         break;
 
-    case c_midi_control_reserved_8:
+    case c_midi_control_start:
 
         result = false;
         break;
 
-    case c_midi_control_reserved_9:
+    case c_midi_control_stop:
 
         result = false;
         break;
 
-    case c_midi_control_reserved_10:
+    case c_midi_control_mod_snapshot_2:
 
         result = false;
         break;
 
-    case c_midi_control_reserved_11:
+    case c_midi_control_toggle_mutes:
 
         result = false;
         break;
 
-    case c_midi_control_reserved_12:
+    case c_midi_control_song_pointer:
 
         result = false;
         break;
@@ -5698,7 +5703,7 @@ perform::restore_playing_state ()
  *  For all active patterns/sequences in the current (playing) screen-set,
  *  this function gets the playing status and saves it in m_sequence_state[i].
  *  Inactive patterns get the value set to false.  Used in saving the
- *  screen-set state during the queued-replace (queued-sol) operation, which
+ *  screen-set state during the queued-replace (queued-solo) operation, which
  *  occurs when the c_status_replace is performed while c_status_queue is
  *  active.
  *

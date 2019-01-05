@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-11-12
+ * \updates       2018-11-28
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -689,7 +689,7 @@ parse_options_files
 (
     perform & p,
     std::string & errmessage,
-    int argc, char * argv []
+    int argc, char * /* argv */ []
 )
 {
     std::string rcname = seq64::rc().config_filespec();

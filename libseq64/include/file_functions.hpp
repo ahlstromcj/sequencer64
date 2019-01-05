@@ -60,15 +60,20 @@ extern void filename_split
     std::string & path,
     std::string & filebase
 );
-extern std::string strip_comments (const std::string & item);
-extern std::string strip_quotes (const std::string & item);
-extern std::string add_quotes (const std::string & item);
-extern std::string file_extension (const std::string & path);
-extern bool strcasecompare (const std::string & a, const std::string & b);
 extern bool file_extension_match
 (
     const std::string & path, const std::string & target
 );
+extern std::string file_extension (const std::string & path);
+
+/*
+ * String functions.
+ */
+
+extern std::string strip_comments (const std::string & item);
+extern std::string strip_quotes (const std::string & item);
+extern std::string add_quotes (const std::string & item);
+extern bool strcasecompare (const std::string & a, const std::string & b);
 extern std::string & ltrim
 (
     std::string & str, const std::string & chars = SEQ64_TRIM_CHARS

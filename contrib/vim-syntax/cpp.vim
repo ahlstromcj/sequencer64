@@ -4,7 +4,7 @@
 "
 "  Language:      C/C++
 "  Maintainer:    Chris Ahlstrom <ahlstromcj@users.sourceforge.net>
-"  Last Change:   2006-09-04 to 2018-11-10
+"  Last Change:   2006-09-04 to 2018-11-22
 "  Project:       XPC Suite library project
 "  Usage:
 "
@@ -34,7 +34,7 @@
 " Our type definitions for new classes and types added by the XPCC++ library
 "------------------------------------------------------------------------------
 
-syn keyword XPCC midistring
+syn keyword XPCC midistring seq64 seq66
 
 "------------------------------------------------------------------------------
 " Our type definition for inside comments
@@ -67,7 +67,8 @@ syn keyword cType thread unique_ptr value_type vector wstring
 " Operators, language constants, or manipulators
 "------------------------------------------------------------------------------
 
-syn keyword cppOperator cin cout cerr endl nothrow npos
+syn keyword cppOperator cin cout cerr endl hex left nothrow new npos
+syn keyword cppOperator right setw
 
 "------------------------------------------------------------------------------
 " Less common C data typedefs

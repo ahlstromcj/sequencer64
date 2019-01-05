@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-21
- * \updates       2018-11-17
+ * \updates       2018-11-22
  * \license       GNU GPLv2 or above
  *
  *  This module defines a number of constants relating to control of the 32
@@ -102,10 +102,10 @@ const int c_midi_control_reset_seq      = c_midi_track_ctrl + 19; /* pull #150 *
 const int c_midi_control_mod_oneshot    = c_midi_track_ctrl + 20; // TODO
 const int c_midi_control_FF             = c_midi_track_ctrl + 21;
 const int c_midi_control_rewind         = c_midi_track_ctrl + 22;
-const int c_midi_control_top            = c_midi_track_ctrl + 23;
+const int c_midi_control_top            = c_midi_track_ctrl + 23; /* beginning */
 const int c_midi_control_playlist       = c_midi_track_ctrl + 24;
 const int c_midi_control_playlist_song  = c_midi_track_ctrl + 25;
-const int c_midi_control_reserved_0     = c_midi_track_ctrl + 26;
+const int c_midi_control_slot_shift     = c_midi_track_ctrl + 26; // TODO
 const int c_midi_control_start          = c_midi_track_ctrl + 27; // TODO
 const int c_midi_control_stop           = c_midi_track_ctrl + 28; // TODO
 const int c_midi_control_mod_snapshot_2 = c_midi_track_ctrl + 29; // TODO

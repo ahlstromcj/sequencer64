@@ -32,7 +32,8 @@
  * \license       GNU GPLv2 or above
  *
  *  The ~/.seq24rc or ~/.config/sequencer64/sequencer64.rc files are
- *  referred to as the "rc" files.
+ *  referred to as the "rc" files.  Note that there are other variations on
+ *  the name for the different versions of Sequencer64 that can be built.
  */
 
 #include "configfile.hpp"
@@ -46,7 +47,7 @@ namespace seq64
     class perform;
 
 /**
- *  Provides a file for reading and writing the application' main
+ *  Provides a file for reading and writing the application's main
  *  configuration file.  The settings that are passed around are provided
  *  or used by the perform class.
  */

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-14
+ * \updates       2018-11-23
  * \license       GNU GPLv2 or above
  *
  *  This is actually an elegant little parser, and works well as long as one
@@ -80,13 +80,6 @@ protected:
      */
 
     std::string m_name;
-
-    /**
-     *   Points to an allocated buffer that holds the data for the
-     *   configuration file.
-     */
-
-    char * m_d;
 
     /**
      *  The current line of text being processed.  This member receives

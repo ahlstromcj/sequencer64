@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-14
+ * \updates       2018-11-23
  * \license       GNU GPLv2 or above
  *
  *  We found a couple of unused members in this module and removed them.
@@ -55,7 +55,6 @@ configfile::configfile (const std::string & name)
  :
     m_error_message (),
     m_name          (name),
-    m_d             (nullptr),
     m_line          ()          /* array of characters              */
 {
    m_line[0] = 0;               /* guarantee a legal empty string   */

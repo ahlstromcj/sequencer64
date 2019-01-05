@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-11-17
+ * \updates       2018-11-30
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -322,7 +322,7 @@ optionsfile::parse (perform & p)
         {
             rc().midi_control_filename(filename);       /* base file-name   */
             fullpath = rc().midi_control_filespec();    /* full path-spec   */
-            printf("[Reading rc MIDI control file %s]\n", fullpath.c_str());
+            printf("[Reading MIDI control file %s]\n", fullpath.c_str());
             ok = parse_midi_control_section(fullpath, p);
             if (! ok)
             {
@@ -338,8 +338,8 @@ optionsfile::parse (perform & p)
     else
         rc().use_midi_control_file(false);
 
-   if (! rc().use_midi_control_file())
-   {
+    if (! rc().use_midi_control_file())
+    {
         /*
          * This call causes parsing to skip all of the header material.
          * Please note that the line_after() function always starts from the
@@ -432,6 +432,7 @@ optionsfile::parse (perform & p)
      */
 
     line_after(file, "[keyboard-control]");
+
     long keys = 0;
     sscanf(m_line, "%ld", &keys);
     ok = keys >= 0 && keys <= c_max_keys;
@@ -472,11 +473,10 @@ optionsfile::parse (perform & p)
     }
 
     /*
-     *  Keys for Group Learn.
-     *
-     *  We used to crap out when this section had 0 entries.  But for working
-     *  with the new Qt5 implmentation, it is worthwhile to continue.  Also,
-     *  we note that Kepler34 has this section commented out.
+     *  Keys for Group Learn.  We used to crap out when this section had 0
+     *  entries.  But for working with the new Qt5 implmentation, it is
+     *  worthwhile to continue.  Also, we note that Kepler34 has this section
+     *  commented out.
      */
 
     line_after(file, "[keyboard-group]");
@@ -637,12 +637,10 @@ optionsfile::parse (perform & p)
             next_data_line(file);
             sscanf(m_line, "%u", &ktx.kpt_toggle_mutes);
             next_data_line(file);
-#ifdef SEQ64_SONG_RECORDING
             sscanf(m_line, "%u", &ktx.kpt_song_record);
             next_data_line(file);
             sscanf(m_line, "%u", &ktx.kpt_oneshot_queue);
             next_data_line(file);
-#endif
         }
         else
         {
@@ -810,7 +808,7 @@ optionsfile::parse (perform & p)
                     if (strcmp(m_line, "\"\"") == 0)
                     {
                         rc().playlist_active(false);
-                        rc().playlist_filename("");
+                        rc().playlist_filename("");     // ).clear();
                     }
                     else
                         rc().playlist_filename(m_line);
@@ -1662,14 +1660,12 @@ optionsfile::write (const perform & p)
             << ktx.kpt_toggle_mutes << "    # "
             << ucperf.key_name(ktx.kpt_toggle_mutes)
             << " handles the toggling-all-pattern-mutes function\n"
-#ifdef SEQ64_SONG_RECORDING
             << ktx.kpt_song_record << "    # "
             << ucperf.key_name(ktx.kpt_song_record)
             << " toggles the song-record function\n"
             << ktx.kpt_oneshot_queue << "    # "
             << ucperf.key_name(ktx.kpt_oneshot_queue)
             << " toggles the one-shot queue function\n"
-#endif
             ;
     }
 
@@ -1974,7 +1970,7 @@ optionsfile::write_midi_control
             break;
 
         case c_midi_control_top:
-            file << "# MIDI Control for top...\n";
+            file << "# MIDI Control for top (song beginning or L marker)\n";
             break;
 
         case c_midi_control_playlist:
@@ -1989,8 +1985,8 @@ optionsfile::write_midi_control
                 ;
             break;
 
-        case c_midi_control_reserved_0:
-            file << "# Reserved for expansion 0\n";
+        case c_midi_control_slot_shift:
+            file << "# Hot-key slot shift (keystroke)\n";
             break;
 
         case c_midi_control_start:
@@ -2018,7 +2014,7 @@ optionsfile::write_midi_control
          *     file << "# Reserved for expansion 9\n";
          *     break;
          *
-         * case g_midi_control_limit:  74/8496, last value, not written.
+         * case g_midi_control_limit:  74/84/96, last value, not written.
          */
 
         default:

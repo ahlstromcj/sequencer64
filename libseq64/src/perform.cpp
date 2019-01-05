@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-11-17
+ * \updates       2018-11-23
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -4744,8 +4744,7 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         result = handle_playlist_control(ctl, a, v);
         break;
 
-
-    case c_midi_control_reserved_0:
+    case c_midi_control_slot_shift:
 
         result = false;
         break;

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-09-27
+ * \updates       2018-12-02
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -104,11 +104,7 @@ rc_settings::rc_settings ()
     m_with_jack_transport       (false),
     m_with_jack_master          (false),
     m_with_jack_master_cond     (false),
-#ifdef SEQ64_RTMIDI_SUPPORT
     m_with_jack_midi            (true),
-#else
-    m_with_jack_midi            (false),
-#endif
     m_manual_alsa_ports         (false),
     m_reveal_alsa_ports         (false),
     m_print_keys                (false),
@@ -295,7 +291,7 @@ rc_settings::set_defaults ()
     m_user_filename             = "sequencer64.usr";    // ditto
     m_config_filename_alt       = ".seq24rc";
     m_user_filename_alt         = ".seq24usr";
-    m_playlist_filename         = "";                   // emnpty by default
+    m_playlist_filename         = "";                   // empty by default
     m_use_midi_control_file     = false;
     m_midi_control_filename     = "";
 

@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2018-09-14
+ * \updates       2019-01-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.  This class
@@ -88,7 +88,7 @@ rtmidi_info::get_compiled_api (std::vector<rtmidi_api> & apis)
 
     if (apis.empty())
     {
-        std::string errortext = func_message("no compiled API support found");
+        std::string errortext = "no rtmidi API support found";
         throw(rterror(errortext, rterror::UNSPECIFIED));
     }
 }
@@ -151,7 +151,7 @@ rtmidi_info::rtmidi_info
     }
     if (is_nullptr(get_api_info()))
     {
-        std::string errortext = func_message("no compiled API support found");
+        std::string errortext = "no rtmidi API support found";
         throw(rterror(errortext, rterror::UNSPECIFIED));
     }
 }
@@ -163,8 +163,6 @@ rtmidi_info::rtmidi_info
 rtmidi_info::~rtmidi_info ()
 {
     delete_api();
-    // if (not_nullptr(m_info_api))
-    //      delete m_info_api;
 }
 
 /**

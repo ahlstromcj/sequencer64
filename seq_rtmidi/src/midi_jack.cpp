@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2018-09-14
+ * \updates       2019-01-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -1067,10 +1067,7 @@ midi_jack::open_client_impl (bool input)
                 );
                 if (rc != 0)
                 {
-                    m_error_string = func_message
-                    (
-                        "JACK error setting multi-client input callback"
-                    );
+                    m_error_string = "JACK error setting input callback";
                     error(rterror::WARNING, m_error_string);
                 }
             }
@@ -1085,10 +1082,7 @@ midi_jack::open_client_impl (bool input)
                     );
                     if (rc != 0)
                     {
-                        m_error_string = func_message
-                        (
-                            "JACK error setting multi-client output callback"
-                        );
+                        m_error_string = "JACK error setting output callback";
                         error(rterror::WARNING, m_error_string);
                     }
                 }
@@ -1115,7 +1109,7 @@ midi_jack::close_client ()
         {
             int index = get_bus_index();
             int id = parent_bus().get_port_id();
-            m_error_string = func_message("JACK closing port #");
+            m_error_string = "JACK closing port #";
             m_error_string += std::to_string(index);
             m_error_string += " (id ";
             m_error_string += std::to_string(id);
@@ -1197,7 +1191,7 @@ midi_jack::connect_port
                 }
                 else
                 {
-                    m_error_string = func_message("JACK error connecting port ");
+                    m_error_string = "JACK error connecting port ";
                     m_error_string += input ? "input '" : "output '";
                     m_error_string += srcportname;
                     m_error_string += "' to '";
@@ -1284,7 +1278,7 @@ midi_jack::register_port (bool input, const std::string & portname)
         }
         else
         {
-            m_error_string = func_message("JACK error registering port");
+            m_error_string = "JACK error registering port";
             m_error_string += " ";
             m_error_string += portname;
             error(rterror::DRIVER_ERROR, m_error_string);
@@ -1334,7 +1328,7 @@ midi_jack::create_ringbuffer (size_t rbsize)
 
         if (! result)
         {
-            m_error_string = func_message("JACK ringbuffer error");
+            m_error_string = "JACK ringbuffer error";
             error(rterror::WARNING, m_error_string);
         }
     }

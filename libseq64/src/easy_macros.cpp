@@ -25,10 +25,10 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-26
- * \updates       2018-04-12
+ * \updates       2019-01-05
  * \license       GNU GPLv2 or above
  *
- *  These functions are used in macros such as func_message().
+ *  These functions are used to assist in debugging.
  */
 
 #include "easy_macros.hpp"
@@ -87,30 +87,6 @@ not_nullptr_assert (void * ptr, const std::string & context)
 
 namespace seq64
 {
-
-/**
- *  This function concatenates two C string pointers and returns them as
- *  a string message.  Note that we don't bother with error-checking the
- *  pointers.  You're on your own, Hoss.
- *
- * \param m1
- *      The first message, often a __func__ macro.
- *
- * \param m2
- *      The second message.
- *
- * \return
- *      Returns "m1: m2" as a standard C++ string.
- */
-
-std::string
-message_concatenate (const char * m1, const char * m2)
-{
-    std::string result(m1);
-    result += ": ";
-    result += m2;
-    return result;
-}
 
 /**
  *  Common-code for console messages.  Adds markers and a newline.

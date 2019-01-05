@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2018-04-12
- * \updates       2018-10-14
+ * \updates       2019-01-05
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -41,7 +41,6 @@ extern bool not_nullptr_assert (void * ptr, const std::string & context);
 namespace seq64
 {
 
-extern std::string message_concatenate (const char * m1, const char * m2);
 extern bool info_message (const std::string & msg);
 extern bool error_message (const std::string & msg);
 

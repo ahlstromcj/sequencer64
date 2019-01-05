@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-08-20
- * \updates       2018-06-02
+ * \updates       2019-01-05
  * \license       See the rtexmidi.lic file.  Too big.
  *
  * \deprecated
@@ -169,7 +169,7 @@ win_process_rtmidi_input
         LeaveCriticalSection(&(api_data->m_win_mutex));
         if (result != MMSYSERR_NOERROR)
         {
-            m_error_string = func_message("error sending SysEx to MIDI device");
+            m_error_string = "error sending SysEx to MIDI device";
             error(rterror::DRIVER_ERROR, m_error_string);
         }
         if (data->test_ignore_flags(0x01))
@@ -241,13 +241,12 @@ midi_win_info::midi_win_info
 {
     if (m_win_handles.is_error())
     {
-        m_error_string = func_message("error opening Win MM sequencer client");
+        m_error_string = "error opening Win MM sequencer client";
         error(rterror::DRIVER_ERROR, m_error_string);
     }
     else
     {
         midi_handle(&m_win_handles);                /* void version         */
-        // client_handle(win_xxxxx);                /* winmm version        */
     }
 }
 
@@ -285,13 +284,13 @@ midi_win_info::connect ()
             }
             else
             {
-                m_error_string = func_message("can't set I/O callback");
+                m_error_string = "can't set I/O callback";
                 error(rterror::WARNING, m_error_string);
             }
         }
         else
         {
-            m_error_string = func_message("Windows MM server not running?");
+            m_error_string = "Windows MM server not running?";
             error(rterror::WARNING, m_error_string);
         }
     }
@@ -463,7 +462,7 @@ midi_win_info::api_connect ()
     }
     if (! result)
     {
-        m_error_string = func_message("JACK can't activate and connect I/O");
+        m_error_string = "JACK can't activate and connect I/O";
         error(rterror::WARNING, m_error_string);
     }
     return result;
@@ -610,7 +609,7 @@ open_win_input_port (midi_win_data & data, unsigned portnumber)
         );
         if (mmresult != MMSYSERR_NOERROR)
         {
-            m_error_string = func_message("error creating MIDI input port");
+            m_error_string = "error creating MIDI input port";
             error(rterror::DRIVER_ERROR, m_error_string);
         }
 
@@ -653,7 +652,7 @@ open_win_input_port (midi_win_data & data, unsigned portnumber)
     }
     else
     {
-        m_error_string = func_message("MIDI input port number does not exist");
+        m_error_string = "MIDI input port number does not exist";
         error(rterror::DRIVER_ERROR, m_error_string);
     }
     return result;
@@ -690,7 +689,7 @@ open_win_output_port (midi_win_data & data, unsigned portnumber)
         );
         if (rc != MMSYSERR_NOERROR)
         {
-            m_error_string = func_message("error creating MIDI output port");
+            m_error_string = "error creating MIDI output port";
             error(rterror::DRIVER_ERROR, m_error_string);
         }
         result = rc == MMSYSERR_NOERROR;
@@ -716,13 +715,13 @@ close_win_output_port (midi_win_data & data)
             rc = midiOutClose(data->m_win_out_handle);
             if (rc != MMSYSERR_NOERROR)
             {
-                m_error_string = func_message("error in midiOutClose()");
+                m_error_string = "error in midiOutClose()";
                 error(rterror::DRIVER_ERROR, m_error_string);
             }
         }
         else
         {
-            m_error_string = func_message("error in midiOutReset()");
+            m_error_string = "error in midiOutReset()";
             error(rterror::DRIVER_ERROR, m_error_string);
         }
         result = rc == MMSYSERR_NOERROR;
@@ -738,7 +737,7 @@ void
 close_win_input_on_error (midi_win_data & data, const std::string & msg)
 {
     (void) midiInClose(data->m_win_out_handle);
-    m_error_string = func_message(msg);
+    m_error_string = msg;
     error(rterror::DRIVER_ERROR, m_error_string);
 }
 
@@ -750,7 +749,7 @@ void
 close_win_output_on_error (midi_win_data & data, const std::string & msg)
 {
     (void) midiOutClose(data->m_win_out_handle);
-    m_error_string = func_message(msg);
+    m_error_string = msg;
     error(rterror::DRIVER_ERROR, m_error_string);
 }
 

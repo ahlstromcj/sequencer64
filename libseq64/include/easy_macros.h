@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2018-10-18
+ * \updates       2019-01-05
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -27,6 +27,7 @@
  *  really should have the "hpp" extension now.  Oh well.
  */
 
+#include <string>
 #include <stdio.h>
 
 #include "platform_macros.h"
@@ -212,15 +213,6 @@ typedef bool cbool_t;
 #endif
 
 #endif  // PLATFORM_GNU
-
-/**
- *  A macro to prepend a fully qualified function name to a string.
- *  Currently defined in the rtmidi library due to an weird inability
- *  to resolve circular references involving message_concatenate() and
- *  the mastermidibus() class!
- */
-
-#define func_message(x)         seq64::message_concatenate(__func__, x)
 
 /**
  *  Usage:      errprint(cstring);

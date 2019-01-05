@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2018-06-02
+ * \updates       2019-01-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring, we had to adapt the existing Sequencer64
@@ -15,7 +15,7 @@
  *  mode of the Sequencer64 application and libraries.
  */
 
-#include "easy_macros.hpp"              /* func_message() etc.              */
+#include "easy_macros.hpp"              /* errprint() etc.                  */
 #include "event.hpp"
 #include "midi_api.hpp"
 #include "midi_info.hpp"
@@ -196,13 +196,13 @@ midi_api::user_callback (rtmidi_callback_t callback, void * userdata)
 {
     if (m_input_data.using_callback())
     {
-        m_error_string = func_message("callback function is already set");
+        m_error_string = "callback function is already set";
         error(rterror::WARNING, m_error_string);
         return;
     }
     if (is_nullptr(callback))
     {
-        m_error_string = func_message("callback function is null");
+        m_error_string = "callback function is null";
         error(rterror::WARNING, m_error_string);
         return;
     }
@@ -229,7 +229,7 @@ midi_api::cancel_callback ()
     }
     else
     {
-        m_error_string = func_message("no callback function was set");
+        m_error_string = "no callback function was set";
         error(rterror::WARNING, m_error_string);
     }
 }

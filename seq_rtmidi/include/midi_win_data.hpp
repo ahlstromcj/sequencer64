@@ -110,8 +110,10 @@ private:
     {
         if (! InitializeCriticalSectionAndSpinCount(&m_win_mutex, 0x00000400)
         {
-            // m_error_string = func_message("Win MM can't create mutex");
-            // error(rterror::WARNING, m_error_string);
+            /*
+             * m_error_string = errprint("Win MM can't create mutex");
+             * error(rterror::WARNING, m_error_string);
+             */
 
             m_is_error = true;
         }

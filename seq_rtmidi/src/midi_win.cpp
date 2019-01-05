@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2017-08-20
- * \updates       2017-06-02
+ * \updates       2019-01-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  * \deprecated
@@ -618,10 +618,7 @@ midi_win::open_client_impl (bool input)
                 );
                 if (rc != 0)
                 {
-                    m_error_string = func_message
-                    (
-                        "Windows MM error setting multi-client input callback"
-                    );
+                    m_error_string = "Windows MM error set input callback";
                     error(rterror::WARNING, m_error_string);
                 }
             }
@@ -636,10 +633,7 @@ midi_win::open_client_impl (bool input)
                     );
                     if (rc != 0)
                     {
-                        m_error_string = func_message
-                        (
-                            "Windows MM error setting multi-client output callback"
-                        );
+                        m_error_string = "Windows MM error set output callback";
                         error(rterror::WARNING, m_error_string);
                     }
                 }
@@ -666,7 +660,7 @@ midi_win::close_client ()
         {
             int index = get_bus_index();
             int id = parent_bus().get_port_id();
-            m_error_string = func_message("Windows MM closing port #");
+            m_error_string = "Windows MM closing port #";
             m_error_string += std::to_string(index);
             m_error_string += " (id ";
             m_error_string += std::to_string(id);
@@ -756,7 +750,7 @@ midi_win::connect_port
                 }
                 else
                 {
-                    m_error_string = func_message("Windows MM error connecting port ");
+                    m_error_string = "Windows MM error connecting port ";
                     m_error_string += input ? "input '" : "output '";
                     m_error_string += srcportname;
                     m_error_string += "' to '";
@@ -843,7 +837,7 @@ midi_win::register_port (bool input, const std::string & portname)
         }
         else
         {
-            m_error_string = func_message("Windows MM error registering port");
+            m_error_string = "Windows MM error registering port";
             m_error_string += " ";
             m_error_string += portname;
             error(rterror::DRIVER_ERROR, m_error_string);
@@ -893,7 +887,7 @@ midi_win::create_ringbuffer (size_t rbsize)
 
         if (! result)
         {
-            m_error_string = func_message("Windows MM ringbuffer error");
+            m_error_string = "Windows MM ringbuffer error";
             error(rterror::WARNING, m_error_string);
         }
     }
@@ -1103,7 +1097,7 @@ midi_out_win::send_message (const midi_message & message)
                 char * buffer = malloc(nbytes);     /* for SysEx data   */
                 if (is_nullptr(buffer)
                 {
-                    m_error_string = func_message("SysEx allocation failed");
+                    m_error_string = "SysEx allocation failed";
                     error(rterror::MEMORY_ERROR, m_error_string);
                     return;
                 }
@@ -1126,7 +1120,7 @@ midi_out_win::send_message (const midi_message & message)
                 if (mmresult != MMSYSERR_NOERROR)
                 {
                     free(buffer);
-                    m_error_string = func_message("SysEx header prep failed");
+                    m_error_string = "SysEx header prep failed";
                     error(rterror::DRIVER_ERROR, m_error_string);
                     return;
                 }
@@ -1138,7 +1132,7 @@ midi_out_win::send_message (const midi_message & message)
                 if (result != MMSYSERR_NOERROR)
                 {
                     free(buffer);
-                    m_error_string = func_message("SysEx send failed");
+                    m_error_string = "SysEx send failed";
                     error(rterror::DRIVER_ERROR, m_error_string);
                     return;
                 }
@@ -1164,7 +1158,7 @@ midi_out_win::send_message (const midi_message & message)
 
                 if (nbytes > 3)
                 {
-                    m_error_string = func_message("Illegal MIDI message size");
+                    m_error_string = "Illegal MIDI message size";
                     error(rterror::DRIVER_ERROR, m_error_string);
                     return;
                 }
@@ -1183,7 +1177,7 @@ midi_out_win::send_message (const midi_message & message)
                 mmresult = midiOutShortMsg(data->m_win_out_handle, packet);
                 if (result != MMSYSERR_NOERROR)
                 {
-                    m_error_string = func_message("error sending MIDI message");
+                    m_error_string = "error sending MIDI message";
                     error(rterror::DRIVER_ERROR, m_error_string);
                 }
             }
@@ -1191,7 +1185,7 @@ midi_out_win::send_message (const midi_message & message)
         }
         else
         {
-            m_error_string = func_message("message argument is empty");
+            m_error_string = "message argument is empty";
             error(rterror::WARNING, m_error_string);
         }
     }

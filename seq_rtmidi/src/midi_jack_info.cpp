@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2018-09-14
+ * \updates       2019-01-05
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -192,13 +192,13 @@ midi_jack_info::connect ()
             }
             else
             {
-                m_error_string = func_message("JACK can't set I/O callback");
+                m_error_string = "JACK can't set I/O callback";
                 error(rterror::WARNING, m_error_string);
             }
         }
         else
         {
-            m_error_string = func_message("JACK server not running?");
+            m_error_string = "JACK server not running?";
             error(rterror::WARNING, m_error_string);
         }
     }
@@ -265,10 +265,6 @@ midi_jack_info::extract_names
  *
  *  Not having any JACK input ports present isn't necessarily an error.  There
  *  may not be any, and there may still be at least one output port.
- *
- *      m_error_string = func_message("no JACK input ports available");
- *      error(rterror::WARNING, m_error_string);
- *
  *  Also, if there are none, we try to make a virtual port so that the
  *  application has something to work with.  The only issue is the client
  *  number.  Currently all virtual ports we create have a client number of 0.
@@ -353,10 +349,6 @@ midi_jack_info::get_all_port_info ()
         {
             /*
              * Not really an error, though perhaps we want to warn about it.
-             *
-             * m_error_string = func_message("no JACK outputs ports available");
-             * error(rterror::WARNING, m_error_string);
-             *
              * As with the input port, we create a virtual port.
              */
 
@@ -465,7 +457,7 @@ midi_jack_info::api_connect ()
     }
     if (! result)
     {
-        m_error_string = func_message("JACK can't activate and connect I/O");
+        m_error_string = "JACK can't activate and connect I/O";
         error(rterror::WARNING, m_error_string);
     }
     return result;

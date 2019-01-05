@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2018-06-02
+ * \updates       2019-01-05
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -110,7 +110,7 @@ midi_alsa_info::midi_alsa_info
     );
     if (result < 0)
     {
-        m_error_string = func_message("error opening ALSA sequencer client");
+        m_error_string = "error opening ALSA sequencer client";
         error(rterror::DRIVER_ERROR, m_error_string);
     }
     else

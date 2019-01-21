@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2018-10-29
+ * \updates       2019-01-19
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -41,7 +41,6 @@
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
 #include "daemonize.hpp"                /* seq64::daemonize()               */
-#include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant.hpp"            /* seq64::gui_assistant base class  */
 #include "keys_perform.hpp"             /* seq64::keys_perform              */
 

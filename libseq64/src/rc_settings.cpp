@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-12-02
+ * \updates       2019-01-21
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -294,12 +294,8 @@ rc_settings::set_defaults ()
     m_playlist_filename         = "";                   // empty by default
     m_use_midi_control_file     = false;
     m_midi_control_filename     = "";
-
-    /*
-     * const: m_application_name = seq_app_name();
-     */
-
-    m_app_client_name           = seq_client_name();
+    m_application_name          = seq_app_name();       // make it up-to-date
+    m_app_client_name           = seq_client_name();    // ditto
     m_tempo_track_number        = 0;
     m_recent_files.clear();
     set_config_files(SEQ64_CONFIG_NAME);

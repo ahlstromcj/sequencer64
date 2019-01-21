@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-11-17
+dnl \update        2019-01-21
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -154,6 +154,9 @@ dnl    name of the client application for display, and the version.
 PACKAGE="sequencer64"
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
+
+AC_DEFINE(APP_NAME, ["seq64"], "The default name of the Sequencer64 executable")
+AC_SUBST(APP_NAME)
 
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
@@ -699,7 +702,7 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-11-17"
+#define VERSION_DATE_SHORT "2019-01-21"
 #define VERSION "0.96.3"
 
 )

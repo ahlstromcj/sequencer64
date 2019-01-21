@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-09-29
+ * \updates       2019-01-21
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -240,10 +240,12 @@ private:
     /**
      *  Holds the application name, e.g. "sequencer64", "seq64portmidi", or
      *  "seq64".  This is a constant, set to SEQ64_APP_NAME.  Also see the
-     *  seq_app_name() function.
+     *  seq_app_name() function.  We cannot make this value constant, even
+     *  though it essentially is, because we still might need to adjust it at
+     *  run-time, such as in rc_settings::set_defaults().
      */
 
-    const std::string m_application_name;
+    std::string m_application_name;
 
     /**
      *  Holds the client name for the application.  This is much like the

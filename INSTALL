@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.96.2 and above
 Chris Ahlstrom
-2015-09-10 to 2018-11-08
+2015-09-10 to 2019-01-06
 
 Getting Sequencer64 requires building the code or going to the
 sequencer64-packages site on GitHub.  The bootstrap setup is primarily
@@ -472,12 +472,13 @@ DEPENDENCIES:
          on Windows.
       -  Qt 5.  Install qtcreator only if you want it, as it installs 650 Mb
          worth of files.  One can just install the bare minimum:
-         -  qt5-default
+         -  qt5-default (Important!)
          -  qtbase5-dev
          -  qtbase5-dev-tools
          -  qtdeclarative-dev-tools or qtdeclarative5-dev-tools
             (qtdeclarative5-dev?)
          -  qtchooser
+         -  qt5-qmake
          -  qtdesigner; optional if you want to tweak the GUIs, not huge,
             provided by the qtttools5-dev-tools package in Debian.
 

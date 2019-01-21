@@ -290,6 +290,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_bpm                       (SEQ64_DEFAULT_BPM),    /* now a double     */
     m_beats_per_bar             (SEQ64_DEFAULT_BEATS_PER_MEASURE),
     m_beat_width                (SEQ64_DEFAULT_BEAT_WIDTH),
+    m_tempo_track_number        (0),
     m_clocks_per_metronome      (24),
     m_32nds_per_quarter         (8),
     m_us_per_quarter_note       (tempo_us_from_bpm(SEQ64_DEFAULT_BPM)),

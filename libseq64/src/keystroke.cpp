@@ -33,7 +33,7 @@
 
 #include <cctype>                       /* std::islower(), std::toupper()   */
 
-#include "keystroke.hpp"            // seq64::keystroke
+#include "keystroke.hpp"                /* seq64::keystroke class           */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

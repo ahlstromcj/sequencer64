@@ -71,7 +71,7 @@
 #include <set>                          /* std::set, arbitary selection     */
 #endif
 
-#include <memory>                       /* std::unique_pt<>                 */
+#include <memory>                       /* std::unique_ptr<>                */
 #include <vector>                       /* std::vector<>                    */
 #include <pthread.h>                    /* pthread_t C structure            */
 
@@ -292,7 +292,7 @@ class perform
 public:
 
     /**
-     *  In many cases, when we check a key action that perform wil do, it is
+     *  In many cases, when we check a key action that perform will do, it is
      *  sufficient to return a boolean.  But, in some cases, we need to indicate
      *  what was changed (e.g. via a keystroke).  This enumeration provides
      *  return values that a (GUI) caller can use to decided which values to get
@@ -1127,9 +1127,7 @@ public:
     ~perform ();
 
     /*
-     * ------------------------------
      * Start of playlist accessors.
-     * ------------------------------
      */
 
     /**
@@ -1400,9 +1398,7 @@ public:
     const std::string & playlist_error_message () const;
 
     /*
-     * ------------------------------
      * End of playlist accessors.
-     * ------------------------------
      */
 
     /**

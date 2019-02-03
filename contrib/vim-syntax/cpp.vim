@@ -4,7 +4,7 @@
 "
 "  Language:      C/C++
 "  Maintainer:    Chris Ahlstrom <ahlstromcj@users.sourceforge.net>
-"  Last Change:   2006-09-04 to 2019-01-18
+"  Last Change:   2006-09-04 to 2019-02-03
 "  Project:       XPC Suite library project
 "  Usage:
 "
@@ -55,10 +55,11 @@ syn keyword cTodo contained pure singleton virtual
 "------------------------------------------------------------------------------
 
 syn keyword cType auto_ptr bad_alloc begin c_str cbegin cend clear const_iterator
+syn keyword cType const_reverse_iterator
 syn keyword cType empty end erase exception find first fstream future
 syn keyword cType ifstream insert istream istringstream iterator
 syn keyword cType length list make_pair map multimap
-syn keyword cType ofstream ostream ostringstream pair promise
+syn keyword cType ofstream ostream ostringstream pair promise reverse_iterator
 syn keyword cType second set shared_ptr size size_type stack std string
 syn keyword cType stringstream
 syn keyword cType thread unique_ptr value_type vector wstring

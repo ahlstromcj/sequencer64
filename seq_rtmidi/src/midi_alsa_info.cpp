@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2019-01-05
+ * \updates       2019-01-21
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -205,19 +205,6 @@ midi_alsa_info::get_all_port_info ()
         snd_seq_client_info_set_client(cinfo, -1);
         input_ports().clear();
         output_ports().clear();
-#ifdef USE_THIS_BAD_CODE
-        This code passes parameters in the wrong order!
-
-        input_ports().add
-        (
-            SND_SEQ_CLIENT_SYSTEM, "system",
-            SND_SEQ_PORT_SYSTEM_ANNOUNCE, "announce",
-            SEQ64_MIDI_NORMAL_PORT,                 /* false = not virtual  */
-            global_queue(),
-            true,                                   /* system port          */
-            SEQ64_MIDI_INPUT_PORT                   /* input port           */
-        );
-#else
         input_ports().add
         (
             SND_SEQ_CLIENT_SYSTEM, "system",
@@ -227,7 +214,6 @@ midi_alsa_info::get_all_port_info ()
             SEQ64_MIDI_INPUT_PORT,                  /* input port           */
             global_queue()
         );
-#endif
         ++count;
         while (snd_seq_query_next_client(m_alsa_seq, cinfo) >= 0)
         {

@@ -31,10 +31,7 @@
  * \updates       2018-08-25
  * \license       GNU GPLv2 or above
  *
- *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
- *  and some from Gtk::Window.  In gtkmm-3, the former will be merged into
- *  the latter, but for now Gtk::DrawingArea will be used.
- *
+ *  Provides keystroke encapsulate across GUI frameworks.
  */
 
 #include "gdk_basic_keys.h"

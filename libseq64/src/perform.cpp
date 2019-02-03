@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-11-23
+ * \updates       2019-02-03
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -939,6 +939,8 @@ perform::select_group_mute (int mutegroup)
                 );
 #endif
             }
+            else                                        /* ca 2019-02-03    */
+                m_mute_group[dest] = false;
         }
     }
     m_mute_group_selected = mutegroup;
@@ -1510,11 +1512,10 @@ perform::are_any_armed ()
     bool result = false;
     for (int i = 0; i < m_sequence_high; ++i)   /* m_sequence_max       */
     {
-        if (is_active(i))
+        if (is_active(i) && m_seqs[i]->get_playing())
         {
-            result = m_seqs[i]->get_playing();
-            if (result)
-                break;                          /* one armed is enough  */
+            result = true;
+            break;                              /* one armed is enough  */
         }
     }
     return result;
@@ -6836,6 +6837,9 @@ perform::toggle_sequences (int seqnum, bool isshiftkey)
                     {
                         bool muted = seq->get_song_mute();
                         seq->set_song_mute(! muted);
+
+                        // What about calling seq->set_playing()?
+
                         result = true;
                     }
                 }
@@ -6848,6 +6852,9 @@ perform::toggle_sequences (int seqnum, bool isshiftkey)
             {
                 bool muted = seq->get_song_mute();
                 seq->set_song_mute(! muted);
+
+                // What about calling seq->set_playing()?
+
                 result = true;
             }
         }

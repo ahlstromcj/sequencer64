@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2018-07-07
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -967,11 +967,13 @@ triggers::move_selected (midipulse tick, bool fixoffset, grow_edit_t which)
         if (i->selected())
         {
             /*
-             * Too tricky.  Beware the side-effect of incrementing i.
+             * ca 2019-02-05 Issue #171 Grid snap does not work in song mode.
+             * Too tricky.  Beware the side-effect of incrementing i.  Make it
+             * like seq24.
              */
 
             s = i;
-            if (++i != m_triggers.end())                    /* side-effect  */
+            if (i != m_triggers.end() && ++i != m_triggers.end())
                 maxtick = i->tick_start() - 1;
 
             midipulse deltatick = 0;

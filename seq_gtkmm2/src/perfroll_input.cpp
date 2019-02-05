@@ -180,26 +180,30 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
     sequence * seq = perf().get_sequence(m_drop_sequence);
     bool dropseq_active;
     grab_focus();
-#ifndef SEQ64_SONG_BOX_SELECT
+// #ifndef SEQ64_SONG_BOX_SELECT
     dropseq_active = not_nullptr(seq);
     if (dropseq_active && ! is_shift_key(ev))       /* initial unselection  */
     {
         seq->unselect_triggers();
-        result = true;                              // draw_all();
+//      result = true;                              // draw_all();
+        draw_all();
+        result = true;
     }
-#endif
+// #endif
     m_drop_x = int(ev->x);
     m_drop_y = int(ev->y);
     convert_drop_xy();                              /* set the m_drop_xxx's */
-    seq = perf().get_sequence(m_drop_sequence);
-    dropseq_active = not_nullptr(seq);
+//  seq = perf().get_sequence(m_drop_sequence);
+//  dropseq_active = not_nullptr(seq);
 
+#if 0
 #ifdef SEQ64_SONG_BOX_SELECT
     bool in_seq = perf().is_active(m_drop_sequence);
     bool in_trigger = perf().intersect_triggers(m_drop_sequence, m_drop_tick);
 #else
     if (! dropseq_active)
         return result;
+#endif
 #endif
 
     if (is_ctrl_key(ev))
@@ -434,8 +438,10 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
             convert_x(x, tick);
             tick -= m_drop_tick_offset;
 
+#if 0
 #ifdef SEQ64_SONG_RECORDING
             if (perf().song_record_snap())         /* snap to seq length   */
+#endif
 #endif
                 tick -= tick % m_snap_x;
 
@@ -462,7 +468,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
                     }
                 }
 #else
-                seq->move_triggers(tick, true);
+                seq->move_triggers(tick, true); /* triggers::move_selected() */
 #endif
                 result = true;
             }

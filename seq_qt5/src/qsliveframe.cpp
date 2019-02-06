@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-11-16
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -1421,13 +1421,11 @@ qsliveframe::handle_key_press (unsigned gdkkey)
                 }
                  */
 
-#ifdef SEQ64_SONG_RECORDING
                 else if (k.is(PREFKEY(song_record)))
                 {
                     bool record = true;             // TODO
                     perf().song_recording(record);
                 }
-#endif
             }
         }
     }

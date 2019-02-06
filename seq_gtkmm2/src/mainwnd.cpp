@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-29
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -141,15 +141,7 @@
 #include "pixmaps/menu.xpm"                 // any better image of a "menu"?
 #include "pixmaps/muting.xpm"               // need better/smaller icon
 #include "pixmaps/song_mode.xpm"            // need better/smaller icon
-
-#ifdef SEQ64_SONG_RECORDING
-
-/*
- *  No longer used: #include "pixmaps/song_rec_off.xpm"
- */
-
 #include "pixmaps/song_rec_on.xpm"
-#endif
 
 #ifdef USE_RECORD_TEMPO_MENU                // too clumsy
 #include "pixmaps/tempo_autorecord.xpm"
@@ -343,12 +335,10 @@ mainwnd::mainwnd
 #ifdef SEQ64_SHOW_JACK_STATUS
     m_button_jack           (manage(new Gtk::Button("ALSA"))),
 #endif
-#ifdef SEQ64_SONG_RECORDING
     m_button_song_record    (manage(new Gtk::ToggleButton())),
     m_button_song_snap      (manage(new Gtk::ToggleButton("S"))),
     m_is_song_recording     (false),
     m_is_snap_recording     (false),
-#endif
     m_tick_time             (manage(new Gtk::Label(""))),
     m_button_time_type      (manage(new Gtk::Button("HMS"))),
     m_tick_time_as_bbt      (false),
@@ -748,8 +738,6 @@ mainwnd::mainwnd
     startstophbox->pack_start(*m_button_play, HBOX_PACKING);
     m_button_play->set_sensitive(true);
 
-#ifdef SEQ64_SONG_RECORDING
-
     m_button_song_record->set_focus_on_click(false);
     m_button_song_record->add(*manage(new PIXBUF_IMAGE(song_rec_on_xpm)));
     m_button_song_record->signal_toggled().connect
@@ -775,8 +763,6 @@ mainwnd::mainwnd
         "Click this button to toggle the snapping of live song recording."
     );
     startstophbox->pack_start(*m_button_song_snap, HBOX_PACKING);
-
-#endif
 
     /*
      * BPM spin button with label.  Be sure to document that right-clicking on
@@ -1742,8 +1728,6 @@ mainwnd::jack_dialog ()
         m_options->show_all();
 }
 
-#ifdef SEQ64_SONG_RECORDING
-
 /**
  *  Sets the song-recording status.  Note that calling this function will
  *  trigger the button signal callback.
@@ -1806,8 +1790,6 @@ mainwnd::set_song_playback (bool playsong)
         perf().song_recording(false);
     }
 }
-
-#endif  // SEQ64_SONG_RECORDING
 
 /**
  *  Toggles the recording of the live song control done by the musician.
@@ -3281,12 +3263,10 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             {
                 toggle_menu_mode();
             }
-#ifdef SEQ64_SONG_RECORDING
             else if (k.is(PREFKEY(song_record)))
             {
                 toggle_song_record();
             }
-#endif
             else if (k.is(SEQ64_Right))
             {
                 (void) perf().open_next_song();

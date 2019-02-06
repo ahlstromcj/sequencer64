@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-10-29
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -187,9 +187,9 @@ main (int argc, char * argv [])
                     (void) snprintf
                     (
                         temp, sizeof temp,
-                        "? MIDI file not found: %s\n", fname.c_str()
+                        "? MIDI file not found: %s", fname.c_str()
                     );
-                    printf(temp);
+                    printf("%s\n", temp);
                     ok = false;
                     errmsg = temp;
                 }

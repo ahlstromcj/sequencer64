@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-11-03
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -125,7 +125,6 @@ sequence::sequence (int ppqn)
     m_quantized_rec             (false),
     m_thru                      (false),
     m_queued                    (false),
-#ifdef SEQ64_SONG_RECORDING
     m_one_shot                  (false),
     m_one_shot_tick             (0),
     m_off_from_snap             (false),
@@ -133,7 +132,6 @@ sequence::sequence (int ppqn)
     m_song_recording            (false),
     m_song_recording_snap       (false),
     m_song_record_tick          (0),
-#endif
     m_overwrite_recording       (false),
     m_loop_reset                (false),
     m_unit_measure              (0),
@@ -1093,13 +1091,9 @@ sequence::toggle_playing (midipulse tick, bool resumenoteons)
     toggle_playing();
     if (get_playing() && resumenoteons)
     {
-#ifdef SEQ64_SONG_RECORDING
         resume_note_ons(tick);
-#endif
     }
-#ifdef SEQ64_SONG_RECORDING
     m_off_from_snap = false;
-#endif
 }
 
 /**
@@ -1116,9 +1110,7 @@ sequence::toggle_queued ()
     automutex locker(m_mutex);
     m_queued = ! m_queued;
     m_queued_tick = m_last_tick - mod_last_tick() + m_length;
-#ifdef SEQ64_SONG_RECORDING
     m_off_from_snap = true;
-#endif
     set_dirty_mp();
 }
 
@@ -1163,10 +1155,8 @@ void
 sequence::play
 (
     midipulse tick,
-    bool playback_mode
-#ifdef SEQ64_SONG_RECORDING
-    , bool resume_note_ons
-#endif
+    bool playback_mode,
+    bool resume_note_ons
 )
 {
     automutex locker(m_mutex);
@@ -1184,14 +1174,11 @@ sequence::play
          *  mode now.
          */
 
-#ifdef SEQ64_SONG_RECORDING
         if (song_recording())
         {
             grow_trigger(song_record_tick(), end_tick, SEQ64_SONG_RECORD_INC);
             set_dirty_mp();                 /* force redraw                 */
         }
-#endif
-
         if (playback_mode)                  /* song mode: on/off triggers   */
         {
             trigger_turning_off = m_triggers.play(start_tick, end_tick);
@@ -5010,9 +4997,7 @@ sequence::set_playing (bool p)
         set_dirty();
     }
     m_queued = false;
-#ifdef SEQ64_SONG_RECORDING
     m_one_shot = false;
-#endif
 }
 
 /**
@@ -5875,8 +5860,6 @@ sequence::set_parent (perform * p)
         m_parent = p;
 }
 
-#ifdef SEQ64_SONG_RECORDING
-
 /**
  *  Why don't we see this in kepler34?  We do, in the MidiPerformance::play()
  *  function.  We refactored this, Chris.  Remember?  :-D
@@ -5909,38 +5892,6 @@ sequence::play_queue (midipulse tick, bool playbackmode, bool resumenoteons)
     play(tick, playbackmode, resumenoteons);
 }
 
-#else
-
-/**
- *  Provides encapsulation for a series of called used in perform::play().
- *  Starts the playing of a pattern/sequence.  This function just has the
- *  sequence dump its events.  It ignores the sequence if it has no playable
- *  MIDI events.
- *
- * \change ca 2016-10-12
- *      Issue #39.  Removed the check for a non-zero event count.  This lets
- *      the seqroll show the progress bar in motion.
- *
- * \param tick
- *      Provides the tick/pulse from which to start playing.
- *
- * \param playbackmode
- *      Indicates if the playback is in live mode (false) or song mode (true).
- */
-
-void
-sequence::play_queue (midipulse tick, bool playbackmode)
-{
-    if (check_queued_tick(tick))
-    {
-        play(get_queued_tick() - 1, playbackmode /* , resume_note_ons */ );
-        toggle_playing();
-    }
-    play(tick, playbackmode);
-}
-
-#endif  // SEQ64_SONG_RECORDING
-
 /**
  *  Actually, useful mainly for the user-interface, this function calculates
  *  the size of the left and right handles of a note.  The s_handlesize value
@@ -5972,8 +5923,6 @@ sequence::handle_size (midipulse start, midipulse finish)
 
     return result;
 }
-
-#ifdef SEQ64_SONG_RECORDING
 
 /**
  *  Toggles the m_one_shot flag, sets m_off_from_snap to true, and adjusts
@@ -6090,8 +6039,6 @@ sequence::resume_note_ons (midipulse tick)
         }
     }
 }
-
-#endif      // SEQ64_SONG_RECORDING
 
 /**
  *  Makes a calculation for expanded recording, used in seqedit and qseqroll.

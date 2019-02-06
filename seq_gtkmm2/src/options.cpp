@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-29
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -859,7 +859,6 @@ options::add_extended_keys_page ()
     controltable->attach(*label, 4, 5, 1, 2);
     controltable->attach(*entry, 5, 6, 1, 2);
 
-#ifdef SEQ64_SONG_RECORDING
     label = manage(new Gtk::Label("Song record", Gtk::ALIGN_RIGHT));
     entry = manage
     (
@@ -875,7 +874,6 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 4, 5, 3, 4);
     controltable->attach(*entry, 5, 6, 3, 4);
-#endif
 }
 
 #undef AddKey

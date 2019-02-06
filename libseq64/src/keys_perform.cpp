@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2018-03-16
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  Added pattern-edit and event-edit keys which change the pattern slot
@@ -89,12 +89,9 @@ keys_perform::keys_perform ()
     m_key_pattern_edit              (SEQ64_equal),
     m_key_pattern_shift             (SEQ64_slash),
     m_key_event_edit                (SEQ64_minus),
-    m_key_stop                      (SEQ64_Escape)
-#ifdef SEQ64_SONG_RECORDING
-    ,
+    m_key_stop                      (SEQ64_Escape),
     m_key_song_record               (SEQ64_P),
     m_key_oneshot_queue             (SEQ64_p)
-#endif
 {
     // Empty body
 }
@@ -169,10 +166,8 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
      m_key_pattern_shift             = kpt.kpt_pattern_shift;
      m_key_event_edit                = kpt.kpt_event_edit;
      m_key_stop                      = kpt.kpt_stop;
-#ifdef SEQ64_SONG_RECORDING
      m_key_song_record               = kpt.kpt_song_record;
      m_key_oneshot_queue             = kpt.kpt_oneshot_queue;
-#endif
      m_key_show_ui_sequence_key      = kpt.kpt_show_ui_sequence_key;
      m_key_show_ui_sequence_number   = kpt.kpt_show_ui_sequence_number;
 }
@@ -216,10 +211,8 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
      kpt.kpt_pattern_shift          = m_key_pattern_shift;
      kpt.kpt_event_edit             = m_key_event_edit;
      kpt.kpt_stop                   = m_key_stop;
-#ifdef SEQ64_SONG_RECORDING
      kpt.kpt_song_record            = m_key_song_record;
      kpt.kpt_oneshot_queue          = m_key_oneshot_queue;
-#endif
      kpt.kpt_show_ui_sequence_key   = m_key_show_ui_sequence_key;
      kpt.kpt_show_ui_sequence_number = m_key_show_ui_sequence_number;
 }

@@ -94,7 +94,7 @@
  *  Kepler34 has a song-recording mode that we are still exploring and adding,
  *  marked by the following macro to keep it out of the way until the feature
  *  is ready for prime time.  This feature has been requested by some users of
- *  Sequencer64.  Currently builds but is not fully tested.
+ *  Sequencer64.  Now permanent.
  */
 
 #define SEQ64_SONG_RECORDING

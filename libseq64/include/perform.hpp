@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-11-11
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -705,8 +705,6 @@ private:
 
     bool m_looping;
 
-#ifdef SEQ64_SONG_RECORDING
-
     /**
      *  Indicates to record live sequence-trigger changes into the Song data.
      */
@@ -731,8 +729,6 @@ private:
      */
 
     double m_current_tick;
-
-#endif
 
     /**
      *  Specifies the playback mode.  There are two, "live" and "song",
@@ -2679,8 +2675,6 @@ public:
         m_seqs_in_set = seqs;
     }
 
-#ifdef SEQ64_SONG_RECORDING
-
     /*
      * This is a long-standing request from user's, adapted from Kepler34.
      */
@@ -2704,8 +2698,6 @@ public:
     {
         m_resume_note_ons = f;
     }
-
-#endif  // SEQ64_SONG_RECORDING
 
 #ifdef SEQ64_SONG_BOX_SELECT
 
@@ -2915,8 +2907,6 @@ public:         // GUI-support functions
 #endif
     }
 
-#ifdef SEQ64_SONG_RECORDING
-
     void song_recording_stop ();
 
     /**
@@ -2938,8 +2928,6 @@ public:         // GUI-support functions
     {
         m_song_record_snap = f;
     }
-
-#endif  // SEQ64_SONG_RECORDING
 
     /**
      * \getter m_playback_mode

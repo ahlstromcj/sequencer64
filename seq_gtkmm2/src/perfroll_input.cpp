@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-04
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  Now derived directly from perfroll.  No more AbstractPerfInput and no more
@@ -411,12 +411,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
             convert_x(x, tick);
 
             midipulse seqlength = seq->get_length();
-
-#ifdef SEQ64_SONG_RECORDING
-            if (perf().song_record_snap())         /* snap to seq length   */
-#endif
-                tick -= (tick % seqlength);
-
+            tick -= (tick % seqlength);
             seq->grow_trigger(m_drop_tick, tick, seqlength);
             draw_all();
             result = true;
@@ -437,13 +432,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
             midipulse tick;
             convert_x(x, tick);
             tick -= m_drop_tick_offset;
-
-#if 0
-#ifdef SEQ64_SONG_RECORDING
-            if (perf().song_record_snap())         /* snap to seq length   */
-#endif
-#endif
-                tick -= tick % m_snap_x;
+            tick -= tick % m_snap_x;
 
             if (m_moving)
             {

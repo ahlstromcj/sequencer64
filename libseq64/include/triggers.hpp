@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2018-07-07
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -474,11 +474,7 @@ public:
     void pop_undo ();
     void pop_redo ();
     void print (const std::string & seqname) const;
-#ifdef SEQ64_SONG_RECORDING
     bool play (midipulse & starttick, midipulse & endtick, bool resume = false);
-#else
-    bool play (midipulse & starttick, midipulse & endtick);
-#endif
     void add
     (
         midipulse tick, midipulse len,

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-10-30
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -366,8 +366,6 @@ private:
 
     bool m_queued;
 
-#ifdef SEQ64_SONG_RECORDING
-
     /**
      *  A member from the Kepler34 project to indicate we are in one-shot mode
      *  for triggering.  Set to false whenever playing-state changes.  Used in
@@ -423,8 +421,6 @@ private:
      */
 
     midipulse m_song_record_tick;
-
-#endif  // SEQ64_SONG_RECORDING
 
     /**
      *  Indicates if overwrite recording of notes in a loop is in force.
@@ -1335,8 +1331,6 @@ public:
         return m_thru;
     }
 
-#ifdef SEQ64_SONG_RECORDING
-
     void off_one_shot ();
     void song_recording_start (midipulse tick, bool snap);
     void song_recording_stop (midipulse tick);
@@ -1406,9 +1400,6 @@ public:
 
     void resume_note_ons (midipulse tick);
     void toggle_one_shot ();
-
-#endif  // SEQ64_SONG_RECORDING
-
     bool is_dirty_main ();
     bool is_dirty_edit ();
     bool is_dirty_perf ();
@@ -1437,15 +1428,8 @@ public:
     void set_midi_channel (midibyte ch, bool user_change = false);
     void print () const;
     void print_triggers () const;
-
-#ifdef SEQ64_SONG_RECORDING
     void play (midipulse tick, bool playback_mode, bool resume = false);
     void play_queue (midipulse tick, bool playbackmode, bool resume);
-#else
-    void play (midipulse tick, bool playback_mode);
-    void play_queue (midipulse tick, bool playbackmode);
-#endif
-
     bool add_note
     (
         midipulse tick, midipulse len, int note,
@@ -1887,8 +1871,6 @@ private:
             return true;
     }
 
-#ifdef SEQ64_SONG_RECORDING
-
     /**
      * \setter m_one_shot
      */
@@ -1942,8 +1924,6 @@ private:
     {
         m_song_record_tick = t;
     }
-
-#endif      // SEQ64_SONG_RECORDING
 
 };          // class sequence
 

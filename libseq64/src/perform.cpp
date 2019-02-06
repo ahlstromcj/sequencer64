@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2019-02-03
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -279,12 +279,10 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_inputing                  (true),
     m_outputing                 (true),
     m_looping                   (false),
-#ifdef SEQ64_SONG_RECORDING
     m_song_recording            (false),
     m_song_record_snap          (false),
     m_resume_note_ons           (false),
     m_current_tick              (0.0),
-#endif
     m_playback_mode             (false),
     m_ppqn                      (choose_ppqn(ppqn)),    /* may change later */
     m_bpm                       (SEQ64_DEFAULT_BPM),    /* now a double     */
@@ -2658,11 +2656,7 @@ perform::play (midipulse tick)
     {
         sequence * s = get_sequence(seq);
         if (not_nullptr(s))
-#ifdef SEQ64_SONG_RECORDING
             s->play_queue(tick, m_playback_mode, m_resume_note_ons);
-#else
-            s->play_queue(tick, m_playback_mode);
-#endif
     }
     if (not_nullptr(m_master_bus))
         m_master_bus->flush();                      /* flush MIDI buss  */
@@ -3392,11 +3386,7 @@ perform::add_trigger (int seqnum, midipulse tick)
     if (not_nullptr(s))
     {
         midipulse seqlength = s->get_length();
-#ifdef SEQ64_SONG_RECORDING
-        if (song_record_snap())         /* snap to the length of sequence   */
-#endif
-            tick -= tick % seqlength;
-
+        tick -= tick % seqlength;
         push_trigger_undo(seqnum);
         s->add_trigger(tick, seqlength);
         modify();
@@ -3742,9 +3732,7 @@ perform::output_func ()
         {
             pad.js_current_tick = 0.0;      // tick and tick fraction
             pad.js_total_tick = 0.0;
-#ifdef SEQ64_SONG_RECORDING
             m_current_tick = 0.0;
-#endif
         }
 
         pad.js_jack_stopped = false;
@@ -3801,9 +3789,7 @@ perform::output_func ()
         m_dont_reset_ticks = false;
         if (ok)
         {
-#ifdef SEQ64_SONG_RECORDING
             m_current_tick = double(m_starting_tick);
-#endif
             pad.js_current_tick = long(m_starting_tick);    // midipulse
             pad.js_clock_tick = m_starting_tick;
             set_orig_ticks(m_starting_tick);                // what member?
@@ -3893,9 +3879,7 @@ perform::output_func ()
             if (m_midiclockpos >= 0)
             {
                 delta_tick = 0;
-#ifdef SEQ64_SONG_RECORDING
                 m_current_tick = double(m_midiclockpos);
-#endif
                 pad.js_clock_tick = pad.js_current_tick = pad.js_total_tick =
                     m_midiclockpos;
 
@@ -3943,9 +3927,7 @@ perform::output_func ()
                 pad.js_current_tick += delta_tick;
                 pad.js_total_tick += delta_tick;
                 pad.js_dumping = true;
-#ifdef SEQ64_SONG_RECORDING
                 m_current_tick = double(pad.js_current_tick);
-#endif
 #ifdef SEQ64_JACK_SUPPORT
             }
 #endif
@@ -4027,9 +4009,7 @@ perform::output_func ()
                         midipulse ltick = get_left_tick();
                         reset_sequences();                          // reset!
                         set_orig_ticks(ltick);
-#ifdef SEQ64_SONG_RECORDING
                         m_current_tick = double(ltick) + leftover_tick;
-#endif
                         pad.js_current_tick = double(ltick) + leftover_tick;
                     }
                     else
@@ -4568,7 +4548,6 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 
     case c_midi_control_song_record:                /* arm for recording */
 
-#ifdef SEQ64_SONG_RECORDING
         if (a == midi_control::action_toggle)
         {
             song_recording(! song_recording());
@@ -4584,7 +4563,6 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
             song_recording(false);
             result = true;
         }
-#endif  // SEQ64_SONG_RECORDING
         break;
 
     case c_midi_control_solo:
@@ -5846,8 +5824,6 @@ perform::sequence_playing_toggle (int seq)
         bool is_queue = (m_control_status & c_status_queue) != 0;
         bool is_replace = (m_control_status & c_status_replace) != 0;
 
-#ifdef SEQ64_SONG_RECORDING                 // enables one-shot as well
-
         /*
          * One-shots are allowed only if we are not playing this sequence.
          */
@@ -5857,11 +5833,7 @@ perform::sequence_playing_toggle (int seq)
         {
             s->toggle_one_shot();           // why not just turn on???
         }
-        else
-
-#endif
-
-        if (is_queue && is_replace)
+        else if (is_queue && is_replace)
         {
             if (m_queued_replace_slot != SEQ64_NO_QUEUED_SOLO)
             {
@@ -5890,8 +5862,6 @@ perform::sequence_playing_toggle (int seq)
             }
             s->toggle_playing();
         }
-
-#ifdef SEQ64_SONG_RECORDING
 
         /*
          * If we're in song playback, temporarily block the events until the
@@ -5937,8 +5907,6 @@ perform::sequence_playing_toggle (int seq)
                 s->song_recording_start(tick, m_song_record_snap);
             }
         }
-#endif  // SEQ64_SONG_RECORDING
-
     }
 }
 
@@ -7182,9 +7150,7 @@ perform::set_tick (midipulse tick)
      *  master_bus().continue_from(tick);
      */
 
-#ifdef SEQ64_SONG_RECORDING
     m_current_tick = tick;
-#endif
 }
 
 /**
@@ -7214,8 +7180,6 @@ perform::FF_RW_timeout ()
     return false;
 }
 
-#ifdef SEQ64_SONG_RECORDING
-
 /**
  *  Calls sequence::song_recording_stop(m_current_tick) for all sequences.
  *  Should be called only when not recording the performance data.  This is a
@@ -7232,8 +7196,6 @@ perform::song_recording_stop ()
             s->song_recording_stop(m_current_tick);     // TODO!!!!
     }
 }
-
-#endif  // SEQ64_SONG_RECORDING
 
 /**
  *  Clears the playlist, and cleans out the currently loaded song.

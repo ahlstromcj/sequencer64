@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-11-28
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -1203,9 +1203,7 @@ build_details ()
 #ifdef SEQ64_MULTI_MAINWID
         << "Multiple main windows on" << std::endl
 #endif
-#ifdef SEQ64_SONG_RECORDING
         << "Song performance recording on" << std::endl
-#endif
 #ifdef SEQ64_SONG_BOX_SELECT
         << "Box song selection on" << std::endl
 #endif

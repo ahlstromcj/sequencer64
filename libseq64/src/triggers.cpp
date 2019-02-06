@@ -243,27 +243,19 @@ bool
 triggers::play
 (
     midipulse & start_tick,
-    midipulse & end_tick
-#ifdef SEQ64_SONG_RECORDING
-    , bool resume_note_ons
-#endif
+    midipulse & end_tick,
+    bool resume_note_ons
 )
 {
-#ifdef SEQ64_SONG_RECORDING
     midipulse tick = start_tick;            /* saved for later              */
-#endif
-
     bool result = false;                    /* turns off after frame play   */
     midipulse trigger_offset = 0;
     midipulse trigger_tick = 0;
     bool trigger_state = false;
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
-
-#ifdef SEQ64_SONG_RECORDING
         if (i->at_trigger_transition(start_tick, end_tick))
             m_parent.song_playback_block(false);
-#endif
 
         midipulse trigstart = i->tick_start();
         midipulse trigend = i->tick_end();
@@ -291,11 +283,8 @@ triggers::play
      */
 
     bool ok = trigger_state != m_parent.get_playing();
-
-#ifdef SEQ64_SONG_RECORDING
     if (ok)
         ok = ! m_parent.song_playback_block();
-#endif
 
     if (ok)
     {
@@ -308,15 +297,12 @@ triggers::play
 
             m_parent.set_playing(true);
 
-#ifdef SEQ64_SONG_RECORDING
-
             /*
              * If triggered between a Note On and a Note Off, then play it.
              */
 
             if (resume_note_ons)
                 m_parent.resume_note_ons(tick);
-#endif
         }
         else
         {
@@ -326,11 +312,8 @@ triggers::play
     }
 
     bool offplay = m_triggers.size() == 0 && m_parent.get_playing();
-
-#ifdef SEQ64_SONG_RECORDING
     if (offplay)
         offplay = ! m_parent.song_playback_block();
-#endif
 
     if (offplay)
         m_parent.set_playing(false);                    /* stop playing     */

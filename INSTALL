@@ -406,7 +406,6 @@ MANUALLY-DEFINED MACROS IN CODE:
 
         USE_SEQUENCE_COLOR
         USE_SEQUENCE_EDIT_MODE
-        SEQ64_SONG_RECORDING
 
         Some of these are defined (or undefined) in
         libseq64/include/seq64_features.h.

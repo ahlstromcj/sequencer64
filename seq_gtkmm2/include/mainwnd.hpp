@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-29
+ * \updates       2019-02-05
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -385,8 +385,6 @@ private:
 
 #endif
 
-#ifdef SEQ64_SONG_RECORDING
-
     /**
      *  Implements Oli Kester's Kepler34 Song-recording feature.
      */
@@ -410,8 +408,6 @@ private:
      */
 
     bool m_is_snap_recording;
-
-#endif  // SEQ64_SONG_RECORDING
 
     /**
      *  This new item shows the current time into the song performance.
@@ -649,7 +645,6 @@ private:
     bool handle_group_learn (const keystroke & k);
     void queue_it ();
 
-#ifdef SEQ64_SONG_RECORDING
     void set_song_record ();
     void toggle_song_record ();
     void toggle_song_snap ();
@@ -659,7 +654,6 @@ private:
     {
         perf().song_record_snap(snap);
     }
-#endif
 
     /**
      *  Pushes the panic button.

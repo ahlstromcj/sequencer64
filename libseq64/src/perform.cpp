@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2019-02-05
+ * \updates       2019-02-06
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -280,7 +280,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_outputing                 (true),
     m_looping                   (false),
     m_song_recording            (false),
-    m_song_record_snap          (false),
     m_resume_note_ons           (false),
     m_current_tick              (0.0),
     m_playback_mode             (false),
@@ -5900,11 +5899,14 @@ perform::sequence_playing_toggle (int seq)
             }
             else            /* if not playing, start recording a new strip  */
             {
-                if (m_song_record_snap)     /* snap to length of sequence   */
-                    tick -= tick % seq_length;
+                /*
+                 * ca 2019-02-06 Issue #171, fixed by removing the check.
+                 * Always snap.  Make the snap smaller if desired.
+                 */
 
+                tick -= tick % seq_length;
                 push_trigger_undo();
-                s->song_recording_start(tick, m_song_record_snap);
+                s->song_recording_start(tick);
             }
         }
     }

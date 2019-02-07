@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-11-04
+ * \updates       2019-02-06
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -85,7 +85,6 @@
 #include "pixmaps/pause.xpm"
 #include "pixmaps/perfedit.xpm"
 #include "pixmaps/play2.xpm"
-#include "pixmaps/snap.xpm"
 #include "pixmaps/song_rec_on.xpm"      /* #include "pixmaps/song_rec.xpm" */
 #include "pixmaps/stop.xpm"
 
@@ -491,15 +490,15 @@ qsmainwnd::qsmainwnd
     );
 
     /*
-     * Record Snap button.
+     * Record Snap button. Removed.  We always snap.
+     *
+     *  connect
+     *  (
+     *      ui->btnRecSnap, SIGNAL(clicked(bool)),
+     *      this, SLOT(set_recording_snap(bool))
+     *  );
+     *  qt_set_icon(snap_xpm, ui->btnRecSnap);
      */
-
-    connect
-    (
-        ui->btnRecSnap, SIGNAL(clicked(bool)),
-        this, SLOT(set_recording_snap(bool))
-    );
-    qt_set_icon(snap_xpm, ui->btnRecSnap);
 
     /*
      * Pattern editor callbacks.  One for editing in the tab, and the other
@@ -1879,7 +1878,11 @@ qsmainwnd::quit ()
 void
 qsmainwnd::set_recording_snap (bool snap)
 {
-    perf().song_record_snap(snap);
+    /*
+     * This will always be in force.
+     *
+     * perf().song_record_snap(snap);
+     */
 }
 
 /**

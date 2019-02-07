@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-02-05
+ * \updates       2019-02-06
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -710,12 +710,6 @@ private:
      */
 
     bool m_song_recording;
-
-    /**
-     *  Snap recorded playback changes to the sequence length.
-     */
-
-    bool m_song_record_snap;
 
     /**
      *  Indicates to resume notes if the sequence is toggled after a Note On.
@@ -2684,11 +2678,6 @@ public:
         return m_song_recording;
     }
 
-    bool song_record_snap () const
-    {
-        return m_song_record_snap;
-    }
-
     bool resume_note_ons () const
     {
         return m_resume_note_ons;
@@ -2918,15 +2907,6 @@ public:         // GUI-support functions
         m_song_recording = f;
         if (! f)
             song_recording_stop();
-    }
-
-    /**
-     *
-     */
-
-    void song_record_snap (bool f)
-    {
-        m_song_record_snap = f;
     }
 
     /**

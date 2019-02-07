@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-02-05
+ * \updates       2019-02-06
  * \license       GNU GPLv2 or above
  *
  *  Now derived directly from perfroll.  No more AbstractPerfInput and no more
@@ -180,32 +180,16 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
     sequence * seq = perf().get_sequence(m_drop_sequence);
     bool dropseq_active;
     grab_focus();
-// #ifndef SEQ64_SONG_BOX_SELECT
     dropseq_active = not_nullptr(seq);
     if (dropseq_active && ! is_shift_key(ev))       /* initial unselection  */
     {
         seq->unselect_triggers();
-//      result = true;                              // draw_all();
         draw_all();
         result = true;
     }
-// #endif
     m_drop_x = int(ev->x);
     m_drop_y = int(ev->y);
     convert_drop_xy();                              /* set the m_drop_xxx's */
-//  seq = perf().get_sequence(m_drop_sequence);
-//  dropseq_active = not_nullptr(seq);
-
-#if 0
-#ifdef SEQ64_SONG_BOX_SELECT
-    bool in_seq = perf().is_active(m_drop_sequence);
-    bool in_trigger = perf().intersect_triggers(m_drop_sequence, m_drop_tick);
-#else
-    if (! dropseq_active)
-        return result;
-#endif
-#endif
-
     if (is_ctrl_key(ev))
     {
         if (SEQ64_CLICK_LEFT(ev->button))
@@ -405,10 +389,14 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
         if (is_nullptr(seq))
             return false;           // Do we want to clear m_selected here?
 
-        midipulse tick;
+        midipulse tick = 0;
         if (is_adding() && is_adding_pressed())
         {
             convert_x(x, tick);
+
+            /*
+             * Issue #171.  Removed the check for perfroll record-snap.
+             */
 
             midipulse seqlength = seq->get_length();
             tick -= (tick % seqlength);
@@ -428,24 +416,16 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
                 perf().push_trigger_undo(m_drop_sequence);
                 m_have_button_press = false;
             }
-
-            midipulse tick;
             convert_x(x, tick);
             tick -= m_drop_tick_offset;
             tick -= tick % m_snap_x;
-
             if (m_moving)
             {
 #ifdef USE_SONG_BOX_SELECT                          // TODO
                 if (m_last_tick != 0)
                 {
                     midipulse offset = -(m_last_tick - tick);
-
-                    /*
-                     * Move this loop to perform!
-                     */
-
-                    for
+                    for             // Move this loop to perform!
                     (
                         int seqid = m_box_select_low;
                         seqid < m_box_select_high; ++seqid
@@ -457,7 +437,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
                     }
                 }
 #else
-                seq->move_triggers(tick, true); /* triggers::move_selected() */
+                seq->move_triggers(tick, true);
 #endif
                 result = true;
             }

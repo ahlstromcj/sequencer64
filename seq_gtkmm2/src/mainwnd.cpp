@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-02-05
+ * \updates       2019-02-06
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -338,7 +338,6 @@ mainwnd::mainwnd
     m_button_song_record    (manage(new Gtk::ToggleButton())),
     m_button_song_snap      (manage(new Gtk::ToggleButton("S"))),
     m_is_song_recording     (false),
-    m_is_snap_recording     (false),
     m_tick_time             (manage(new Gtk::Label(""))),
     m_button_time_type      (manage(new Gtk::Button("HMS"))),
     m_tick_time_as_bbt      (false),
@@ -1766,8 +1765,10 @@ mainwnd::toggle_song_record ()
 void
 mainwnd::toggle_song_snap ()
 {
-    m_is_snap_recording = ! m_is_snap_recording;
-    perf().song_record_snap(m_is_snap_recording);
+    /*
+     * m_is_snap_recording = ! m_is_snap_recording;
+     * perf().song_record_snap(m_is_snap_recording);
+     */
 }
 
 /**

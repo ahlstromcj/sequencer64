@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-04
+ * \updates       2019-02-06
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -75,7 +75,6 @@ namespace seq64
 class qperfroll : public QWidget, private gui_palette_qt5, public qperfbase
 {
     friend class qperfeditframe64;  /* for scrolling a horizontal page  */
-//  friend class qperfeditframe;    /* for scrolling a horizontal page  */
 
     Q_OBJECT
 
@@ -141,7 +140,7 @@ private:
     int m_seq_h;                            // highest seq in window
     int m_seq_l;                            // lowest seq in window
     midipulse m_drop_tick;
-    midipulse m_drop_tick_trigger_offset;   // ticks clicked from trigger
+    midipulse m_drop_tick_offset;           // ticks clicked from trigger
     midipulse mLastTick;                    // tick using at last mouse event
     bool m_sequence_active[c_max_sequence];
     bool mBoxSelect;

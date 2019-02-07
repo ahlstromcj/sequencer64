@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2019-01-05
+ * \updates       2019-02-06
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -130,7 +130,7 @@
  *    A more obvious boolean type.
  */
 
-#if ! defined __cplus_plus
+#if ! defined __cplusplus
 typedef int cbool_t;
 #elif __cplusplus <= 199711L
 typedef bool cbool_t;
@@ -140,7 +140,7 @@ typedef bool cbool_t;
  *  Provides the "false" value of the wbool_t type definition.
  */
 
-#if ! defined __cplus_plus
+#if ! defined __cplusplus
 #define false    0
 #endif
 
@@ -148,7 +148,7 @@ typedef bool cbool_t;
  *  Provides the "true" value of the wbool_t type definition.
  */
 
-#if ! defined __cplus_plus
+#if ! defined __cplusplus
 #define true     1
 #endif
 

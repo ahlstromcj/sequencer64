@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-11
+ * \updates       2019-02-06
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -80,7 +80,7 @@ qperfroll::qperfroll
     m_seq_h             (-1),
     m_seq_l             (-1),
     m_drop_tick         (0),
-    m_drop_tick_trigger_offset (0),
+    m_drop_tick_offset  (0),
     mLastTick           (0),
     m_sequence_active   (),         // array
     mBoxSelect          (false),
@@ -214,13 +214,13 @@ qperfroll::paintEvent (QPaintEvent *)
     int x_offset = tick_offset / scale_zoom();
     for (int y = y_s; y <= y_f; ++y)
     {
-        int seqId = y;
-        if (seqId < c_max_sequence)
+        int seqid = y;
+        if (seqid < c_max_sequence)
         {
-            if (perf().is_active(seqId))
+            if (perf().is_active(seqid))
             {
-                m_sequence_active[seqId] = true;
-                sequence * seq =  perf().get_sequence(seqId);
+                m_sequence_active[seqid] = true;
+                sequence * seq =  perf().get_sequence(seqid);
 
                 midipulse seq_length = seq->get_length();
                 seq->reset_draw_trigger_marker();
@@ -233,7 +233,7 @@ qperfroll::paintEvent (QPaintEvent *)
                         int x_off = tick_off / scale_zoom();
                         int w = x_off - x_on + 1;
                         int x = x_on;
-                        int y = c_names_y * seqId + 1;  // + 2
+                        int y = c_names_y * seqid + 1;  // + 2
                         int h = c_names_y - 2; // - 4
                         x = x - x_offset;   // adjust to screen coordinates
                         if (selected)
@@ -243,7 +243,7 @@ qperfroll::paintEvent (QPaintEvent *)
 
                         // Get seq's assigned colour and beautify it.
 
-                        int c = perf().get_sequence_color(seqId);
+                        int c = perf().get_sequence_color(seqid);
                         Color backcolor = get_color_fix(PaletteColor(c));
 
                         pen.setStyle(Qt::SolidLine);  // main seq icon box
@@ -435,53 +435,36 @@ qperfroll::sizeHint () const
 void
 qperfroll::mousePressEvent(QMouseEvent *event)
 {
-    //    if ( perf().is_active( m_drop_sequence ))
-    //    {
-    //        perf().get_sequence( m_drop_sequence )->unselect_triggers( );
-    //    }
-
+    sequence * dropseq = perf().get_sequence(m_drop_sequence);
     drop_x(event->x());
     drop_y(event->y());
-
-    // get the sequence row we're on
-
     convert_xy(drop_x(), drop_y(), m_drop_tick, m_drop_sequence);
     if (event->button() == Qt::LeftButton)
     {
-        midipulse tick = m_drop_tick;
-
         /*
-         * Add a new seq instance if we didnt select anything, and are holding
+         * Add a new seq instance if we didn't select anything, and are holding
          * the right mouse button.
          */
 
+        midipulse tick = m_drop_tick;
         if (adding())
         {
             m_adding_pressed = true;
-            if (perf().is_active(m_drop_sequence))
+            if (not_nullptr(dropseq))
             {
-                midipulse seq_length = perf().get_sequence(m_drop_sequence)->
-                    get_length();
-
-                bool trigger_state = perf().get_sequence(m_drop_sequence)->
-                    get_trigger_state(tick);
-
+                midipulse seq_length = dropseq->get_length();
+                bool trigger_state = dropseq->get_trigger_state(tick);
                 if (trigger_state)
                 {
-                    // perf().push_trigger_undo();
-                    // perf().get_sequence(m_drop_sequence)->delete_trigger(tick);
-
                     delete_trigger(m_drop_sequence, tick);
                 }
                 else
                 {
-                    if (perf().song_record_snap())  // snap to seq length
-                        tick = tick - (tick % seq_length);
+                    /*
+                     * ca 2019-02-06 Issue #171.  Always snap.
+                     */
 
-//                  perf().push_trigger_undo();
-//                  perf().get_sequence(m_drop_sequence)->
-//                      add_trigger(tick, seq_length);
-
+                    tick = tick - (tick % seq_length);
                     add_trigger(m_drop_sequence, tick);
                 }
             }
@@ -489,12 +472,13 @@ qperfroll::mousePressEvent(QMouseEvent *event)
         else                /* we aren't holding the right mouse btn */
         {
             bool selected = false;
-
-            if (perf().is_active(m_drop_sequence))  // trigger position ops
+            if (not_nullptr(dropseq))
             {
                 perf().push_trigger_undo();
 
-                // if current seq not in selection range, bin it
+                /*
+                 * if current seq not in selection range, bin it
+                 */
 
                 if
                 (
@@ -505,32 +489,28 @@ qperfroll::mousePressEvent(QMouseEvent *event)
                     perf().unselect_all_triggers();
                     m_seq_h = m_seq_l = m_drop_sequence;
                 }
+                dropseq->select_trigger(tick);
 
-                perf().get_sequence(m_drop_sequence)->select_trigger(tick);
+                midipulse start_tick = dropseq->selected_trigger_start();
+                midipulse end_tick = dropseq->selected_trigger_end();
 
-                midipulse start_tick = perf().get_sequence(m_drop_sequence)->
-                    selected_trigger_start();
-
-                midipulse end_tick = perf().get_sequence(m_drop_sequence)->
-                    selected_trigger_end();
-
-                // check for corner drag to grow sequence start
+                /*
+                 * Check for corner drag to grow sequence start.
+                 */
 
                 int clickminus = c_perfroll_size_box_click_w - 1;
                 int clickbox = c_perfroll_size_box_click_w * scale_zoom();
                 if
                 (
-                    tick >= start_tick &&
-                    tick <= start_tick + clickbox &&
+                    tick >= start_tick && tick <= start_tick + clickbox &&
                     (drop_y() % c_names_y) <= clickminus
                 )
                 {
                     growing(true);
                     m_grow_direction = true;
                     selected = true;
-                    m_drop_tick_trigger_offset = m_drop_tick -
-                        perf().get_sequence(m_drop_sequence)->
-                            selected_trigger_start();
+                    m_drop_tick_offset = m_drop_tick -
+                        dropseq->selected_trigger_start();
                 }
                 else if     // check for corner drag to grow sequence end
                 (
@@ -541,17 +521,15 @@ qperfroll::mousePressEvent(QMouseEvent *event)
                     growing(true);
                     selected = true;
                     m_grow_direction = false;
-                    m_drop_tick_trigger_offset = m_drop_tick -
-                        perf().get_sequence(m_drop_sequence)->
-                            selected_trigger_end();
+                    m_drop_tick_offset = m_drop_tick -
+                        dropseq->selected_trigger_end();
                 }
                 else if (tick <= end_tick && tick >= start_tick)
                 {
                     moving(true);            // we're moving the seq
                     selected = true;
-                    m_drop_tick_trigger_offset = m_drop_tick -
-                        perf().get_sequence(m_drop_sequence)->
-                            selected_trigger_start();
+                    m_drop_tick_offset = m_drop_tick -
+                        dropseq->selected_trigger_start();
                 }
             }
 
@@ -578,9 +556,7 @@ qperfroll::mousePressEvent(QMouseEvent *event)
     {
         if (perf().is_active(m_drop_sequence))
         {
-            bool state = perf().get_sequence(m_drop_sequence)->
-                get_trigger_state(m_drop_tick);
-
+            bool state = dropseq->get_trigger_state(m_drop_tick);
             if (state)
                 half_split_trigger(m_drop_sequence, m_drop_tick);
         }
@@ -638,78 +614,101 @@ qperfroll::mouseMoveEvent (QMouseEvent * event)
 {
     midipulse tick = 0;
     int x = event->x();
+
+    /*
+     * Try this.
+     *
+     * Do we want to clear m_selected here?
+     */
+
+    sequence * dropseq = perf().get_sequence(m_drop_sequence);
+    if (is_nullptr(dropseq))
+        return;
+
     if (adding() && m_adding_pressed)
     {
         convert_x(x, tick);
-        if (perf().is_active(m_drop_sequence))
-        {
-            midipulse seq_length = perf().get_sequence(m_drop_sequence)->
-                get_length();
 
-            if (perf().song_record_snap())      // snap to length of sequence
-                tick = tick - (tick % seq_length);
+        /*
+         * ca 2019-02-06 Issue #171.  Always snap.
+         */
 
-            midipulse length = seq_length;
-            perf().get_sequence(m_drop_sequence)->
-                grow_trigger(m_drop_tick, tick, length);
-        }
+        midipulse seqlength = dropseq->get_length();
+        tick = tick - (tick % seqlength);
+        dropseq->grow_trigger(m_drop_tick, tick, seqlength);
     }
     else if (moving() || growing())
     {
-        if (perf().is_active(m_drop_sequence))
-        {
-            convert_x(x, tick);
-            tick -= m_drop_tick_trigger_offset;
-            if (perf().song_record_snap())      // snap to length of sequence
-                tick = tick - tick % snap();
+        /*
+         * Used in perfroll_input:
+         *
+         *  if (m_have_button_press)
+         *  {
+         *      perf().push_trigger_undo(m_drop_sequence);
+         *      m_have_button_press = false;
+         *  }
+         */
 
-            if (moving())                       // move all selected triggers
+        convert_x(x, tick);
+        tick -= m_drop_tick_offset;
+
+        /*
+         * ca 2019-02-06 Issue #171.  Always snap.
+         */
+
+        tick = tick - tick % snap();
+        if (moving())                       // move all selected triggers
+        {
+#ifdef USE_SONG_BOX_SELECT
+            for (int seqid = m_seq_l; seqid <= m_seq_h; ++seqid)
             {
-                for (int seqId = m_seq_l; seqId <= m_seq_h; ++seqId)
+                sequence * seq = perf().get_sequence(seqid);
+                if (not_nullptr(seq)
                 {
-                    if (perf().is_active(seqId))
-                    {
-                        if (mLastTick != 0)
-                            perf().get_sequence(seqId)->
-                                offset_triggers(-(mLastTick - tick));
-                    }
+                    if (mLastTick != 0)
+                        seq->offset_triggers(-(mLastTick - tick));
                 }
             }
-            if (growing())
+#else
+            dropseq->move_triggers(tick, true);
+#endif
+        }
+        if (growing())
+        {
+            if (m_grow_direction)
             {
-                if (m_grow_direction)
-                {
-                    // grow start of all selected triggers
+                // grow start of all selected triggers
 
-                    for (int seqId = m_seq_l; seqId <= m_seq_h; seqId++)
+                for (int seqid = m_seq_l; seqid <= m_seq_h; ++seqid)
+                {
+                    sequence * seq = perf().get_sequence(seqid);
+                    if (not_nullptr(seq))
                     {
-                        if (perf().is_active(seqId))
+                        if (mLastTick != 0)
                         {
-                            if (mLastTick != 0)
-                            {
-                                perf().get_sequence(seqId)->offset_triggers
-                                (
-                                    -(mLastTick - tick), triggers::GROW_START
-                                );
-                            }
+                            seq->offset_triggers
+                            (
+                                -(mLastTick - tick), triggers::GROW_START
+                            );
                         }
                     }
                 }
-                else
-                {
-                    // grow end of all selected triggers
+            }
+            else
+            {
+                // grow end of all selected triggers
 
-                    for (int seqId = m_seq_l; seqId <= m_seq_h; seqId++)
+                for (int seqid = m_seq_l; seqid <= m_seq_h; ++seqid)
+                {
+                    sequence * seq = perf().get_sequence(seqid);
+                    if (not_nullptr(seq))
                     {
-                        if (perf().is_active(seqId))
+                        if (mLastTick != 0)
                         {
-                            if (mLastTick != 0)
-                            {
-                                perf().get_sequence(seqId)->offset_triggers
-                                (
-                                    -(mLastTick - tick) - 1, triggers::GROW_END
-                                );
-                            }
+                            seq->offset_triggers
+                            (
+                                -(mLastTick - tick) - 1, triggers::GROW_END
+                            );
                         }
                     }
                 }
@@ -724,6 +723,13 @@ qperfroll::mouseMoveEvent (QMouseEvent * event)
         convert_xy(0, current_y(), tick, m_drop_sequence);
     }
     mLastTick = tick;
+
+    /*
+     * This is necessary to show the changes immediately to the user.
+     * We still need to solve issue #171 for the Qt version.
+     */
+
+    update();
 }
 
 /**
@@ -738,9 +744,9 @@ qperfroll::keyPressEvent (QKeyEvent * event)
     {
         unhandled = false;
         perf().push_trigger_undo();                 // delete selected notes
-        for (int seqId = m_seq_l; seqId <= m_seq_h; seqId++)
-            if (perf().is_active(seqId))
-                perf().get_sequence(seqId)->delete_selected_triggers();
+        for (int seqid = m_seq_l; seqid <= m_seq_h; seqid++)
+            if (perf().is_active(seqid))
+                perf().get_sequence(seqid)->delete_selected_triggers();
     }
     if (event->modifiers() & Qt::ControlModifier)   // Ctrl + ... events
     {

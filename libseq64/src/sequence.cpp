@@ -130,7 +130,6 @@ sequence::sequence (int ppqn)
     m_off_from_snap             (false),
     m_song_playback_block       (false),
     m_song_recording            (false),
-    m_song_recording_snap       (false),
     m_song_record_tick          (0),
     m_overwrite_recording       (false),
     m_loop_reset                (false),
@@ -5964,17 +5963,12 @@ sequence::off_one_shot ()
  * \param tick
  *      Provides the current tick, which helps set the recorded block's
  *      boundaries, and is copied into m_song_record_tick.
- *
- * \param snap
- *      Indicates if we are to snap the recording to the configured boundary,
- *      and is copied into m_song_recording_snap.
  */
 
 void
-sequence::song_recording_start (midipulse tick, bool snap)
+sequence::song_recording_start (midipulse tick)
 {
     add_trigger(tick, SEQ64_SONG_RECORD_INC);
-    m_song_recording_snap = snap;
     m_song_record_tick = tick;
     m_song_recording = true;
 
@@ -6001,13 +5995,10 @@ sequence::song_recording_start (midipulse tick, bool snap)
 void
 sequence::song_recording_stop (midipulse tick)
 {
+    midipulse len = m_length - (tick % m_length);
     m_song_playback_block = m_song_recording = false;
-    if (m_song_recording_snap)
-    {
-        midipulse len = m_length - (tick % m_length);
-        m_triggers.grow(m_song_record_tick, tick, len);
-        m_off_from_snap = true;
-    }
+    m_triggers.grow(m_song_record_tick, tick, len);
+    m_off_from_snap = true;
 }
 
 /**

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2019-02-05
+ * \updates       2019-02-06
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -408,13 +408,6 @@ private:
      */
 
     bool m_song_recording;
-
-    /**
-     *  This value indicates that the following feature is active: the number
-     *  of tick to snap recorded improvisations.
-     */
-
-    bool m_song_recording_snap;
 
     /**
      *  Saves the tick from when we started recording live song data.
@@ -1332,7 +1325,7 @@ public:
     }
 
     void off_one_shot ();
-    void song_recording_start (midipulse tick, bool snap);
+    void song_recording_start (midipulse tick);
     void song_recording_stop (midipulse tick);
 
     /**
@@ -1378,15 +1371,6 @@ public:
     bool song_playback_block () const
     {
         return m_song_playback_block;
-    }
-
-    /**
-     * \getter m_song_recording_snap
-     */
-
-    bool song_recording_snap () const
-    {
-        return m_song_recording_snap;
     }
 
     /**
@@ -1905,15 +1889,6 @@ private:
     void song_recording (bool f)
     {
         m_song_recording = f;
-    }
-
-    /**
-     * \getter m_song_recording_snap
-     */
-
-    void song_recording_snap (bool f)
-    {
-        m_song_recording_snap = f;
     }
 
     /**

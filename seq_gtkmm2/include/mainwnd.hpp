@@ -404,12 +404,6 @@ private:
     bool m_is_song_recording;
 
     /**
-     *  Indicates if song-recording snap is active.
-     */
-
-    bool m_is_snap_recording;
-
-    /**
      *  This new item shows the current time into the song performance.
      *  Long overdue, actually!
      */
@@ -652,7 +646,9 @@ private:
 
     void song_record_snap (bool snap)
     {
-        perf().song_record_snap(snap);
+        /*
+         * perf().song_record_snap(snap);
+         */
     }
 
     /**

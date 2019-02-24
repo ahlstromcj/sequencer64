@@ -1140,7 +1140,7 @@ mainwid::on_button_release_event (GdkEventButton * ev)
 
                     if (is_current_seq_active())    /* toggle playing status */
                     {
-                        toggle_current_sequence();
+                        toggle_current_sequence();  /* in the seqmenu class  */
                         redraw(current_seq());
                     }
                 }

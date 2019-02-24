@@ -626,12 +626,30 @@ that indicate the kind of data for a particular SeqSpec event:
 In <i>Seq24</i>, these events are placed at the end of the song, but are
 not marked as SeqSpec data.  Most MIDI applications handle this situation fine,
 but some (e.g. <i>midicvt</i>) do not.  Therefore, <i>Sequencer64</i> makes
-sure to wrap each data item in the 0xFF 0x7F (SeqSpec) wrapper.
+sure to wrap each data item in the <code>0xFF 0x7F</code> (SeqSpec) wrapper.
+The full format of a SeqSpec event is
 
-Also, the last three items above (key, scale, and background sequence)
-can also be stored (by <i>Sequencer64</i>) with a particular sequence/track, as
-well as at the end of the song.  Not sure if this bit of extra flexibility is
-useful, but it is there.
+\verbatim
+   0x00 0xFF 0x7F <len> 0x242400xx ...
+     ^    ^    ^   ^      ^
+     |    |    |   |      |
+     |    |    |   |       ----- control tag
+     |    |    |    ------------ proprietary section length
+     |    |     ---------------- SeqSpec event marker
+     |     --------------------- Meta marker
+      -------------------------- Delta time
+\endverbatim
+
+The last three items in the c_xxxxxxxx list above (key, scale, and background
+sequence) can also be stored (by <i>Sequencer64</i>) with a particular
+sequence/track, as well as at the end of the song.  Not sure if this bit of extra
+flexibility is useful, but it is there.
+
+We have two special tags to dig into, in light of the ongoing refactoring leading
+to <i>Sequencer66</i>: <code>c_mutegroups</code> (song mute group data) and
+<code>c_midictrl</code> (song MIDI control data).
+
+The MIDI control data, once detected by midifile::parse_prop_header(),
 
 \subsubsection midi_parsing_smf_1_end  Non-Specific End of Sequence
 

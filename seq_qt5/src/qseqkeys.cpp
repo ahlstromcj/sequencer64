@@ -93,22 +93,6 @@ qseqkeys::qseqkeys
     setMouseTracking(true);
 }
 
-#if 0
-
-/**
- *  In an effort to reduce CPU usage when simply idling, this function calls
- *  update() only if necessary.  See qseqbase::needs_update().
- */
-
-void
-qseqkeys::conditional_update ()
-{
-    if (needs_update())
-        update();
-}
-
-#endif     // 0
-
 /**
  *
  */

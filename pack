@@ -55,7 +55,7 @@ if [ "$1" == "--help" ] || [ "$1" == "help" ] ; then
 
    cat << E_O_F
 
-pack 0.5 2018-09-25
+seq64 pack 0.5 2018-09-25
 
 Usage:  ./pack [--dry-run] [--clean] [--release package] [--diffs] [tag]
 
@@ -210,7 +210,7 @@ else
       pushd ..
       if [ -d $WORKINGDIR ] ; then
 
-      tar cJf $TARBALLNAME \
+ tar cJf $TARBALLNAME \
  --exclude-vcs         \
  --exclude=".git"      \
  --exclude="Midiclocker64/midiclocker64" \

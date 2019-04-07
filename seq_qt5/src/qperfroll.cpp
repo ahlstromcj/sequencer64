@@ -25,11 +25,18 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2019-02-06
+ * \updates       2019-04-07
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
  *  performance/song editor.
+ *
+ *  Re issue #171:
+ *
+ *      Seq24f's song editor does not snap when first drawing in the pattern
+ *      extent.  It does snap when moving an existing pattern extent.  It does
+ *      snap when enlarging or shrinking an existing pattern extent via the
+ *      handle.  That is, if moving or growing, snap the tick.
  */
 
 #include <QMouseEvent>
@@ -433,7 +440,7 @@ qperfroll::sizeHint () const
  */
 
 void
-qperfroll::mousePressEvent(QMouseEvent *event)
+qperfroll::mousePressEvent (QMouseEvent *event)
 {
     sequence * dropseq = perf().get_sequence(m_drop_sequence);
     drop_x(event->x());
@@ -561,6 +568,12 @@ qperfroll::mousePressEvent(QMouseEvent *event)
                 half_split_trigger(m_drop_sequence, m_drop_tick);
         }
     }
+
+    /*
+     * Force a redraw
+     */
+
+    set_dirty();
 }
 
 /**
@@ -603,6 +616,12 @@ qperfroll::mouseReleaseEvent (QMouseEvent * event)
     m_adding_pressed = false;
     mBoxSelect = false;
     mLastTick = 0;
+
+    /*
+     * Force a redraw
+     */
+
+    set_dirty();
 }
 
 /**
@@ -727,9 +746,13 @@ qperfroll::mouseMoveEvent (QMouseEvent * event)
     /*
      * This is necessary to show the changes immediately to the user.
      * We still need to solve issue #171 for the Qt version.
+     *
+     * update();
+     *
+     * Force a redraw
      */
 
-    update();
+    set_dirty();
 }
 
 /**
@@ -784,7 +807,6 @@ qperfroll::keyPressEvent (QKeyEvent * event)
         {
             unhandled = false;
             m_parent_frame->zoom_in();
-            set_dirty();
         }
     }
     else
@@ -793,17 +815,17 @@ qperfroll::keyPressEvent (QKeyEvent * event)
         {
             unhandled = false;
             m_parent_frame->zoom_out();
-            set_dirty();
         }
         else if (event->key() == Qt::Key_0)
         {
             unhandled = false;
             m_parent_frame->reset_zoom();
-            set_dirty();
         }
     }
     if (unhandled)
         QWidget::keyPressEvent(event);
+    else
+        set_dirty();
 }
 
 /**
@@ -833,9 +855,6 @@ qperfroll::add_trigger(int seq, midipulse tick)
 void
 qperfroll::half_split_trigger (int seq, midipulse tick)
 {
-//  perf().push_trigger_undo();
-//  perf().get_sequence(seq)->half_split_trigger(tick);
-
     perf().split_trigger(seq, tick);
 }
 

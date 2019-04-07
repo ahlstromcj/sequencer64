@@ -49,7 +49,7 @@ TARGET = seq_qt5
 
 UI_DIR = forms
 
-FORMS += \
+FORMS += forms/qlfoframe.ui \
  forms/qliveframeex.ui \
  forms/qperfeditex.ui \
  forms/qperfeditframe64.ui \
@@ -74,6 +74,7 @@ HEADERS += \
  include/keys_perform_qt5.hpp \
  include/qclocklayout.hpp \
  include/qinputcheckbox.hpp \
+ include/qlfoframe.hpp \
  include/qliveframeex.hpp \
  include/qperfbase.hpp \
  include/qperfeditex.hpp \
@@ -113,6 +114,7 @@ SOURCES += \
  src/keys_perform_qt5.cpp \
  src/qclocklayout.cpp \
  src/qinputcheckbox.cpp \
+ src/qlfoframe.cpp \
  src/qliveframeex.cpp \
  src/qperfbase.cpp \
  src/qperfeditex.cpp \

@@ -99,10 +99,14 @@ public:
     void set_beats_per_measure (int beats_per_measure);
     void follow_progress ();
     void update_sizes ();
+    int snap () const
+    {
+        return m_snap;                  /* set snap-to in pulses/ticks  */
+    }
 
 private:
 
-    void set_snap (int a_snap);
+    void set_snap (int s);
     void set_guides ();
     void grow ();
 

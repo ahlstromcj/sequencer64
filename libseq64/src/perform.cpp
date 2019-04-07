@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2019-02-06
+ * \updates       2019-03-16
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -149,6 +149,20 @@
  *        in data in this event.
  *    -   MIDI Active Sense and MIDI Reset are currently filtered by the JACK
  *        implementation.
+ *
+ * Locking:
+ *
+ *      -#  The flags m_inputing and m_outputing start out true.
+ *      -#  When the perform starts, the input thread starts.
+ *      -#  When the perform starts, the output thread then starts.
+ *      -#  The output thread then waits on the condition variable for
+ *          inner_start() to set is_running() to true. It then proceeds to run
+ *          forever.
+ *      -#  In the destructor, the flags m_inputing and m_outputing are set to
+ *          false, and the condition variable is signalled.  This causes the
+ *          output thread to exit.  The input thread detects that m_inputing is
+ *          false and exits.
+ *      -#  The two threads are then joined.
  */
 
 #include <sched.h>
@@ -4276,37 +4290,35 @@ perform::output_func ()
 void *
 input_thread_func (void * myperf)
 {
-    if (not_nullptr(myperf))
-    {
-        perform * p = (perform *) myperf;
+    perform * p = (perform *) myperf;
 
 #ifdef PLATFORM_WINDOWS
-        timeBeginPeriod(1);
-        p->input_func();
-        timeEndPeriod(1);
+    timeBeginPeriod(1);
+    p->input_func();
+    timeEndPeriod(1);
 #else                                   // MinGW RCB
-        if (rc().priority())
+    if (rc().priority())
+    {
+        struct sched_param schp;
+        memset(&schp, 0, sizeof(sched_param));
+        schp.sched_priority = 1;
+        if (sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
         {
-            struct sched_param schp;
-            memset(&schp, 0, sizeof(sched_param));
-            schp.sched_priority = 1;
-            if (sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
-            {
-                printf
-                (
-                    "input_thread_func: couldn't sched_setscheduler"
-                   "(FIFO), need root priviledges."
-                );
-                pthread_exit(0);
-            }
-            else
-            {
-                infoprint("[Input priority set to 1]");
-            }
+            printf
+            (
+                "input_thread_func: couldn't sched_setscheduler"
+               "(FIFO), need root priviledges."
+            );
+            pthread_exit(0);
         }
-        p->input_func();
-#endif
+        else
+        {
+            infoprint("[Input priority set to 1]");
+        }
     }
+    p->input_func();
+#endif
+
     return nullptr;
 }
 

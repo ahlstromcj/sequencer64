@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2019-04-07
+ * \updates       2019-04-08
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -670,12 +670,7 @@ qperfroll::mouseMoveEvent (QMouseEvent * event)
 
         convert_x(x, tick);
         tick -= m_drop_tick_offset;
-
-        /*
-         * ca 2019-02-06 Issue #171.  Always snap.
-         */
-
-        tick = tick - tick % snap();
+        tick -= tick % snap();              // ca 2019-02-06 Issue #171.
         if (moving())                       // move all selected triggers
         {
 #ifdef USE_SONG_BOX_SELECT
@@ -869,7 +864,8 @@ qperfroll::delete_trigger(int seq, midipulse tick)
 }
 
 /*
- *  Sets the snap, measure-length, and beat-length members.
+ *  Sets the snap, measure-length, and beat-length members.  The parameters are
+ *  all in ticks.
  */
 
 void

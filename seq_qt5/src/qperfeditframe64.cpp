@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2018-10-31
+ * \updates       2019-04-08
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -396,24 +396,27 @@ qperfeditframe64::set_beat_width (int bw)
 }
 
 /**
- *  These values are ticks, but passed as integers.
- *  The guides are set to 4 measures by default.
+ *  These values are ticks, but passed as integers.  The guides are set to 4
+ *  measures by default.
+ *
+ *  Issue #171:  Change it back to what Seq24 does!  Done.  Seems to work.
  */
 
 void
 qperfeditframe64::set_guides ()
 {
-    int ppqn = perf().get_ppqn();               // TODO: allow runtime changes
-    int measure = (ppqn * 4 * 4) * m_beats_per_measure / m_beat_width;
-    int snap = m_snap;                          // measure / m_snap;
-    int beat = (ppqn * 4 * 4) / m_beat_width;
-    m_perfroll->set_guides(snap, measure, beat);
-    m_perftime->set_guides(snap, measure);
+    int pp = perf().get_ppqn() * 4;             // TODO: allow runtime changes
+    int measure_ticks = pp * m_beats_per_measure / m_beat_width;
+    int snap_ticks = measure_ticks / m_snap;
+    int beat_ticks = pp / m_beat_width;
+    m_perfroll->set_guides(snap_ticks, measure_ticks, beat_ticks);
+    m_perftime->set_guides(snap_ticks, measure_ticks);
+
 #ifdef PLATFORM_DEBUG_TMI
     printf
     (
         "set_guides(snap = %d, measure = %d, beat = %d ticks\n",
-        snap, measure, beat
+        snap_ticks, measure_ticks, beat_ticks
     );
 #endif
 }

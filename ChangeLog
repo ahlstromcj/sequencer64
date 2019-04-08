@@ -1,3 +1,136 @@
+2019-04-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/easy_macros.h, seq_portmidi/src/portmidi.c,
+	seq_qt5/forms/qplaylistframe.ui, seq_qt5/include/qperfroll.hpp,
+	seq_qt5/src/qperfroll.cpp: Minor fixes for Qt/portmidi.
+	* seq_gtkmm2/src/perfedit.cpp, seq_qt5/src/qperfeditframe64.cpp,
+	seq_qt5/src/qperfroll.cpp: More fixing for issue #171.
+	* seq_qt5/src/qperfeditframe64.cpp, seq_qt5/src/qperfroll.cpp: Issue
+	#171 seems to be fixed in Qt version.  Caused by incorrect
+	snap-ticks calculation in the edit-frame.
+
+2019-04-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/perform.cpp, pack, seq_qt5/include/Makefile.am,
+	seq_qt5/include/qperfeditframe64.hpp, seq_qt5/seq_qt5.pro,
+	seq_qt5/src/qperfroll.cpp: Working on perf-dirty updates and issue
+	#171.
+
+2019-02-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/midi_parsing.dox, seq_gtkmm2/src/mainwid.cpp,
+	seq_qt5/src/qseqkeys.cpp: Minor tweaks.
+
+2019-02-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/easy_macros.h, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfroll_input.cpp,
+	seq_qt5/forms/qsmainwnd.ui, seq_qt5/include/qperfroll.hpp,
+	seq_qt5/src/qperfroll.cpp, seq_qt5/src/qsmainwnd.cpp: Trying to fix
+	issue #171 for qperfroll.
+	* INSTALL, Seq64qt5/seq64qt5.cpp, doc/dox/doxy-reference.cfg,
+	libseq64/include/keys_perform.hpp, libseq64/include/perform.hpp,
+	libseq64/include/seq64_features.h, libseq64/include/sequence.hpp,
+	libseq64/include/triggers.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/triggers.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfroll_input.cpp, seq_qt5/src/qsliveframe.cpp: 
+	Finalized issue #171 and removed song-record macro to make it
+	permanent.
+
+2019-02-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/triggers.cpp, seq_gtkmm2/src/perfroll_input.cpp: 
+	Tentative fix to issue #171, needs more testing.
+
+2019-02-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/configs/cpp.vim, contrib/vim-syntax/c.vim,
+	contrib/vim-syntax/cpp.vim, libseq64/include/keystroke.hpp,
+	libseq64/include/perform.hpp, libseq64/src/keystroke.cpp,
+	libseq64/src/perform.cpp, seq_rtmidi/src/midi_alsa_info.cpp: More
+	minor tweaks found during refactoring.
+
+2019-01-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, Seq64cli/seq64rtcli.cpp, Seq64rtmidi/seq64rtmidi.cpp,
+	configure, configure.ac, contrib/vim-syntax/cpp.vim,
+	include/config.h.in, libseq64/include/rc_settings.hpp,
+	libseq64/src/perform.cpp, libseq64/src/rc_settings.cpp: Minor fixes
+	for app settings.
+
+2019-01-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* aux-files/compile, aux-files/depcomp, aux-files/missing,
+	configure, libseq64/include/easy_macros.h,
+	libseq64/include/easy_macros.hpp, libseq64/src/easy_macros.cpp,
+	seq_rtmidi/include/midi_win_data.hpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_api.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp,
+	seq_rtmidi/src/midi_win.cpp, seq_rtmidi/src/midi_win_info.cpp,
+	seq_rtmidi/src/rtmidi.cpp, seq_rtmidi/src/rtmidi_info.cpp: Removed
+	func_message() and message_concatenate() as too problematic.
+	* configure, contrib/vim-syntax/c.vim, contrib/vim-syntax/cpp.vim,
+	include/config.h.in, libseq64/include/configfile.hpp,
+	libseq64/include/file_functions.hpp,
+	libseq64/include/midi_control.hpp,
+	libseq64/include/optionsfile.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/configfile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/rc_settings.cpp: Many tweaks
+	found during refactoring for seq66.
+
+2018-11-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, VERSION, configure.ac, libseq64/include/midi_control.hpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp: Reserved
+	some new MIDI controls, still need to implement them.
+
+2018-11-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_qt5/src/Makefile.am, seq_qt5/src/qsliveframe.cpp: Commented
+	out debug code in qsliveframe.
+	* README, Seq64qt5/seq64qt5.cpp, data/sample-playlist.rc,
+	libseq64/include/perform.hpp, libseq64/include/playlist.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/perform.cpp,
+	libseq64/src/playlist.cpp, qpseq64.pro,
+	seq_qt5/src/qplaylistframe.cpp, seq_qt5/src/qsliveframe.cpp,
+	strap_functions: Interim safety check-in.
+
+2018-11-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/vim-syntax/c.vim, contrib/vim-syntax/cpp.vim,
+	libseq64/include/gdk_basic_keys.h, libseq64/src/perform.cpp,
+	seq_qt5/forms/qplaylistframe.ui, seq_qt5/src/qsliveframe.cpp: Fixed
+	a bug in showing hot-keys in Qt external live frame.
+
+2018-11-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, README.windows, VERSION, configure,
+	configure.ac, doc/dox/doxy-notes.cfg, doc/dox/doxy-reference.cfg,
+	include/config.h.in, include/qt/portmidi/seq64-config.h,
+	libseq64/include/perform.hpp, libseq64/include/playlist.hpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/playlist.cpp,
+	man/seq64.1, man/seq64cli.1, man/sequencer64.1,
+	nsis/build_release_package.bat, seq_qt5/forms/qplaylistframe.ui,
+	seq_qt5/include/qplaylistframe.hpp, seq_qt5/src/qplaylistframe.cpp,
+	seq_qt5/src/qsliveframe.cpp: Prepping for 0.96.2 and some minor Qt
+	fixes.
+
+2018-11-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* packages: Fixed some bug in the packages script.
+
+2018-11-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, README, VERSION, configure, configure.ac,
+	include/config.h.in, libseq64/src/settings.cpp,
+	libseq64/src/wrkfile.cpp, seq_qt5/src/qseqeditframe64.cpp,
+	seq_qt5/src/qseqtime.cpp: Preliminary version of 0.96.1 checked in.
+
 2018-11-04  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* seq_gtkmm2/src/seqedit.cpp, seq_qt5/forms/qplaylistframe.ui,

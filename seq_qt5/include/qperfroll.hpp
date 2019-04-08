@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2019-02-06
+ * \updates       2019-04-08
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -47,7 +47,7 @@
  */
 
 const int c_perfroll_background_x = (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_scale_x;
-const int c_perfroll_size_box_w = 3;
+const int c_perfroll_size_box_w = 6;                /* 3 is too small */
 const int c_perfroll_size_box_click_w = c_perfroll_size_box_w + 1 ;
 
 /*

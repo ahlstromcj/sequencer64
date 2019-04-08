@@ -210,13 +210,12 @@ qperfroll::paintEvent (QPaintEvent *)
 #endif
     }
 
-    int y_s = 0;                                    // draw background
+    int y_s = 0;                                        /* for background   */
     int y_f = height() / c_names_y;
-    midipulse tick_on;                              // draw sequence block
+    bool selected;
+    midipulse tick_on;                                  /* for seq block    */
     midipulse tick_off;
     midipulse offset;
-    bool selected;
-
     midipulse tick_offset = 0;              // long tick_offset = c_ppqn * 16;
     int x_offset = tick_offset / scale_zoom();
     for (int y = y_s; y <= y_f; ++y)
@@ -227,11 +226,11 @@ qperfroll::paintEvent (QPaintEvent *)
             if (perf().is_active(seqid))
             {
                 m_sequence_active[seqid] = true;
-                sequence * seq =  perf().get_sequence(seqid);
 
+                sequence * seq = perf().get_sequence(seqid);
                 midipulse seq_length = seq->get_length();
-                seq->reset_draw_trigger_marker();
                 int length_w = seq_length / scale_zoom();
+                seq->reset_draw_trigger_marker();
                 while (seq->get_next_trigger(tick_on, tick_off, selected, offset))
                 {
                     if (tick_off > 0)
@@ -240,9 +239,9 @@ qperfroll::paintEvent (QPaintEvent *)
                         int x_off = tick_off / scale_zoom();
                         int w = x_off - x_on + 1;
                         int x = x_on;
-                        int y = c_names_y * seqid + 1;  // + 2
-                        int h = c_names_y - 2; // - 4
-                        x = x - x_offset;   // adjust to screen coordinates
+                        int y = c_names_y * seqid + 1;
+                        int h = c_names_y - 2;
+                        x -= x_offset;      // adjust to screen coordinates
                         if (selected)
                             pen.setColor( "orange" /*Qt::red*/ );
                         else
@@ -252,14 +251,12 @@ qperfroll::paintEvent (QPaintEvent *)
 
                         int c = perf().get_sequence_color(seqid);
                         Color backcolor = get_color_fix(PaletteColor(c));
-
                         pen.setStyle(Qt::SolidLine);  // main seq icon box
                         brush.setColor(backcolor);
                         brush.setStyle(Qt::SolidPattern);
                         painter.setBrush(brush);
                         painter.setPen(pen);
                         painter.drawRect(x, y, w, h);
-
                         brush.setStyle(Qt::NoBrush);  // seq grab handle left
                         painter.setBrush(brush);
                         pen.setColor(Qt::black);

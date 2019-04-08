@@ -257,8 +257,8 @@ strstrcase (const char * src, const char * target)
         char temptarget[PM_STRING_MAX];
         int isrc;
         int itarget;
-        (void) snprintf(tempsrc, sizeof(tempsrc), src);
-        (void) snprintf(temptarget, sizeof(temptarget), target);
+        (void) snprintf(tempsrc, sizeof tempsrc, "%s", src);
+        (void) snprintf(temptarget, sizeof temptarget, "%s", target);
         for (isrc = 0; isrc < lensrc; ++isrc)
             tempsrc[isrc] = (char) tolower((unsigned char) src[isrc]);
 
@@ -350,7 +350,7 @@ Pm_set_hosterror_message (const char * msg)
         }
         else
         {
-            snprintf(pm_hosterror_message, sizeof pm_hosterror_message, msg);
+            snprintf(pm_hosterror_message, sizeof pm_hosterror_message, "%s", msg);
             pm_error_present = TRUE;
         }
     }

@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2019-02-06
+ * \updates       2019-04-08
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -27,7 +27,6 @@
  *  really should have the "hpp" extension now.  Oh well.
  */
 
-#include <string>
 #include <stdio.h>
 
 #include "platform_macros.h"

@@ -653,7 +653,7 @@ qperfroll::mouseMoveEvent (QMouseEvent * event)
          */
 
         midipulse seqlength = dropseq->get_length();
-        tick = tick - (tick % seqlength);
+        tick -= (tick % seqlength);
         dropseq->grow_trigger(m_drop_tick, tick, seqlength);
     }
     else if (moving() || growing())

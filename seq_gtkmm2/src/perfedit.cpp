@@ -643,9 +643,8 @@ perfedit::set_guides ()
 {
     if (m_bw > 0 && m_snap > 0 && m_bpm > 0)
     {
-        midipulse measure_pulses = perf().get_ppqn() *
-            m_standard_bpm * m_bpm / m_bw;
-
+        midipulse pp = perf().get_ppqn() * m_standard_bpm;
+        midipulse measure_pulses = pp * m_bpm / m_bw;
         midipulse snap_pulses = measure_pulses / m_snap;
         midipulse beat_pulses = measure_pulses / m_bpm;
         m_perfroll->set_guides(snap_pulses, measure_pulses, beat_pulses);

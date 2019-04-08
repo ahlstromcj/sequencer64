@@ -405,20 +405,23 @@ qperfeditframe64::set_beat_width (int bw)
 void
 qperfeditframe64::set_guides ()
 {
-    int pp = perf().get_ppqn() * 4;             // TODO: allow runtime changes
-    int measure_ticks = pp * m_beats_per_measure / m_beat_width;
-    int snap_ticks = measure_ticks / m_snap;
-    int beat_ticks = pp / m_beat_width;
-    m_perfroll->set_guides(snap_ticks, measure_ticks, beat_ticks);
-    m_perftime->set_guides(snap_ticks, measure_ticks);
+    if (m_beat_width > 0 && m_snap > 0 && m_beats_per_measure > 0)
+    {
+        midipulse pp = perf().get_ppqn() * 4;   // TODO: allow runtime changes
+        midipulse measure_ticks = pp * m_beats_per_measure / m_beat_width;
+        midipulse snap_ticks = measure_ticks / m_snap;
+        midipulse beat_ticks = pp / m_beat_width;
+        m_perfroll->set_guides(snap_ticks, measure_ticks, beat_ticks);
+        m_perftime->set_guides(snap_ticks, measure_ticks);
 
 #ifdef PLATFORM_DEBUG_TMI
-    printf
-    (
-        "set_guides(snap = %d, measure = %d, beat = %d ticks\n",
-        snap_ticks, measure_ticks, beat_ticks
-    );
+        printf
+        (
+            "set_guides(snap = %d, measure = %d, beat = %d ticks\n",
+            snap_ticks, measure_ticks, beat_ticks
+        );
 #endif
+    }
 }
 
 /**

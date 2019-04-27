@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-12
+ * \updates       2019-04-27
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -577,21 +577,12 @@ midibus::api_flush ()
  *      The beats value calculated by midibase::continue_from().
  */
 
-#ifdef USE_THIS_SEQ24_CODE
-
 void
 midibus::api_continue_from (midipulse tick, midipulse beats)
 {
 
-#else
-
-void
-midibus::api_continue_from (midipulse /*tick*/, midipulse beats)
-{
-
-#endif
-
 #ifdef USE_THIS_SEQ24_CODE
+
     /*
      * Tell the device that we are going to start at a certain position.
      * Was there anything left over? Then wait for next beat (16th note) to start
@@ -609,6 +600,7 @@ midibus::api_continue_from (midipulse /*tick*/, midipulse beats)
     if (clock_enabled())
     {
         ... covers the rest of the statements....
+
 #endif	// USE_THIS_SEQ24_CODE
 
     snd_seq_event_t ev;
@@ -632,7 +624,6 @@ midibus::api_continue_from (midipulse /*tick*/, midipulse beats)
     snd_seq_event_output(m_seq, &evc);              /* pump into queue  */
     api_flush();
     snd_seq_event_output(m_seq, &ev);
-
     if (rc().verbose_option() && tick > 0)
     {
         printf

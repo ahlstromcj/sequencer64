@@ -1,6 +1,6 @@
-Sequencer64 Licensing 0.96.1
+Sequencer64 Licensing 0.96.4
 Chris Ahlstrom
-2015-09-10 to 2018-10-29
+2015-09-10 to 2019-04-27
 
 Applications:
 
@@ -9,7 +9,7 @@ Applications:
    the latter license, while projects I have extended may specify the
    former license.
 
-   Copyright (C) 2015-2018 by Chris Ahlstrom
+   Copyright (C) 2015-2019 by Chris Ahlstrom
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

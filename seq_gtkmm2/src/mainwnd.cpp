@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-02-06
+ * \updates       2019-04-25
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -2631,7 +2631,7 @@ mainwnd::about_dialog ()
     (
         "(C) 2002-2006 Rob C. Buse (seq24)\n"
         "(C) 2008-2016 Seq24team (seq24)\n"
-        "(C) 2015-2018 Chris Ahlstrom (sequencer64/seq64)"
+        "(C) 2015-2019 Chris Ahlstrom (sequencer64/seq64)"
     );
     dialog.set_website
     (

@@ -3192,7 +3192,8 @@ private:
 
     bool log_current_tempo ();
     bool create_master_bus ();
-#ifdef USE_STAZED_PARSE_SYSEX               // more code to incorporate!!!
+
+#ifdef USE_STAZED_PARSE_SYSEX               // specific to Seq32
     void parse_sysex (event a_e);           // copy, or reference???
 #endif
 

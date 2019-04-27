@@ -25,15 +25,16 @@
  * \library       seq64portmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2018-04-22
+ * \updates       2019-04-27
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
  *  here, since other header files include them.
  *
- *  Also note that this version of Sequencer64 is deprecated for Linux (no
- *  support for virtual ports), but will likely be used in the upcoming
- *  Windows implementation.
+ * \deprecated
+ *      Also note that this version of Sequencer64 is deprecated for Linux (no
+ *      support for virtual ports), but will likely be used in the upcoming
+ *      Windows implementation.
  */
 
 #include <stdio.h>
@@ -138,9 +139,12 @@ main (int argc, char * argv [])
          * affects some of the child objects of mainwnd.
          */
 
+        std::string midifname;
         seq64::mainwnd seq24_window
         (
-            p, seq64::usr().allow_two_perfedits(),
+            p,
+            midifname,                          /* always empty */
+            seq64::usr().allow_two_perfedits(),
             seq64::usr().midi_ppqn()
 #if defined SEQ64_MULTI_MAINWID
             ,
@@ -164,8 +168,7 @@ main (int argc, char * argv [])
                         temp, sizeof temp,
                         "? MIDI file not found: %s\n", midifilename.c_str()
                     );
-                    printf(temp);
-                    // seq24_window.show_message_box(std::string(temp));
+                    printf("%s", temp);
                     seq24_window.rc_error_dialog(std::string(temp));
                 }
             }

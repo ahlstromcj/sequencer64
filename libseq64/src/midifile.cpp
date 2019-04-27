@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-11-03
+ * \updates       2019-04-27
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1173,7 +1173,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                         {
                             --m_pos;                    /* put byte back    */
                             len = read_varinum();       /* sysex            */
-#ifdef USE_SYSEX_PROCESSING
+#ifdef SEQ64_USE_SYSEX_PROCESSING
                             int bcount = 0;
                             while (len--)
                             {
@@ -1185,6 +1185,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             m_pos += len;               /* skip the rest    */
 #else
                             m_pos += len;               /* skip it          */
+#endif
                             if (m_data[m_pos-1] != 0xF7)
                             {
                                 (void) set_error_dump
@@ -1192,7 +1193,6 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                     "SysEx terminator byte F7 not found"
                                 );
                             }
-#endif
                         }
                     }
                     else

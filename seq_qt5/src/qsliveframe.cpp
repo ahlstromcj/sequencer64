@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2019-02-05
+ * \updates       2019-04-15
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -114,8 +114,8 @@ qsliveframe::qsliveframe (perform & p, qsmainwnd * window, QWidget * parent)
     m_mainwnd_rows      (usr().mainwnd_rows()),
     m_mainwnd_cols      (usr().mainwnd_cols()),
     m_mainwid_spacing   (usr().mainwid_spacing()),
-    m_space_rows        (m_mainwid_spacing * m_mainwnd_cols),
-    m_space_cols        (m_mainwid_spacing * m_mainwnd_rows),
+    m_space_rows        (m_mainwid_spacing * m_mainwnd_rows),
+    m_space_cols        (m_mainwid_spacing * m_mainwnd_cols),
     m_screenset_slots   (m_mainwnd_rows * m_mainwnd_cols),
     m_screenset_offset  (m_bank_id * m_screenset_slots),
     m_slot_w            (0),

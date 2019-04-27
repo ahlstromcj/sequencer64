@@ -995,7 +995,7 @@ midi_in_win::api_get_midi_event (event * inev)
         {
             infoprint("SysEx information encountered?");
 
-#ifdef USE_SYSEX_PROCESSING                 /* currently disabled           */
+#ifdef SEQ64_USE_SYSEX_PROCESSING
 
             /**
              *  We will only get EVENT_SYSEX on the first packet of MIDI data;

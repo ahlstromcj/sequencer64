@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-27
+ * \updates     2019-04-27
  * \license     GNU GPLv2 or above
  *
  *  Check out this site:
@@ -50,7 +50,8 @@
 #include <mmsystem.h>
 #include <string.h>
 
-#include "easy_macros.h"
+#include "seq64_features.h"             /* SYSEX-related and other macros   */
+#include "easy_macros.h"                /* not_nullptr() macro, etc.        */
 #include "portmidi.h"                   /* UNUSED() macro, and PortMidi API */
 #include "pmerrmm.h"                    /* error-message support, debugging */
 #include "pmutil.h"
@@ -82,7 +83,7 @@ static void CALLBACK winmm_streamout_callback
     DWORD_PTR dwParam2
 );
 
-#ifdef USE_SYSEX_BUFFERS
+#ifdef SEQ64_USE_SYSEX_PROCESSING
 static void CALLBACK winmm_out_callback
 (
     HMIDIOUT hmo, UINT wMsg,
@@ -157,7 +158,7 @@ extern pm_fns_node pm_winmm_out_dictionary;
  *  Size of a MIDIHDR with a buffer contaning multiple MIDIEVENT structures.
  */
 
-#ifdef USE_SYSEX_BUFFERS
+#ifdef SEQ64_USE_SYSEX_PROCESSING
 #define MIDIHDR_SIZE(x) ((x) + sizeof(MIDIHDR))
 #endif
 
@@ -205,7 +206,7 @@ typedef struct midiwinmm_struct
      * a SysEx message is sent. The size of the buffer is fixed.
      */
 
-#ifdef USE_SYSEX_BUFFERS
+#ifdef SEQ64_USE_SYSEX_PROCESSING
     LPMIDIHDR sysex_buffers[NUM_SYSEX_BUFFERS]; /**< Pool for SysEx data.   */
     int next_sysex_buffer;      /**< Index of next SysEx buffer to send.    */
 #endif
@@ -509,7 +510,7 @@ allocate_buffer (long data_size)
     return hdr;
 }
 
-#ifdef USE_SYSEX_BUFFERS
+#ifdef SEQ64_USE_SYSEX_PROCESSING
 
 /**
  * we're actually allocating more than data_size because the buffer
@@ -531,7 +532,7 @@ allocate_sysex_buffer (long data_size)
     return hdr;
 }
 
-#endif  // USE_SYSEX_BUFFERS
+#endif  // SEQ64_USE_SYSEX_BUFFERS
 
 /**
  *  Buffers is an array of 'count' pointers to an IDIHDR/MIDIEVENT struct.
@@ -565,7 +566,7 @@ allocate_buffers (midiwinmm_type m, long data_size, long count)
     return pmNoError;
 }
 
-#ifdef USE_SYSEX_BUFFERS
+#ifdef SEQ64_USE_SYSEX_PROCESSING
 
 /**
  *
@@ -641,7 +642,7 @@ found_sysex_buffer:
     return r;
 }
 
-#endif      // USE_SYSEX_BUFFERS
+#endif      // SEQ64_USE_SYSEX_BUFFERS
 
 /**
  *
@@ -875,7 +876,7 @@ winmm_in_open (PmInternal * midi, void * driverInfo)
     m->next_buffer = 0;                 /* not used for input */
     m->buffer_signal = 0;               /* not used for input */
 
-#ifdef USE_SYSEX_BUFFERS
+#ifdef SEQ64_USE_SYSEX_PROCESSING
     for (i = 0; i < NUM_SYSEX_BUFFERS; ++i)
         m->sysex_buffers[i] = nullptr;  /* not used for input */
 
@@ -1268,7 +1269,7 @@ winmm_out_open (PmInternal * midi, void * UNUSED(driverinfo))
     m->buffers_expanded = FALSE;
     m->next_buffer = 0;
 
-#ifdef USE_SYSEX_BUFFERS
+#ifdef SEQ64_USE_SYSEX_PROCESSING
     m->sysex_buffers[0] = nullptr;
     m->sysex_buffers[1] = nullptr;
     m->next_sysex_buffer = 0;
@@ -1434,7 +1435,7 @@ winmm_out_delete (PmInternal * midi)
         pm_free(m->buffers);
         m->max_buffers = 0;
 
-#ifdef USE_SYSEX_BUFFERS                /* free sysex buffers */
+#ifdef SEQ64_USE_SYSEX_PROCESSING       /* free sysex buffers */
         for (i = 0; i < NUM_SYSEX_BUFFERS; ++i)
             if (m->sysex_buffers[i]) pm_free(m->sysex_buffers[i]);
 #endif
@@ -1893,7 +1894,7 @@ winmm_synchronize (PmInternal * midi)
     return real_time;
 }
 
-#ifdef USE_SYSEX_BUFFERS
+#ifdef SEQ64_USE_SYSEX_PROCESSING
 
 /**
  * winmm_out_callback -- recycle sysex buffers
@@ -1931,7 +1932,7 @@ winmm_out_callback
     assert(err);                        /* false -> error                   */
 }
 
-#endif  // USE_SYSEX_BUFFERS
+#endif  // SEQ64_USE_SYSEX_BUFFERS
 
 /**
  *  winmm_streamout_callback -- unprepare (free) buffer header

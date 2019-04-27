@@ -5476,6 +5476,12 @@ perform::input_func ()
                         }
 
 #ifdef USE_STAZED_PARSE_SYSEX               // more code to incorporate!!!
+
+                        /*
+                         * Sequencer64 doesn't use incoming SysEx events. This
+                         * code comes from the Seq32 project.
+                         */
+
                         if (global_use_sysex)
                         {
                             if (FF_RW_button_type != FF_RW_RELEASE)
@@ -5551,7 +5557,8 @@ perform::combine_bytes (midibyte b0, midibyte b1)
 #ifdef USE_STAZED_PARSE_SYSEX               // more code to incorporate!!!
 
 /**
- *  Too hardware-specific.
+ *  Too hardware-specific.  The author of Seq32 wants to have his application
+ *  controlled.  See below.
  */
 
 enum sysex_YPT

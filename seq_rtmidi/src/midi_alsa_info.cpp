@@ -589,7 +589,7 @@ midi_alsa_info::api_get_midi_event (event * inev)
      *  disabled.
      */
 
-#ifdef USE_SYSEX_PROCESSING                 /* currently disabled           */
+#ifdef SEQ64_USE_SYSEX_PROCESSING
     inev->set_sysex_size(bytes);            /* why here? why not in "if"?   */
     if (buffer[0] == EVENT_MIDI_SYSEX)
     {
@@ -617,7 +617,7 @@ midi_alsa_info::api_get_midi_event (event * inev)
         }
         sysex = false;
 
-#ifdef USE_SYSEX_PROCESSING
+#ifdef SEQ64_USE_SYSEX_PROCESSING
     }
 #endif
 

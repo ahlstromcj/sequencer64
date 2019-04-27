@@ -99,7 +99,7 @@
  *
  */
 
-#define SYSEX_BUFFER_SIZE       128
+#define SYSEX_BUFFER_SIZE       128         /* is this enough?  */
 
 /**
  *

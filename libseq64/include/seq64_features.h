@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-11-03
+ * \updates       2019-04-27
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -162,7 +162,7 @@
  *  from a file.
  */
 
-#undef USE_SYSEX_PROCESSING            /* disabled in Seq24 as well        */
+#define SEQ64_USE_SYSEX_PROCESSING
 
 /**
  *  Adds a button to disable the main menu in the main window.  Adds a button

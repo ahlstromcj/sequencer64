@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2019-01-05
+ * \updates       2019-04-27
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -1449,7 +1449,7 @@ midi_in_jack::api_get_midi_event (event * inev)
              *  The Yamaha PSS-790 is constantly emitting Active Sense events.
              */
 
-#ifdef USE_SYSEX_PROCESSING                 /* currently disabled           */
+#ifdef SEQ64_USE_SYSEX_PROCESSING
 
             /**
              *  We will only get EVENT_SYSEX on the first packet of MIDI data;
@@ -1458,13 +1458,17 @@ midi_in_jack::api_get_midi_event (event * inev)
              */
 
             midibyte buffer[0x1000];        /* temporary buffer for Sysex   */
-            inev->set_sysex_size(bytes);
+            inev->set_sysex_size(mm.count());
             if (buffer[0] == EVENT_MIDI_SYSEX)
             {
                 inev->restart_sysex();      /* set up for sysex if needed   */
-                sysex = inev->append_sysex(buffer, bytes);
+                if (! inev->append_sysex(buffer, mm.count()))
+                {
+                    errprint("event::append_sysex() failed");
+                }
             }
-#else
+#endif
+
             /*
              * For now, ignore certain messages; they're not handled by the
              * perform object.  Could be handled there, but saves some
@@ -1489,6 +1493,8 @@ midi_in_jack::api_get_midi_event (event * inev)
                     c = '|';
                 else if (st == EVENT_MIDI_STOP)
                     c = '<';
+                else if (st == EVENT_MIDI_SYSEX)
+                    c = 'X';
 
                 (void) putchar(c);
                 if (++s_count == 80)
@@ -1506,7 +1512,6 @@ midi_in_jack::api_get_midi_event (event * inev)
             {
                 inev->set_status(st);
             }
-#endif
         }
     }
     return result;

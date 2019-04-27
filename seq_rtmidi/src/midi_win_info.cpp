@@ -404,7 +404,8 @@ midi_win_info::get_all_port_info ()
 void
 midi_win_info::api_flush ()
 {
-#if 0
+#ifdef SEQ64_USE_SYSEX_PROCESSING_HERE      // NOT READY
+
     // No code yet; write-flush adapted from PortMidi.
 
     MMRESULT mmr = midiOutPrepareHeader
@@ -414,6 +415,7 @@ midi_win_info::api_flush ()
     );
 
     // There seems to be more to it than this, though.
+
 #endif
 }
 
@@ -613,8 +615,10 @@ open_win_input_port (midi_win_data & data, unsigned portnumber)
             error(rterror::DRIVER_ERROR, m_error_string);
         }
 
-        // Allocate and init the sysex buffers.
-        // We use the dwUser parameter as a buffer indicator.
+        /*
+         * Allocate and init the sysex buffers.  We use the dwUser parameter as
+         * a buffer indicator.
+         */
 
         for (int i = 0; i < WIN_RT_SYSEX_BUFFER_COUNT; ++i)
         {

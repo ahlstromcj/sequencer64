@@ -523,6 +523,7 @@ jack_assistant::jack_assistant
     m_jack_frame_rate           (0),
     m_toggle_jack               (false),
     m_jack_stop_tick            (0),
+    m_follow_transport          (true),             /* follow_progress()    */
     m_ppqn                      (choose_ppqn(ppqn)),
     m_beats_per_measure         (bpmeasure),
     m_beat_width                (beatwidth),

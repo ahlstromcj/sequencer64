@@ -534,7 +534,7 @@ allocate_sysex_buffer (long data_size)
     return hdr;
 }
 
-#endif  // SEQ64_USE_SYSEX_BUFFERS
+#endif  // SEQ64_USE_SYSEX_PROCESSING
 
 /**
  *  Buffers is an array of 'count' pointers to an IDIHDR/MIDIEVENT struct.
@@ -644,7 +644,7 @@ found_sysex_buffer:
     return r;
 }
 
-#endif      // SEQ64_USE_SYSEX_BUFFERS
+#endif      // SEQ64_USE_SYSEX_PROCESSING
 
 /**
  *
@@ -1934,7 +1934,7 @@ winmm_out_callback
     assert(err);                        /* false -> error                   */
 }
 
-#endif  // SEQ64_USE_SYSEX_BUFFERS
+#endif  // SEQ64_USE_SYSEX_PROCESSING
 
 /**
  *  winmm_streamout_callback -- unprepare (free) buffer header

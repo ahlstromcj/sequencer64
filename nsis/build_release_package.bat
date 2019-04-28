@@ -8,7 +8,7 @@
 :: \library     Sequencer64 for Windows
 :: \author      Chris Ahlstrom
 :: \date        2018-05-26
-:: \update      2018-11-05
+:: \update      2019-04-28
 :: \license     $XPC_SUITE_GPL_LICENSE$
 ::
 ::      This script sets up and creates a release build of Sequencer64 for
@@ -32,44 +32,47 @@
 ::      "packages" script.
 ::
 ::       1. Before running this script, modify the environment variables below
-::          for your specific setup, including PROJECT_VERSION, PROJECT_DRIVE,
-::          and PROJECT_BASE.  Also edit:
-::          sequencer64/nsis/Seq64Constants.nsh to specify the current date
-::          and Sequencer64 version number.  The macros to modify are
-::          VER_NUMBER (e.g. "0.95") and VER_REVISION (e.g. "1", as in
-::          "0.95.1").
-::       2. In Windows Explorer, just double-click on this batch file in its
-::          location in the "nsis" directory, and watch the build run in a
-::          DOS window.
-::       3. The result is a file such as "qpseq64-release-package-0.95.1.7z".
+::          in this batch file for your specific setup, including
+::          PROJECT_VERSION, PROJECT_DRIVE, and PROJECT_BASE.
+::       2. Also edit sequencer64/nsis/Seq64Constants.nsh
+::          to specify the current date and Sequencer64 version number.
+::          The macros to modify are: VER_NUMBER (e.g. "0.95") and
+::          VER_REVISION (e.g. "1", as in "0.95.1").
+::       3. a. In Windows Explorer, just double-click on this batch file in its
+::             location in the "nsis" directory, and watch the build run in a
+::             DOS window.
+::          b. Alternatively, create a "shadow" directory at the same level
+::             as "sequencer64", change to it, and run
+::             "..\sequencer64\nsis\build_release_package.bat".
+::       4. The result is a file such as "qpseq64-release-package-0.95.1.7z".
 ::          It is found in ../sequencer64/seq64-release/Seq64qt5.  Also, a
 ::          log file is made in ../sequencer64/seq64-release/make.log,
 ::          which can be checked for build warnings and errors.
-::       4. In Linux (have not tried NSIS in Windows yet), copy this 7z file
+::       5. In Linux (have not tried NSIS in Windows yet), copy this 7z file
 ::          to the root sequencer64 directory.
-::       5. Use 7zip to extract this file; it will unpack the contents into
+::       6. Use 7zip to extract this file; it will unpack the contents into
 ::          the 'release' directory.  Then move it out of the way.
 ::
 ::          $ 7z x qpseq64-release-package-0.95.2.7z
 ::          $ mv qpseq64-release-package-0.95.2.7z ..
 ::
-::       6. Change to the sequencer64/nsis directory and run:
+::       7. Change to the sequencer64/nsis directory and run:
 ::
 ::          $ makensis Seq64Setup.nsi
 ::
-::       7. The installer is sequencer64/release/sequencer64_setup_0.95.1.exe.
+::       8. The installer is sequencer64/release/sequencer64_setup_0.95.1.exe.
 ::          Move it out of this directory to a safe place for transport.
 ::          For example:
 ::
 ::          $ mv sequencer64_setup_0.95.1.exe ../../sequencer64-packages/latest
 ::
-::       8. Make a portable Zip package:
+::       9. Make a portable Zip package:
 ::
 ::          $ mv release/ qpseq64
 ::          $ zip -u -r qpseq64-portable-0.95.1-0.zip qpseq64/
 ::          $ mv qpseq64-portable-0.95.1-0.zip ../sequencer64-packages/latest
 ::
-::       9. Make a standard Linux source/configure tarball:
+::      10. Make a standard Linux source/configure tarball:
 ::
 ::          $ ./pack --release rtmidi 0.95.1
 ::          $ mv ../sequencer64-master-rtmidi-0.95.1.tar.xz \
@@ -83,7 +86,7 @@
 ::
 ::---------------------------------------------------------------------------
  
-set PROJECT_VERSION=0.96.1
+set PROJECT_VERSION=0.96.4
 set PROJECT_DRIVE=C:
 set PROJECT_BASE=\Users\Chris\Documents\Home
 set PROJECT_ROOT=..\sequencer64

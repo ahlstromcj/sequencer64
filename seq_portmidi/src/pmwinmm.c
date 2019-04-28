@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2019-04-27
+ * \updates     2019-04-28
  * \license     GNU GPLv2 or above
  *
  *  Check out this site:
@@ -123,6 +123,8 @@ extern pm_fns_node pm_winmm_out_dictionary;
  *  The following constants help to represent these design parameters.
  */
 
+#define NUM_SYSEX_BUFFERS             4     /* not in original PortMID lib! */
+#define SYSEX_BYTES_PER_BUFFER      128     /* ditto!!!!                    */
 #define NUM_SIMPLE_SYSEX_BUFFERS      3
 #define MIN_SIMPLE_SYSEX_LEN        256
 #define MIN_STREAM_BUFFERS           16

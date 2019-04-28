@@ -3,8 +3,8 @@
 ; File:         Seq64Setup.nsi
 ; Author:       Chris Ahlstrom
 ; Date:         2018-05-26
-; Updated:      2018-10-29
-; Version:      0.96.1
+; Updated:      2019-04-28
+; Version:      0.96.4
 ;
 ;       Installation is silent.
 ;
@@ -21,8 +21,9 @@
 ;       and to create a 7-Zip "release" package that can be unpacked in
 ;       the root "sequencer64" directory.
 ;           C:\Projects\sequencer64 build_release_package.bat
-;    -  The resulting package is
-;
+;    -  The resulting package is something like the file
+;       "qpseq64-release-package-0.95.1.7z", found in
+;       ../sequencer64/seq64-release/Seq64qt5.
 ;    -  Then run NSIS:
 ;       -   Windows:
 ;           -   Click on "Compile NSI scripts".

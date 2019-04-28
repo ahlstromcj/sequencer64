@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2019-04-27
+ * \updates       2019-04-28
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -52,9 +52,11 @@
  *    one-by-one in a controlled, tested manner.
  */
 
-#include <string>
-
 #include "seq64-config.h"
+
+#if defined __cplusplus
+#include <string>
+#endif
 
 /*
  *  We need to disable some features not yet available in the Qt 5 user
@@ -365,6 +367,8 @@
 
 #endif      // SEQ64_FEATURES_H
 
+#if defined __cplusplus
+
 /*
  * This is the main namespace of Sequencer64.  Do not attempt to
  * Doxygenate the documentation here; it breaks Doxygen.
@@ -386,6 +390,8 @@ extern const std::string & seq_version_text ();
 extern const std::string & seq_app_tag ();
 
 }           // namespace seq64
+
+#endif      // __cplusplus
 
 /*
  * seq64_features.h

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-29
+ * \updates       2019-04-29
  * \license       GNU GPLv2 or above
  *
  *  Please see the additional notes for the Gtkmm-2.4 version of this panel,
@@ -1032,8 +1032,54 @@ qseqroll::keyPressEvent (QKeyEvent * event)
             }
             else if (event->key() == Qt::Key_Left)
             {
+#if defined SEQ66_USE_KEPLER_TICK_SETTING
+
+                /*
+                 * Moved to Ctrl section below.
+                 */
+
                 seq().set_last_tick(seq().get_last_tick() - snap());
+#else
+                move_selected_notes(-1, 0);
+#endif
                 dirty = true;
+            }
+            else if (event->key() == Qt::Key_Right)
+            {
+#if defined SEQ66_USE_KEPLER_TICK_SETTING
+
+                /*
+                 * Moved to Ctrl section below.
+                 */
+
+                seq().set_last_tick(seq().get_last_tick() + snap());
+#else
+                move_selected_notes(1, 0);
+#endif
+                dirty = true;
+            }
+            else if (event->key() == Qt::Key_Down)
+            {
+                move_selected_notes(0, 1);
+                dirty = true;
+            }
+            else if (event->key() == Qt::Key_Up)
+            {
+                move_selected_notes(0, -1);
+                dirty = true;
+            }
+            else if (event->modifiers() & Qt::ControlModifier) // Ctrl + ...
+            {
+                /*
+                 * We want to ignore Ctrl sequences here, so that Ctrl-Z's can
+                 * be used for "undo".
+                 */
+
+                if (event->key() == Qt::Key_Left)
+                {
+                    seq().set_last_tick(seq().get_last_tick() - snap());
+                    dirty = true;
+                }
             }
             else if (event->key() == Qt::Key_Right)
             {
@@ -1148,6 +1194,79 @@ void
 qseqroll::keyReleaseEvent (QKeyEvent *)
 {
     // no code
+}
+
+/**
+ *  Proposed new function to encapsulate the movement of selections even
+ *  more fully.  Works with the four arrow keys.
+ *
+ *  Note that the movement vertically is different for the selection box versus
+ *  the notes.  While the movement values are -1, 0, or 1, the differences are
+ *  as follows:
+ *
+ *      -   Selection box vertical movement:
+ *          -   -1 is up one note snap.
+ *          -   0 is no vertical movement.
+ *          -   +1 is down one note snap.
+ *      -   Note vertical movement:
+ *          -   -1 is down one note.
+ *          -   0 is no note vertical movement.
+ *          -   +1 is up one note.
+ *
+ * \param dx
+ *      The amount to move the selection box or the selection horizontally.
+ *      Values are -1 (left one time snap), 0 (no movement), and +1 (right one
+ *      snap).  Obviously values other than +-1 can be used for larger
+ *      movement, but the GUI doesn't yet support that ... we could implement
+ *      movement by "pages" some day.
+ *
+ * \param dy
+ *      The amount to move the selection box or the selection vertically.  See
+ *      the notes above.
+ */
+
+void
+qseqroll::move_selected_notes (int dx, int dy)
+{
+    if (paste())
+    {
+        //// move_selection_box(dx, dy);
+    }
+    else
+    {
+        int snap_x = dx * snap();                   /* time-stamp snap  */
+        int snap_y = -dy;                           /* note pitch snap  */
+        if (seq().any_selected_notes())     /* redundant!       */
+        {
+            seq().move_selected_notes(snap_x, snap_y);
+        }
+        else if (snap_x != 0)
+        {
+            seq().set_last_tick(seq().get_last_tick() + snap_x);
+        }
+    }
+}
+
+/**
+ *  Proposed new function to encapsulate the movement of selections even
+ *  more fully.
+ *
+ * \param dx
+ *      The amount to grow the selection horizontally.  Values are -1 (left one
+ *      time snap), 0 (no stretching), and +1 (right one snap).  Obviously
+ *      values other than +-1 can be used for larger stretching, but the GUI
+ *      doesn't yet support that.
+ */
+
+void
+qseqroll::grow_selected_notes (int dx)
+{
+    if (! paste())
+    {
+        int snap_x = dx * snap();                   /* time-stamp snap  */
+        growing(true);
+        seq().grow_selected(snap_x);
+    }
 }
 
 /**

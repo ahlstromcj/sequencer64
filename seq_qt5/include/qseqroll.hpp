@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-29
+ * \updates       2019-04-29
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -145,6 +145,9 @@ protected:      // overrides for painting, mouse/keyboard events, & size hints
     void keyPressEvent (QKeyEvent *);
     void keyReleaseEvent (QKeyEvent *);
     QSize sizeHint () const;
+
+    void move_selected_notes (int dx, int dy);
+    void grow_selected_notes (int dx);
 
 private:
 

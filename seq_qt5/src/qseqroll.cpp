@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2019-04-29
+ * \updates       2019-05-10
  * \license       GNU GPLv2 or above
  *
  *  Please see the additional notes for the Gtkmm-2.4 version of this panel,
@@ -1004,6 +1004,7 @@ qseqroll::mouseMoveEvent (QMouseEvent * event)
         convert_xy(current_x(), current_y(), tick, note);
         seq().add_note(tick, m_note_length - 2, note, true);
     }
+    set_dirty();
 }
 
 /**

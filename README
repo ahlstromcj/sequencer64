@@ -1,6 +1,6 @@
 README for Sequencer64 0.96.4 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2019-05-11
+2015-09-10 to 2019-05-25
 
 Sequencer64 is a reboot of seq24, extending it with many new features.
 The heart of seq24 remains intact.  It is an old friend with a whole lot
@@ -47,6 +47,7 @@ Recent changes:
         -   Tweaks back-ported from Sequencer66.
         -   Added arrow movement of notes in qseqroll, and fixed drawing the
             selection box.
+        -   Fixed enabling event-editor save button when an event is deleted.
     -   Version 0.96.3:
         A long time in coming, busy with refactoring Seq66 (not yet available).
         Fixes issue #171 (GitHub), and some minor tweakage.

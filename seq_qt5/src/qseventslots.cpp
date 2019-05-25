@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-08-13
- * \updates       2018-08-18
+ * \updates       2019-05-25
  * \license       GNU GPLv2 or above
  *
  *  Also note that, currently, the editable_events container does not support
@@ -354,7 +354,7 @@ qseventslots::insert_event (const editable_event & edev)
             m_top_iterator = m_current_iterator =
                 m_bottom_iterator = m_event_container.begin();
 
-            select_event(m_current_index);      // m_parent.set_dirty() ?
+            select_event(m_current_index);
         }
         else
         {
@@ -380,7 +380,7 @@ qseventslots::insert_event (const editable_event & edev)
 
         if (get_length() > m_last_max_timestamp)
         {
-            m_last_max_timestamp = get_length(); // m_parent.set_dirty() ?
+            m_last_max_timestamp = get_length();
         }
     }
     return result;
@@ -584,14 +584,13 @@ qseventslots::delete_current_event ()
         bool ok = newcount == (oldcount - 1);
         if (ok)
         {
+            m_parent.set_dirty();
             result = true;                  /* an event was deleted */
             m_event_count = newcount;       // result = newcount > 0;
             if (newcount > 0)
                 select_event(m_current_index);
             else
                 select_event(SEQ64_NULL_EVENT_INDEX);
-
-            // TODO: m_parent.set_dirty();
         }
     }
     return result;

@@ -520,15 +520,12 @@ qseqeventframe::set_dirty (bool flag)
 {
     if (flag)
     {
-        // m_label_modified->set_text("[ Modified ]");
         ui->button_save->setEnabled(true);
     }
     else
     {
-        // m_label_modified->set_text("[ Saved ]");
         ui->button_save->setEnabled(false);
     }
-    // set_seq_lengths(get_lengths());
 }
 
 /**

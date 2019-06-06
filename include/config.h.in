@@ -1,7 +1,9 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-#define VERSION_DATE_SHORT "2019-04-28"
+#define VERSION_DATE_SHORT "2019-04-27"
 #define VERSION "0.96.4"
+
+
 
 /* Indicates if ALSA MIDI support is enabled */
 #undef ALSAMIDI_SUPPORT
@@ -19,7 +21,8 @@
    wanted. */
 #undef COVFLAGS
 
-/* Define DBGFLAGS=-ggdb -O0 -DDEBUG -fno-inline if debug support is wanted.  */
+/* Define DBGFLAGS=-ggdb -O0 -DDEBUG -fno-inline if debug support is wanted.
+   */
 #undef DBGFLAGS
 
 /* Define to 1 if you have the <ctype.h> header file. */

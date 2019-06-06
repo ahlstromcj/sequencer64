@@ -1,5 +1,60 @@
+2019-06-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_qt5/src/qseqroll.cpp: qseqrollpix works, but need to try
+	QImage due to size limit.
+
+2019-05-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, seq_qt5/src/qseqeventframe.cpp,
+	seq_qt5/src/qseventslots.cpp: Fixed enabling save button on deleting
+	an event in the event editor.
+
+2019-05-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Added labeling to stress-test file.
+
+2019-05-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, libseq64/src/cmdlineopts.cpp, seq_qt5/src/qseqroll.cpp: 
+	Fixed help and selection drawing on qseqroll.
+
+2019-04-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, seq_qt5/include/qseqroll.hpp, seq_qt5/src/qseqroll.cpp: 
+	Adding arrow movement to qseqroll.
+
+2019-04-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/perform.cpp, seq_portmidi/src/pmwinmm.c: Minor
+	cleanup after Windows build.
+
+2019-04-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* include/config.h.in, libseq64/include/seq64_features.h,
+	nsis/Seq64Constants.nsh, nsis/Seq64Setup.nsi,
+	nsis/build_release_package.bat, seq_portmidi/src/pmwinmm.c: Fixed
+	Windows PortMIDI build.
+
+2019-04-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, Seq64portmidi/seq64portmidi.cpp, VERSION,
+	configure.ac, data/license.txt, doc/dox/doxy-notes.cfg,
+	doc/dox/doxy-reference.cfg, libseq64/include/perform.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/jack_assistant.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp, man/seq64.1,
+	man/seq64cli.1, man/sequencer64.1,
+	seq_alsamidi/src/mastermidibus.cpp, seq_alsamidi/src/midibus.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_portmidi/src/pmmacosxcm.c,
+	seq_portmidi/src/pmwinmm.c, seq_qt5/src/qperfeditframe64.cpp,
+	seq_qt5/src/qsliveframe.cpp, seq_rtmidi/src/midi_alsa_info.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_win.cpp,
+	seq_rtmidi/src/midi_win_info.cpp: Enabled more SysEx support,
+	starting 0.96.4.
+
 2019-04-08  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* ChangeLog, INSTALL, README, man/seq64.1, man/seq64cli.1,
+	man/sequencer64.1: Version 0.96.3 pending.
 	* libseq64/include/easy_macros.h, seq_portmidi/src/portmidi.c,
 	seq_qt5/forms/qplaylistframe.ui, seq_qt5/include/qperfroll.hpp,
 	seq_qt5/src/qperfroll.cpp: Minor fixes for Qt/portmidi.

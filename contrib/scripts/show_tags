@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# Shows git tags with dates.  Can also make this an alias.
+
+git log --tags --simplify-by-decoration --pretty="format:%ai %d"

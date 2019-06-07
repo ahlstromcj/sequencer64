@@ -64,6 +64,9 @@ public:
     virtual bool write (const perform & p);
     bool parse_mute_group_section (perform & p);
     bool parse_midi_control_section (const std::string & fname, perform & p);
+#ifdef SEQ64_MIDI_CTRL_OUT
+    bool parse_midi_control_out (const std::string & fname, perform & p);
+#endif
 
 private:
 
@@ -77,6 +80,13 @@ private:
         const perform & p,
         std::ofstream & file
     );
+#ifdef SEQ64_MIDI_CTRL_OUT
+    bool write_midi_control_out
+    (
+        const perform & p,
+        std::ofstream & file
+    );
+#endif
 
 };          // class optionsfile
 

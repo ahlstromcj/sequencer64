@@ -1,0 +1,207 @@
+
+ahlstrom@mlsleno ~/.../ca/mls/git/forks/igor-angst-sequencer64
+midictrlout % git pull
+
+From https://github.com/igorangst/sequencer64
+   6119834e..ad996fa9  midictrlout -> origin/midictrlout
+Updating 6119834e..ad996fa9
+Fast-forward
+ libseq64/include/midi_control.hpp     |   2 +-
+ libseq64/include/midi_control_out.hpp |  40 +++++++++++-
+ libseq64/src/midi_control_out.cpp     |  73 ++++++++++++++++-----
+ libseq64/src/optionsfile.cpp          | 129 +++++++++++++++-----------------------
+ libseq64/src/perform.cpp              |  88 ++++++++++++++++++++++++--
+
+Don't forget about Makefiles and configure.ac!
+
+--------------------------------------
+
+From: mathiasfriman <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Mention <mention@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
+
+[-- Autoview using elinks -dump '/tmp/mutt.html' --]
+   First, kudos for a great software, it has almost everything I need! :)
+
+   I've tried [1]@igorangst fork just now, configured it with
+
+   ./configure --enable-midictrlout
+
+   I'm aiming at triggering some patterns/sequences with my novation
+   Launchpad Pro. I have been able to use the [midi-control] for a 8x4-grid
+   and an 8x8 grid using mididings, but the [midi-control-out] resets itself
+   to all zeroes [0 0 0 0 0 0] on all 0-31 fields when i quit seq64 if my
+   data looks like this:
+
+   0 [0 0 0 0 0] [0 0 0 0 0] [0 2 144 81 16] [0 0 0 0 0]
+   [..]
+   31 [0 0 0 0 0] [0 0 0 0 0] [0 2 144 58 16] [0 0 0 0 0]
+
+   It had to do with me not enabling (on/off-ing) the entries. When I put a 1
+   to enable the entries, they do not reset.
+
+   To send flashing green when queued I should use a row like
+
+   0 [0 0 0 0 0] [0 0 0 0 0] [1 2 144 81 16] [0 0 0 0 0]
+
+   where 2 is the MIDI-channel that is mandatory for getting the button to
+   blink. However, when I quit seq64 the 2 is gone. I see that the control
+   out is hardwired to MIDI-channel 15, where can I change this in the code?
+
+   This is really the only thing left - in an otherwise great (!!) piece of
+   software - that stops me from using it in a live setting. I'm happy to
+   test, however I'm not a C-developer..
+
+Date: Wed, 05 Jun 2019 03:50:53 -0700
+From: Igor Angst <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Mention <mention@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
+
+[-- Autoview using elinks -dump '/tmp/mutt.html' --]
+   Hi,
+   I confirm that there is a problem with inactive entries not being saved
+   and thus being reset to 0. It has been some time that I worked on this,
+   and I'm really happy that there is somebody out there ready to give it a
+   try with a real piece of hardware. I will try and fix this as soon as I
+   can spare some time. It is quite possible that I didn't implement the
+   channel, since I only use channel 1 in my hardware. As far as I remember,
+   15 is the number of the (ALSA/Jack) output and does not refer to the MIDI
+   channel.
+
+Date: Thu, 06 Jun 2019 09:03:02 +0000 (UTC)
+From: mathiasfriman <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Mention <mention@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
+
+[-- Autoview using elinks -dump '/tmp/mutt.html' --]
+   Awesome!
+   I'll change the m_buss(2) parameter in libseq64/src/midi_control_out.cpp
+   back to m_buss(15) then. Wingin' it a bit... :)
+
+   If I may make a wish list it would be to have the grid on the Launchpad
+   Pro reflect the grid in Sequencer64, maybe with some sort of translation
+   table between the default colors in Seq64:
+
+     * Red
+     * Green
+     * Yellow
+     * Blue
+     * Magenta
+     * White
+     * Dark red
+     * Dark Green
+     * Dark Yellow
+     * Dark Blue
+     * Dark Magenta
+     * Dark Cyan
+     * Orange
+     * Dark Orange
+
+   That would (in my mind at least) allow for e.g. setting a 3-color scheme
+   for the controllers that does not have full RGB-color LEDs, just by
+   adjusting the color codes. Also, I would not use the Red and Green colors
+   (why, I hope will be apparent below), and may want to translate them into
+   some other colors instead.
+
+   I would also like Sequencer64 to mimick the behaviour of the Launchpad
+   when used with Ableton Live (which I have never done, just seen videos).
+   That means that
+
+     * When queuing a sequence, it should be flashing green. (MIDI-Ch 2,
+       NoteOn, Pad XX, Color)
+     * When playing a sequence, it should be pulsing green. (MIDI-Ch 3,
+       NoteOn, Pad XX, Color)
+     * When arming a track to record, it should be flashing red. (MIDI-Ch 2,
+       NoteOn, Pad XX, Color)
+     * When recording in a sequence, it should be pulsing red. (MIDI-Ch 3,
+       NoteOn, Pad XX, Color)
+
+   Stopping these requires a send of a (MIDI-Ch 1, NoteOn, Pad XX, Color) to
+   the Launchpad Pro.
+
+   It is also possible to light several LEDs with a single SysEx-message on
+   the Launchpad Pro, further detailed in the [1]programmers reference but
+   that might not be a way forward for other controllers, so maybe it's best
+   to stick with MIDI messages.
+
+   Also, the pad note numbers seems to vary wildly even within the Launchpad
+   family of controllers...
+
+Date: Thu, 06 Jun 2019 08:32:04 -0700
+From: mathiasfriman <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Mention <mention@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
+
+[-- Autoview using elinks -dump '/tmp/mutt.html' --]
+   I'm starting seq64 with the -j option to connect it to JACK transport and
+   use JACK midi, not ALSA.
+
+   If in Sequencer64 I open a sequence and select MIDI Output Bus "[0] 0:0
+   seq64:system midi_playback_1" and MIDI channel 1, 2 or 3 and connect that
+   bus/port in Qjackctl to the writable/input port "system: midi_playback_2"
+   I can light up the LaunchPad Pro buttons by playing/sending MIDI notes to
+   it.
+
+   However, I can't get anything to light up using the Launchpad Pro
+   triggering patterns. They queue up and start playing, but not a single
+   indication on the LPPro.
+
+   Do I have to connect some ports in JACK to get it to work, or how do I go
+   about it?
+
+Date: Thu, 06 Jun 2019 12:27:50 -0700
+From: mathiasfriman <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Mention <mention@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
+
+[-- Autoview using elinks -dump '/tmp/mutt.html' --]
+   These lines in libseq64/src/perform.cpp:
+
+ #ifdef SEQ64_MIDI_CTRL_OUT
+     if (status | c_status_queue)
+         m_midi_ctrl_out->send_event(midi_control_out::action_queue_on);
+
+   and these lines of code in libseq64/src/sequence.cpp:
+
+ #ifdef SEQ64_MIDI_CTRL_OUT
+     if (m_queued)
+     {
+         m_parent->get_midi_control_out()->send_seq_event(number(), midi_control_out
+::seq_action_queue);
+
+   only get executed when I quit seq64, not when queueing the various
+   sequences during play.
+
+   Maybe I'm not doing something right? As I said previously, I'm just
+   guessing here to try to find something that seems to have a bearing on
+   what I'm trying to accomplish..
+
+Date: Fri, 07 Jun 2019 00:57:57 -0700
+From: Igor Angst <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Mention <mention@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
+
+[-- Autoview using elinks -dump '/tmp/mutt.html' --]
+   Thanks for the feedback. By "get executed" I suppose you mean that the
+   messages only make it out to the Launch Pad when you quit seq64. I guess
+   this is related to the fact that the MIDI output bus needs a flush. I
+   could not figure out why this is the case, it seems to depend on the
+   underlying MIDI implementation. Maybe [1]@ahlstromcj knows more about
+   this. Can you try the following:
+
+   The functions send_(seq)_event have an optional boolean argument, telling
+   it to flush the bus after sending. So change the code snippets to
+   if (status | c_status_queue)
+   m_midi_ctrl_out->send_event(midi_control_out::action_queue_on, true);
+   and
+   m_parent->get_midi_control_out()->send_seq_event(number(),
+   midi_control_out::seq_action_queue, true);
+
+-------------------------------------------------------
+

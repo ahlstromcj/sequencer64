@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2019-04-28
+ * \updates       2019-06-06
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -84,6 +84,15 @@
  */
 
 #undef USE_KEPLER34_SEQUENCE_COLOR
+
+/**
+ *  Igor Angst's MIDI Control Out feature, so that some Sequencer64 actions can
+ *  be sent to a device like the Novation LaunchPad.
+ *
+ *  See https://github.com/igorangst/sequencer64
+ */
+
+#define SEQ64_MIDI_CTRL_OUT     // experimental
 
 /**
  *  A better way to implement the Kepler34 sequence-color feature.  Here,

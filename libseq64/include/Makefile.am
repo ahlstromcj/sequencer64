@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2018-08-26
+# \update      2019-06-06
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -117,6 +117,7 @@ pkginclude_HEADERS = \
 	midifile.hpp \
    midi_container.hpp \
    midi_control.hpp \
+   midi_control_out.hpp \
    midi_list.hpp \
    midi_splitter.hpp \
    midi_vector.hpp \

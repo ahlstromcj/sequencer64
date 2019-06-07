@@ -869,8 +869,6 @@ sequence::select_event_handle
     bool have_selection = false;
     if (status == EVENT_NOTE_ON)                    // use a function!
     {
-//      if (get_num_selected_events(status, cc))
-//          have_selection = true;
         have_selection = m_events.any_selected_events(status, cc);
     }
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
@@ -1111,6 +1109,30 @@ sequence::toggle_queued ()
     m_queued_tick = m_last_tick - mod_last_tick() + m_length;
     m_off_from_snap = true;
     set_dirty_mp();
+
+#ifdef SEQ64_MIDI_CTRL_OUT
+    if (m_queued)
+    {
+        m_parent->get_midi_control_out()->send_seq_event
+        (
+            number(), midi_control_out::seq_action_queue
+        );
+    }
+    else if (get_playing())
+    {
+        m_parent->get_midi_control_out()->send_seq_event
+        (
+            number(), midi_control_out::seq_action_arm
+        );
+    }
+    else
+    {
+        m_parent->get_midi_control_out()->send_seq_event
+        (
+            number(), midi_control_out::seq_action_mute
+        );
+    }
+#endif
 }
 
 /**
@@ -4980,6 +5002,9 @@ void
 sequence::set_playing (bool p)
 {
     automutex locker(m_mutex);
+#ifdef SEQ64_MIDI_CTRL_OUT
+    bool send_play = p ^ get_playing();
+#endif
     if (p != get_playing())
     {
         m_playing = p;
@@ -4997,6 +5022,16 @@ sequence::set_playing (bool p)
     }
     m_queued = false;
     m_one_shot = false;
+#ifdef SEQ64_MIDI_CTRL_OUT
+    if (send_play)
+    {
+        m_parent->get_midi_control_out()->send_seq_event
+        (
+            number(), p ? midi_control_out::seq_action_arm :
+                midi_control_out::seq_action_mute
+        );
+    }
+#endif
 }
 
 /**

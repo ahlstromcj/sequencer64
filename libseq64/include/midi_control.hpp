@@ -85,9 +85,9 @@ const int c_midi_control_ss_dn          = c_midi_track_ctrl + 3;
 const int c_midi_control_mod_replace    = c_midi_track_ctrl + 4;
 const int c_midi_control_mod_snapshot   = c_midi_track_ctrl + 5;
 const int c_midi_control_mod_queue      = c_midi_track_ctrl + 6;
-const int c_midi_control_mod_gmute      = c_midi_track_ctrl + 7;  /* andy      */
-const int c_midi_control_mod_glearn     = c_midi_track_ctrl + 8;  /* andy      */
-const int c_midi_control_play_ss        = c_midi_track_ctrl + 9;  /* andy      */
+const int c_midi_control_mod_gmute      = c_midi_track_ctrl + 7;
+const int c_midi_control_mod_glearn     = c_midi_track_ctrl + 8;
+const int c_midi_control_play_ss        = c_midi_track_ctrl + 9;
 const int c_midi_controls               = c_midi_track_ctrl + 10; /* old = 74  */
 const int c_midi_control_playback       = c_midi_track_ctrl + 10;
 const int c_midi_control_song_record    = c_midi_track_ctrl + 11; /* arm for   */

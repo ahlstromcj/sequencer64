@@ -74,29 +74,6 @@
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc()                      */
 
-#ifdef SEQ64_MIDI_CTRL_OUT
-
-#define READ_CTRL_EVENT(action) { \
- int ev[5]; \
- if (!next_data_line(file)) \
-    return make_error_message("midi-control-out", "missing data"); \
- sscanf(m_line, "%d [ %d %d %d %d ]", \
- &ev[0], &ev[1], &ev[2], &ev[3], &ev[4]); \
- mctrl->set_event(action, ev); }
-
-#define READ_CTRL_EVENT_PAIR(action1, action2) { \
- int ev_on[5], ev_off[5]; \
- if (!next_data_line(file)) \
-    return make_error_message("midi-control-out", "missing data"); \
- sscanf(m_line, "%d [ %d %d %d %d ] [ %d %d %d %d ]", \
- &ev_on[0], &ev_on[1], &ev_on[2], &ev_on[3], &ev_on[4], \
- &ev_off[1], &ev_off[2], &ev_off[3], &ev_off[4]); \
- ev_off[0] = ev_on[0]; \
- mctrl->set_event(action1, ev_on); \
- mctrl->set_event(action2, ev_off); }
-
-#endif
-
 /**
  *  Provides names for the mouse-handling used by the application.
  */
@@ -2078,6 +2055,54 @@ optionsfile::write_midi_control
 
 #ifdef SEQ64_MIDI_CTRL_OUT
 
+void
+optionsfile::read_ctrl_event
+(
+    std::ifstream & file,
+    midi_control_out * mctrl,
+    midi_control_out::action a
+)
+{
+    if (next_data_line(file))
+    {
+        int ev[5];
+        sscanf
+        (
+            m_line, "%d [ %d %d %d %d ]",
+            &ev[0], &ev[1], &ev[2], &ev[3], &ev[4]
+        );
+        mctrl->set_event(a, ev);
+    }
+    else
+        (void) make_error_message("midi-control-out", "missing data");
+}
+
+void
+optionsfile::read_ctrl_event_pair
+(
+    std::ifstream & file,
+    midi_control_out * mctrl,
+    midi_control_out::action a1,
+    midi_control_out::action a2
+)
+{
+    if (next_data_line(file))
+    {
+        int ev_on[5], ev_off[5];
+        sscanf
+        (
+            m_line, "%d [ %d %d %d %d ] [ %d %d %d %d ]",
+            &ev_on[0], &ev_on[1], &ev_on[2], &ev_on[3], &ev_on[4],
+            &ev_off[1], &ev_off[2], &ev_off[3], &ev_off[4]
+        );
+        ev_off[0] = ev_on[0];
+        mctrl->set_event(a1, ev_on);
+        mctrl->set_event(a2, ev_off);
+    }
+    else
+        (void) make_error_message("midi-control-out", "missing data");
+}
+
 bool
 optionsfile::parse_midi_control_out (const std::string & fname, perform & p)
 {
@@ -2128,41 +2153,50 @@ optionsfile::parse_midi_control_out (const std::string & fname, perform & p)
 
     // Non-sequence actions
 
-    READ_CTRL_EVENT(midi_control_out::action_play);
-    READ_CTRL_EVENT(midi_control_out::action_stop);
-    READ_CTRL_EVENT(midi_control_out::action_pause);
-    READ_CTRL_EVENT_PAIR
+    read_ctrl_event(file, mctrl, midi_control_out::action_play);
+    read_ctrl_event(file, mctrl, midi_control_out::action_stop);
+    read_ctrl_event(file, mctrl, midi_control_out::action_pause);
+    read_ctrl_event_pair
     (
+        file, mctrl,
         midi_control_out::action_queue_on,
         midi_control_out::action_queue_off
     );
-    READ_CTRL_EVENT_PAIR
+    read_ctrl_event_pair
     (
+        file, mctrl,
         midi_control_out::action_oneshot_on,
         midi_control_out::action_oneshot_off
     );
-    READ_CTRL_EVENT_PAIR
+    read_ctrl_event_pair
     (
+        file, mctrl,
         midi_control_out::action_replace_on,
         midi_control_out::action_replace_off
     );
-    READ_CTRL_EVENT_PAIR
+    read_ctrl_event_pair
     (
+        file, mctrl,
         midi_control_out::action_snap1_store,
         midi_control_out::action_snap1_restore
     );
-    READ_CTRL_EVENT_PAIR
+    read_ctrl_event_pair
     (
+        file, mctrl,
         midi_control_out::action_snap2_store,
         midi_control_out::action_snap2_restore
     );
-    READ_CTRL_EVENT_PAIR
+    read_ctrl_event_pair
     (
+        file, mctrl,
         midi_control_out::action_learn_on,
         midi_control_out::action_learn_off
     );
-    p.set_midi_control_out(mctrl);
-    return true;
+    bool result = ! is_error();
+    if (result)
+        p.set_midi_control_out(mctrl);
+
+    return result;
 }
 
 /**

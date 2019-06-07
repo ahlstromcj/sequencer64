@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2019-06-06
+dnl \update        2019-06-07
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -26,7 +26,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.96$)
-AC_INIT(Sequencer64, [0.96.4], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.96.5], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -161,7 +161,7 @@ AC_SUBST(APP_NAME)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.96.4"
+VERSION="0.96.5"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -689,6 +689,22 @@ else
     AC_MSG_NOTICE([Main patterns-panel scrollbars disabled.]);
 fi
 
+
+dnl Support for MIDI control output. If enabled, the macro
+dnl SEQ64_MIDI_CTRL_OUTPUT is defined.  From igorangst's GitHub fork of
+dnl Sequencer64.
+
+AC_ARG_ENABLE(midictrlout,
+    [AS_HELP_STRING(--enable-midictrlout, [Enable MIDI control output])],
+    [midictrlout=$enableval],
+    [midictrlout=no])
+
+if test "$midictrlout" != "no"; then
+    AC_DEFINE(MIDI_CTRL_OUT, 1, [Define to enable MIDI control output])
+    AC_MSG_RESULT([MIDI control output enabled.]);
+else
+    AC_MSG_NOTICE([MIDI control output disabled.]);
+fi
 AM_CONDITIONAL([BUILD_ALSAMIDI], [test "$build_alsamidi" = "yes"])
 AM_CONDITIONAL([BUILD_QTMIDI], [test "$build_qtmidi" = "yes"])
 AM_CONDITIONAL([BUILD_RTMIDI], [test "$build_rtmidi" = "yes"])
@@ -702,8 +718,8 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2019-04-27"
-#define VERSION "0.96.4"
+#define VERSION_DATE_SHORT "2019-06-07"
+#define VERSION "0.96.5"
 
 )
 

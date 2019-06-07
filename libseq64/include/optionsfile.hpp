@@ -37,6 +37,7 @@
  */
 
 #include "configfile.hpp"
+#include "midi_control_out.hpp"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -66,6 +67,19 @@ public:
     bool parse_midi_control_section (const std::string & fname, perform & p);
 #ifdef SEQ64_MIDI_CTRL_OUT
     bool parse_midi_control_out (const std::string & fname, perform & p);
+    void read_ctrl_event
+    (
+        std::ifstream & file,
+        midi_control_out * mctrl,
+        midi_control_out::action a
+    );
+    void read_ctrl_event_pair
+    (
+        std::ifstream & file,
+        midi_control_out * mctrl,
+        midi_control_out::action a1,
+        midi_control_out::action a2
+    );
 #endif
 
 private:

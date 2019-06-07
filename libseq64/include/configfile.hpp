@@ -72,6 +72,12 @@ private:
 
     std::string m_error_message;
 
+    /**
+     * Indicates if we are in an error status.
+     */
+
+    bool m_is_error;
+
 protected:
 
     /**
@@ -140,11 +146,17 @@ public:
         return m_error_message;
     }
 
+    bool is_error () const
+    {
+        return m_is_error;
+    }
+
 protected:
 
     void set_error_message (const std::string & msg)
     {
         m_error_message = msg;
+        m_is_error = ! msg.empty();
     }
 
 };          // class configfile

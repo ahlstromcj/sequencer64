@@ -103,6 +103,7 @@ public:
         action_learn_on      = 13,
         action_learn_off     = 14,
         action_max           = 15
+
     } action;
 
 private:

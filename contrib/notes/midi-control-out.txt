@@ -203,5 +203,120 @@ Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
    m_parent->get_midi_control_out()->send_seq_event(number(),
    midi_control_out::seq_action_queue, true);
 
+
+Date: Fri, 07 Jun 2019 06:56:54 -0700
+From: mathiasfriman <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Mention <mention@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
+
+[-- Autoview using elinks -dump '/tmp/mutt.html' --]
+   Tried this, and that doesn't do the trick. :(
+
+   I've set a number of printf statements in the various files just after the
+   #ifdef SEQ64_MIDI_CTRL_OUT lines. It doesn't print regularly. It's like it
+   doesn't even enter the #ifdef SEQ64_MIDI_CTRL_OUT conditionals until it
+   bursts a number of the printf-statements in a random fashion without any
+   discernable pattern.
+
+   This is probably not the best way to do this, but I'm not much of a
+   programmer.. :/ So this is what got printed after starting seq64:
+
+ [..]
+ Input ports (9):
+   [0] 0:0 system:midi_playback_1
+   [1] 0:1 system:midi_playback_2
+   [2] 0:2 system:midi_playback_3
+   [3] 0:3 system:midi_playback_4
+   [4] 0:4 system:midi_playback_5
+   [5] 0:5 system:midi_playback_6
+   [6] 0:6 system:midi_playback_7
+   [7] 0:7 system:midi_playback_8
+   [8] 0:8 system:midi_playback_9
+ Output ports (5):
+   [1] 0:1 system:midi_capture_2
+   [2] 0:2 system:midi_capture_3
+   [3] 0:3 system:midi_capture_4
+   [4] 0:4 system:midi_capture_5
+
+ [JACK sync enabled]
+ [JACK sync still enabled]
+ [JACK sync still enabled]
+
+   After a while, all these printf statements come in one single burst,
+   triggered by what? I don't know.
+   I've tried to show where I've put the print statements with the syntax -
+   path/to/file: row
+
+ Sending play midi control - libseq64/src/sequence.cpp: 4802
+ Sending midi control event action queue on - libseq64/src/perform.cpp: 5517
+ MIDI CTRL OUT defined - libseq64/src/sequence.cpp: 1032
+ queued out - libseq64/src/sequence.cpp: 1035
+ Sending play midi control - libseq64/src/sequence.cpp: 4802
+ MIDI CTRL OUT defined
+ queued out
+ Sending play midi control
+ MIDI CTRL OUT defined
+ queued out
+ Sending play midi control
+ MIDI CTRL OUT defined
+ queued out
+ Sending play midi control
+ MIDI CTRL OUT defined
+ queued out
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control
+ MIDI CTRL OUT defined
+ queued out
+ Sending play midi control
+ MIDI CTRL OUT defined
+ queued out
+ Sending play midi control
+ Sending midi-control-event queue off - libseq64/src/perform.cpp: 5553
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control 
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control 
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control
+ Sending play midi control
+ Sending play m
+   And there it stops for quite some time..
+
+   As an example, in the file libseq64/src/perform.cpp on row 5553 it looks
+   like this:
+
+ #ifdef SEQ64_MIDI_CTRL_OUT
+     if (status | c_status_queue)
+         printf("Sending midi-control-event queue off");
+         m_midi_ctrl_out->send_event(midi_control_out::action_queue_off);
+
+   In libseq64/src/sequence.cpp in sequence::toggle_queued ():
+
+ #ifdef SEQ64_MIDI_CTRL_OUT
+     printf("MIDI CTRL OUT defined");
+     if (m_queued)
+     {
+         printf("queued out");
+         m_parent->get_midi_control_out()->send_seq_event(number(), midi_control_out
+::seq_action_queue, 1);
+
+   Nothing is lit on the launchpad when the burst comes.
+
+
+
 -------------------------------------------------------
 

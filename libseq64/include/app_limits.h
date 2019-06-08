@@ -82,6 +82,20 @@
 #define SEQ64_DEFAULT_SET_MAX             32
 
 /**
+ *  Default set size.  This may need to be adjusted.  It is used with
+ *  igorangst's MIDI-control-out feature at present.
+ */
+
+#define SEQ64_DEFAULT_SET_SIZE            32
+
+/**
+ *  Default MIDI control output buss.  It is used with igorangst's
+ *  MIDI-control-out feature at present.
+ */
+
+#define SEQ64_MIDI_CONTROL_OUT_BUSS       15
+
+/**
  *  Default value for c_seqs_in_set.
  */
 

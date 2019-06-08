@@ -9,7 +9,7 @@
 #define SEQ64_VERSION_DATE_SHORT "2019-04-27"
 #endif
 #ifndef SEQ64_VERSION
-#define SEQ64_VERSION "0.96.4"
+#define SEQ64_VERSION "0.96.5"
 #endif
 
 
@@ -227,7 +227,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef SEQ64_PACKAGE_STRING
-#define SEQ64_PACKAGE_STRING "Sequencer64 0.96.4"
+#define SEQ64_PACKAGE_STRING "Sequencer64 0.96.5"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -242,7 +242,7 @@
 
 /* Define to the version of this package. */
 #ifndef SEQ64_PACKAGE_VERSION
-#define SEQ64_PACKAGE_VERSION "0.96.4"
+#define SEQ64_PACKAGE_VERSION "0.96.5"
 #endif
 
 /* Indicates if PortMidi support is enabled */
@@ -272,7 +272,7 @@
 
 /* Version number of package */
 #ifndef SEQ64_VERSION
-#define SEQ64_VERSION "0.96.4"
+#define SEQ64_VERSION "0.96.5"
 #endif
 
 /* Indicates limited Windows support */

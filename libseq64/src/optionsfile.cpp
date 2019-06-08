@@ -2127,9 +2127,8 @@ optionsfile::parse_midi_control_out (const std::string & fname, perform & p)
     for (unsigned i = 0; i < sequences; ++i)
     {
         if (! next_data_line(file))
-        {
             return make_error_message("midi-control-out", "no data");
-        }
+
         int a[5], b[5], c[5], d[5];
         int sequence = 0;
         sscanf
@@ -2212,7 +2211,8 @@ optionsfile::write_midi_control_out
 {
     bool result = false;
     file <<
-        "\n[midi-control-out]\n"
+        "\n"
+        "[midi-control-out]\n"
         "\n"
         "#    ------------------- on/off (indicate is the section is enabled)\n"
         "#    | ----------------- MIDI channel (0-15)\n"
@@ -2226,7 +2226,7 @@ optionsfile::write_midi_control_out
         "\n"
         "32 # Number of sequences\n\n";
 
-    for (int seq=0; seq < 32; ++seq)
+    for (int seq = 0; seq < SEQ64_DEFAULT_SET_SIZE; ++seq)
     {
         file << seq;
         for (int a = 0; a < midi_control_out::seq_action_max; ++a)
@@ -2236,17 +2236,17 @@ optionsfile::write_midi_control_out
                 seq, (midi_control_out::seq_action) a
             );
             midibyte d0, d1;
+            bool eia = p.get_midi_control_out()->seq_event_is_active
+            (
+                seq, (midi_control_out::seq_action) a
+            );
             ev.get_data(d0, d1);
             file
-                << (unsigned) p.get_midi_control_out()->seq_event_is_active
-                   (
-                        seq, (midi_control_out::seq_action) a
-                    )
-                 << " "
-                 << (unsigned) ev.get_channel() << " "
-                 << (unsigned) ev.get_status() << " "
-                 << (unsigned) d0 << " "
-                 << (unsigned) d1 << "]";
+                << unsigned(eia) << " "
+                << unsigned(ev.get_channel()) << " "
+                << unsigned(ev.get_status()) << " "
+                << unsigned(d0) << " "
+                << unsigned(d1) << "]";
         }
         file << "\n";
     }

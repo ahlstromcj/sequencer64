@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Igor Angst
  * \date          2018-03-28
- * \updates       2019-06-06
+ * \updates       2019-06-07
  * \license       GNU GPLv2 or above
  *
  * The class contained in this file encapsulates most of the
@@ -50,6 +50,11 @@ namespace seq64
 {
 
 class perform;
+
+/**
+ *  Provides some management support for MIDI control... on output.  Many thanks
+ *  to igorangst!
+ */
 
 class midi_control_out
 {
@@ -85,6 +90,10 @@ public:
 
     } seq_action;
 
+    /**
+     *  Provides codes for various other actions.
+     */
+
     typedef enum
     {
         action_play          = 0,
@@ -106,58 +115,79 @@ public:
 
     } action;
 
+    /**
+     *  Manifest constants for optionsfile to use as array indices.
+     */
+
+    typedef enum
+    {
+        out_enabled   = 0,
+        out_channel   = 1,
+        out_status    = 2,
+        out_data_1    = 3,
+        out_data_2    = 4
+
+    } out_index;
+
 private:
 
     /**
      *  Provides the MIDI output master bus.
      */
-    mastermidibus* m_master_bus;
+
+    mastermidibus * m_master_bus;
 
     /**
-     *  Provides the MIDI output buss.
+     *  Provides the MIDI output buss, that is the port number for MIDI output.
+     *  Currently, this value is hard-wired to 15, and the user must be sure to
+     *  avoid using this buss value for music.
      */
-    bussbyte m_buss;
+
+    bussbyte m_buss;                    /* SEQ64_MIDI_CONTROL_OUT_BUSS      */
 
     /**
      *  Provides the events to be sent out for sequence status changes.
      */
-    event m_seq_event[32][seq_action_max];
+
+    event m_seq_event[SEQ64_MIDI_CONTROL_OUT_BUSS][seq_action_max];
 
     /**
      *  True if the respective sequence action is active (i.e. has
      *  been set in the configuration file).
      */
-    bool  m_seq_active[32][seq_action_max];
+
+    bool m_seq_active[SEQ64_MIDI_CONTROL_OUT_BUSS][seq_action_max];
 
     /**
      *  Provides the events to be sent out for non-sequence actions.
      */
+
     event m_event[action_max];
 
     /**
      *  True if the respective action is active (i.e. has been set in
      *  the configuration file).
      */
-    bool  m_event_active[action_max];
+
+    bool m_event_active[action_max];
 
     /**
-     *  Current screen set offset. Since the sequences dispatch the
-     *  output messages, and sequences don't know shit about
-     *  screen-sets, we need to do the math in this class in order to
-     *  send screen-set relative events out to external
-     *  controllers. For now, the size of the screen-set is hard-wired
+     *  Current screen set offset. Since the sequences dispatch the output
+     *  messages, and sequences don't know about screen-sets, we need to do the
+     *  math in this class in order to send screen-set relative events out to
+     *  external controllers. For now, the size of the screen-set is hard-wired
      *  to 32.
      *
      *  TODO: Make this behavior configurable via optionsfile
-     *
      */
+
     int m_screenset_offset;
 
 public:
 
-    midi_control_out();
+    midi_control_out ();
 
-    void set_master_bus(mastermidibus* mmbus)
+    void set_master_bus (mastermidibus * mmbus)
     {
         m_master_bus = mmbus;
     }
@@ -168,7 +198,8 @@ public:
      * \param offset
      *      New screen-set offset
      */
-    void set_screenset_offset(int offset)
+
+    void set_screenset_offset (int offset)
     {
         m_screenset_offset = offset;
     }
@@ -185,7 +216,8 @@ public:
      * \param flush
      *      Flush MIDI buffer after sending (default true)
      */
-    void send_seq_event(int seq, seq_action what, bool flush=false);
+
+    void send_seq_event (int seq, seq_action what, bool flush = false);
 
     /**
      *  Clears all visible sequences by sending "delete" messages for all
@@ -203,11 +235,11 @@ public:
      * \param what
      *      The action to be notified.
      *
-     * \returns
+     * \return
      *      The MIDI event to be sent.
      */
 
-    event get_seq_event(int seq, seq_action what) const;
+    event get_seq_event (int seq, seq_action what) const;
 
     /**
      * Register a MIDI event for a given sequence action.
@@ -221,7 +253,8 @@ public:
      * \param ev
      *      The MIDI event to be sent.
      */
-    void set_seq_event(int seq, seq_action what, event& ev);
+
+    void set_seq_event (int seq, seq_action what, event & ev);
 
     /**
      * Register a MIDI event for a given sequence action.
@@ -235,7 +268,8 @@ public:
      * \param ev
      *      Raw int array representing The MIDI event to be sent.
      */
-    void set_seq_event(int seq, seq_action what, int *ev);
+
+    void set_seq_event (int seq, seq_action what, int * ev);
 
     /**
      * Checks if a sequence status event is active.
@@ -249,15 +283,17 @@ public:
      * \return
      *      Returns true if the respective event is active.
      */
-    bool seq_event_is_active(int seq, seq_action what) const;
+
+    bool seq_event_is_active (int seq, seq_action what) const;
 
     /**
      * Send out notification about non-sequence actions.
      *
      * \param what
-     *      The action to be notified
+     *      The action to be notified.
      */
-    void send_event(action what);
+
+    void send_event (action what);
 
     /**
      * Getter for non-sequence action events.
@@ -265,10 +301,11 @@ public:
      * \param what
      *      The action to be notified.
      *
-     * \returns
+     * \return
      *      The MIDI event to be sent.
      */
-    event get_event(action what) const;
+
+    event get_event (action what) const;
 
     /**
      * Getter for non-sequence action events.
@@ -276,10 +313,11 @@ public:
      * \param what
      *      The action to be notified.
      *
-     * \returns
+     * \return
      *      The MIDI event in a config-compatible string
      */
-    std::string get_event_str(action what) const;
+
+    std::string get_event_str (action what) const;
 
     /**
      * Register a MIDI event for a given non-sequence action.
@@ -290,7 +328,8 @@ public:
      * \param event
      *      The MIDI event to be sent.
      */
-    void set_event(action what, event& ev);
+
+    void set_event (action what, event & ev);
 
     /**
      * Register a MIDI event for a given non-sequence action.
@@ -301,7 +340,8 @@ public:
      * \param ev
      *      Raw int data representing the MIDI event to be sent.
      */
-    void set_event(action what, int *ev);
+
+    void set_event (action what, int * ev);
 
     /**
      * Checks if an event is active.
@@ -312,9 +352,18 @@ public:
      * \return
      *      Returns true if the respective event is active.
      */
-    bool event_is_active(action what) const;
-};
 
-}
+    bool event_is_active (action what) const;
 
-#endif
+};          // class midi_control_out
+
+}           // namespace seq64
+
+#endif      // SEQ64_MIDI_CONTROL_OUT_HPP
+
+/*
+ * midi_control_out.hpp
+ *
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
+ */
+

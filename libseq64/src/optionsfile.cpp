@@ -2224,7 +2224,7 @@ optionsfile::write_midi_control_out
         "#   [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]\n"
         "#       Arm         Mute       Queue      Delete\n"
         "\n"
-        "32 # Number of sequences\n\n";
+        "32 # Number of sequences in set\n\n";
 
     for (int seq = 0; seq < SEQ64_DEFAULT_SET_SIZE; ++seq)
     {

@@ -278,11 +278,11 @@ Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
  Sending play midi control
  Sending play midi control
  Sending play midi control
- Sending play midi control 
  Sending play midi control
  Sending play midi control
  Sending play midi control
- Sending play midi control 
+ Sending play midi control
+ Sending play midi control
  Sending play midi control
  Sending play midi control
  Sending play midi control
@@ -315,6 +315,93 @@ Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
 ::seq_action_queue, 1);
 
    Nothing is lit on the launchpad when the burst comes.
+
+
+Date: Sat, 08 Jun 2019 01:44:50 -0700
+From: mathiasfriman <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Mention <mention@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
+
+[-- Autoview using elinks -dump '/tmp/mutt.html' --]
+   Great news Chris! Sorry for the late reply, but I'm in Sweden, GMT+2 so I
+   have saturday morning now...
+
+   Igors fork is a couple of changes behind master so that's a bit of a
+   nuisance when switching between them, since the rc-files are not 100%
+   backwards compatible and tend to overwrite each other.. :)
+
+   I've attached my rc below. Here's what happens when I start seq64 with it
+   (using ALSA midi this time to see if it made a difference. It didn't.):
+
+ Reading rc configuration /home/mathias/.config/sequencer64/sequencer64.rc]
+ [set_seq_event] 0 0
+ [set_seq_event] 0 1
+ [set_seq_event] 0 2
+ [set_seq_event] 1 2
+ [set_seq_event] 2 2
+ [set_seq_event] 3 2
+ [set_seq_event] 4 2
+ [set_seq_event] 5 2
+ [set_seq_event] 6 2
+ [set_seq_event] 7 2
+ [set_seq_event] 8 2
+ [set_seq_event] 9 2
+ [set_seq_event] 10 2
+ [set_seq_event] 11 2
+ [set_seq_event] 12 2
+ [set_seq_event] 13 2
+ [set_seq_event] 14 2
+ [set_seq_event] 15 2
+ [set_seq_event] 16 2
+ [set_seq_event] 17 2
+ [set_seq_event] 18 2
+ [set_seq_event] 19 2
+ [set_seq_event] 20 2
+ [set_seq_event] 21 2
+ [set_seq_event] 22 2
+ [set_seq_event] 23 2
+ [set_seq_event] 24 2
+ [set_seq_event] 25 2
+ [set_seq_event] 26 2
+ [set_seq_event] 27 2
+ [set_seq_event] 28 2
+ [set_seq_event] 29 2
+ [set_seq_event] 30 2
+ [set_seq_event] 31 2
+ filter-by-channel off
+ [Reading user configuration /home/mathias/.config/sequencer64/sequencer64.usr]
+ [JACK server already started]
+ [JACK client:uuid is seq64_transport:24]
+ [JACK sync slave]
+ 15 rtmidi ports created:
+ Input ports (6):
+   [0] 0:1 system:announce (system)
+   [1] 14:0 Midi Through:Midi Through Port-0
+   [2] 20:0 Launchpad Pro:Launchpad Pro MIDI 1
+   [3] 20:1 Launchpad Pro:Launchpad Pro MIDI 2
+   [4] 20:2 Launchpad Pro:Launchpad Pro MIDI 3
+   [5] 133:0 KMidimon:KMidimon
+ Output ports (9):
+   [0] 14:0 Midi Through:Midi Through Port-0
+   [1] 20:0 Launchpad Pro:Launchpad Pro MIDI 1
+   [2] 20:1 Launchpad Pro:Launchpad Pro MIDI 2
+   [3] 20:2 Launchpad Pro:Launchpad Pro MIDI 3
+   [4] 128:0 TiMidity:TiMidity port 0
+   [5] 128:1 TiMidity:TiMidity port 1
+   [6] 128:2 TiMidity:TiMidity port 2
+   [7] 128:3 TiMidity:TiMidity port 3
+   [8] 133:0 KMidimon:KMidimon
+
+ [JACK sync enabled]
+ [JACK sync still enabled]
+ [JACK sync still enabled]
+
+   Maybe that's indended, but I can't see an output midi control out port
+   that I can connect the LaunchPad Pro to. Is seq64 suppose to handle this
+   internally?
+
+   [1]sequencer64.rc.txt
 
 
 

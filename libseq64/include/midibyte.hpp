@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2018-07-24
+ * \updates       2018-06-08
  * \license       GNU GPLv2 or above
  *
  *  These typedef specifications are intended to remove the ambiguity we have
@@ -97,6 +97,12 @@ typedef std::basic_string<midibyte> midistring;
  */
 
 typedef unsigned char bussbyte;
+
+/**
+ *  Provides a safer way to create a vector of booleans.
+ */
+
+typedef unsigned char midibool;
 
 /**
  *  Distinguishes a short value from the unsigned short values implicit in

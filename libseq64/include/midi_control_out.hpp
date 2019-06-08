@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Igor Angst
  * \date          2018-03-28
- * \updates       2019-06-07
+ * \updates       2019-06-08
  * \license       GNU GPLv2 or above
  *
  * The class contained in this file encapsulates most of the
@@ -37,6 +37,8 @@
  * the playing and queueing status of the sequences.
  *
  */
+
+#include <vector>                       /* std::vector<>                    */
 
 #include "globals.h"
 #include "mastermidibus.hpp"
@@ -129,6 +131,30 @@ public:
 
     } out_index;
 
+    /**
+     *  Provides a type to hold a MIDI-control-out event and its status.
+     */
+
+    typedef struct
+    {
+        event apt_action_event;
+        bool apt_action_status;
+
+    } action_pair_t;
+
+    /**
+     *
+     */
+
+    typedef std::vector<action_pair_t> actions; // [seq_action_max];
+
+    /**
+     *  Provides a type for a vector of action pairs, which can be essentially
+     *  unlimited in size.
+     */
+
+    typedef std::vector<actions> action_list;
+
 private:
 
     /**
@@ -149,27 +175,27 @@ private:
      *  Provides the events to be sent out for sequence status changes.
      */
 
-    event m_seq_event[SEQ64_MIDI_CONTROL_OUT_BUSS][seq_action_max];
+    action_list m_seq_event;            // event m_seq_event[32][seq_action_max];
 
     /**
      *  True if the respective sequence action is active (i.e. has
      *  been set in the configuration file).
-     */
 
-    bool m_seq_active[SEQ64_MIDI_CONTROL_OUT_BUSS][seq_action_max];
+    status_list m_seq_active;           // bool m_seq_active[32][seq_action_max];
+     */
 
     /**
      *  Provides the events to be sent out for non-sequence actions.
      */
 
-    event m_event[action_max];
+    action_pair_t m_event[action_max];  // event m_event[action_max];
+
+    // m_event_active[] too
 
     /**
      *  True if the respective action is active (i.e. has been set in
      *  the configuration file).
      */
-
-    bool m_event_active[action_max];
 
     /**
      *  Current screen set offset. Since the sequences dispatch the output
@@ -186,6 +212,8 @@ private:
 public:
 
     midi_control_out ();
+
+    void initialize (int count);
 
     void set_master_bus (mastermidibus * mmbus)
     {

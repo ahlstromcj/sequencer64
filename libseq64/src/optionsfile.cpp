@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-06-07
+ * \updates       2019-06-08
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1121,7 +1121,7 @@ optionsfile::write (const perform & p)
          */
 
         file
-            << "# Sequencer64 0.95.1 (and above) rc configuration file\n"
+            << "# Sequencer64 0.96.5 (and above) rc configuration file\n"
             << "#\n"
             << "# " << name() << "\n"
             << "# Written on " << current_date_time() << "\n"
@@ -2055,6 +2055,10 @@ optionsfile::write_midi_control
 
 #ifdef SEQ64_MIDI_CTRL_OUT
 
+/**
+ *
+ */
+
 void
 optionsfile::read_ctrl_event
 (
@@ -2065,20 +2069,40 @@ optionsfile::read_ctrl_event
 {
     if (next_data_line(file))
     {
-        int ev[5];
-        sscanf
-        (
-            m_line, "%d [ %d %d %d %d ]",
-            &ev[0], &ev[1], &ev[2], &ev[3], &ev[4]
-        );
-        mctrl->set_event(a, ev);
+        int v[5];
+        sscanf(m_line, "%d [%d %d %d %d]", &v[0], &v[1], &v[2], &v[3], &v[4]);
+        mctrl->set_event(a, v);
     }
     else
         (void) make_error_message("midi-control-out", "missing data");
 }
 
+/**
+ *
+ */
+
 void
-optionsfile::read_ctrl_event_pair
+optionsfile::write_ctrl_event
+(
+    std::ofstream & file,
+    midi_control_out * mctrl,
+    midi_control_out::action a
+)
+{
+    bool active = mctrl->event_is_active(a);
+    std::string activestr = mctrl->get_event_str(a);
+    file
+        << "# MIDI Control Out: " << action_to_string(a) << "\n"
+        << (active ? "1" : "0") << " " << activestr << "\n\n"
+        ;
+}
+
+/**
+ *
+ */
+
+void
+optionsfile::read_ctrl_pair
 (
     std::ifstream & file,
     midi_control_out * mctrl,
@@ -2091,7 +2115,7 @@ optionsfile::read_ctrl_event_pair
         int ev_on[5], ev_off[5];
         sscanf
         (
-            m_line, "%d [ %d %d %d %d ] [ %d %d %d %d ]",
+            m_line, "%d [%d %d %d %d] [%d %d %d %d]",
             &ev_on[0], &ev_on[1], &ev_on[2], &ev_on[3], &ev_on[4],
             &ev_off[1], &ev_off[2], &ev_off[3], &ev_off[4]
         );
@@ -2103,9 +2127,37 @@ optionsfile::read_ctrl_event_pair
         (void) make_error_message("midi-control-out", "missing data");
 }
 
+/**
+ *
+ */
+
+void
+optionsfile::write_ctrl_pair
+(
+    std::ofstream & file,
+    midi_control_out * mctrl,
+    midi_control_out::action a1,
+    midi_control_out::action a2
+)
+{
+    bool active = mctrl->event_is_active(a1);
+    std::string act1str = mctrl->get_event_str(a1);
+    std::string act2str = mctrl->get_event_str(a2);
+    file
+        << "# MIDI Control Out: " << action_to_string(a1) << "/opposite\n"
+        << (active ? "1" : "0") << " "
+        << act1str << " " << act2str << "\n\n"
+        ;
+}
+
+/**
+ *  It is not an error for the "[midi-contro-out]" section to be missing.
+ */
+
 bool
 optionsfile::parse_midi_control_out (const std::string & fname, perform & p)
 {
+    bool result = true;
     std::ifstream file(fname, std::ios::in | std::ios::ate);
     if (! file.is_open())
     {
@@ -2117,84 +2169,83 @@ optionsfile::parse_midi_control_out (const std::string & fname, perform & p)
      * [midi-control-out]
      */
 
-    line_after(file, "[midi-control-out]");
-
-    // Sequence actions
-
-    unsigned sequences = 0;                                 /* seq & ctrl #s */
-    sscanf(m_line, "%u", &sequences);
-    midi_control_out * mctrl = new midi_control_out();
-    for (unsigned i = 0; i < sequences; ++i)
+    if (line_after(file, "[midi-control-out]"))
     {
-        if (! next_data_line(file))
-            return make_error_message("midi-control-out", "no data");
+        // Sequence actions
 
-        int a[5], b[5], c[5], d[5];
-        int sequence = 0;
-        sscanf
+        unsigned sequences = 0;                                 /* seq & ctrl #s */
+        sscanf(m_line, "%u", &sequences);
+        midi_control_out * mctrl = new midi_control_out();
+        mctrl->initialize(sequences);
+        for (unsigned i = 0; i < sequences; ++i)
+        {
+            if (! next_data_line(file))
+                return make_error_message("midi-control-out", "no data");
+
+            int a[5], b[5], c[5], d[5];
+            int sequence = 0;
+            sscanf
+            (
+                m_line,
+                "%d [%d %d %d %d %d] [%d %d %d %d %d]"
+                " [%d %d %d %d %d] [%d %d %d %d %d]",
+                &sequence,
+                &a[0], &a[1], &a[2], &a[3], &a[4],
+                &b[0], &b[1], &b[2], &b[3], &b[4],
+                &c[0], &c[1], &c[2], &c[3], &c[4],
+                &d[0], &d[1], &d[2], &d[3], &d[4]
+            );
+            mctrl->set_seq_event(i, midi_control_out::seq_action_arm, a);
+            mctrl->set_seq_event(i, midi_control_out::seq_action_mute, b);
+            mctrl->set_seq_event(i, midi_control_out::seq_action_queue, c);
+            mctrl->set_seq_event(i, midi_control_out::seq_action_delete, d);
+        }
+
+        // Non-sequence actions
+
+        read_ctrl_event(file, mctrl, midi_control_out::action_play);
+        read_ctrl_event(file, mctrl, midi_control_out::action_stop);
+        read_ctrl_event(file, mctrl, midi_control_out::action_pause);
+        read_ctrl_pair
         (
-            m_line,
-            "%d [ %d %d %d %d %d ]"
-            " [ %d %d %d %d %d ]"
-            " [ %d %d %d %d %d ]"
-            " [ %d %d %d %d %d ]",
-            &sequence,
-            &a[0], &a[1], &a[2], &a[3], &a[4],
-            &b[0], &b[1], &b[2], &b[3], &b[4],
-            &c[0], &c[1], &c[2], &c[3], &c[4],
-            &d[0], &d[1], &d[2], &d[3], &d[4]
+            file, mctrl,
+            midi_control_out::action_queue_on,
+            midi_control_out::action_queue_off
         );
-        mctrl->set_seq_event(i, midi_control_out::seq_action_arm, a);
-        mctrl->set_seq_event(i, midi_control_out::seq_action_mute, b);
-        mctrl->set_seq_event(i, midi_control_out::seq_action_queue, c);
-        mctrl->set_seq_event(i, midi_control_out::seq_action_delete, d);
+        read_ctrl_pair
+        (
+            file, mctrl,
+            midi_control_out::action_oneshot_on,
+            midi_control_out::action_oneshot_off
+        );
+        read_ctrl_pair
+        (
+            file, mctrl,
+            midi_control_out::action_replace_on,
+            midi_control_out::action_replace_off
+        );
+        read_ctrl_pair
+        (
+            file, mctrl,
+            midi_control_out::action_snap1_store,
+            midi_control_out::action_snap1_restore
+        );
+        read_ctrl_pair
+        (
+            file, mctrl,
+            midi_control_out::action_snap2_store,
+            midi_control_out::action_snap2_restore
+        );
+        read_ctrl_pair
+        (
+            file, mctrl,
+            midi_control_out::action_learn_on,
+            midi_control_out::action_learn_off
+        );
+        result = ! is_error();
+        if (result)
+            p.set_midi_control_out(mctrl);
     }
-
-    // Non-sequence actions
-
-    read_ctrl_event(file, mctrl, midi_control_out::action_play);
-    read_ctrl_event(file, mctrl, midi_control_out::action_stop);
-    read_ctrl_event(file, mctrl, midi_control_out::action_pause);
-    read_ctrl_event_pair
-    (
-        file, mctrl,
-        midi_control_out::action_queue_on,
-        midi_control_out::action_queue_off
-    );
-    read_ctrl_event_pair
-    (
-        file, mctrl,
-        midi_control_out::action_oneshot_on,
-        midi_control_out::action_oneshot_off
-    );
-    read_ctrl_event_pair
-    (
-        file, mctrl,
-        midi_control_out::action_replace_on,
-        midi_control_out::action_replace_off
-    );
-    read_ctrl_event_pair
-    (
-        file, mctrl,
-        midi_control_out::action_snap1_store,
-        midi_control_out::action_snap1_restore
-    );
-    read_ctrl_event_pair
-    (
-        file, mctrl,
-        midi_control_out::action_snap2_store,
-        midi_control_out::action_snap2_restore
-    );
-    read_ctrl_event_pair
-    (
-        file, mctrl,
-        midi_control_out::action_learn_on,
-        midi_control_out::action_learn_off
-    );
-    bool result = ! is_error();
-    if (result)
-        p.set_midi_control_out(mctrl);
-
     return result;
 }
 
@@ -2210,6 +2261,8 @@ optionsfile::write_midi_control_out
 )
 {
     bool result = false;
+    midi_control_out * mco = p.get_midi_control_out();
+    int setsize = mco->screenset_size();
     file <<
         "\n"
         "[midi-control-out]\n"
@@ -2224,166 +2277,71 @@ optionsfile::write_midi_control_out
         "#   [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]\n"
         "#       Arm         Mute       Queue      Delete\n"
         "\n"
-        "32 # Number of sequences in set\n\n";
+        << setsize << "     # Number of sequences in a set\n\n";
 
-    for (int seq = 0; seq < SEQ64_DEFAULT_SET_SIZE; ++seq)
+    for (int seq = 0; seq < setsize; ++seq)
     {
         file << seq;
         for (int a = 0; a < midi_control_out::seq_action_max; ++a)
         {
-            event ev = p.get_midi_control_out()->get_seq_event
-            (
-                seq, (midi_control_out::seq_action) a
-            );
+            event ev = mco->get_seq_event(seq, (midi_control_out::seq_action) a);
             midibyte d0, d1;
-            bool eia = p.get_midi_control_out()->seq_event_is_active
-            (
-                seq, (midi_control_out::seq_action) a
-            );
+
+            /*
+             * bool eia = mco->seq_event_is_active
+             * (
+             *     seq, (midi_control_out::seq_action) a
+             * );
+             */
+
             ev.get_data(d0, d1);
             file
-                << unsigned(eia) << " "
+                << " ["
                 << unsigned(ev.get_channel()) << " "
                 << unsigned(ev.get_status()) << " "
                 << unsigned(d0) << " "
-                << unsigned(d1) << "]";
+                << unsigned(d1)
+                << "]"
+                ;
         }
         file << "\n";
     }
 
-    bool play = p.get_midi_control_out()->event_is_active
+    file << "\n";
+
+    write_ctrl_event(file, mco, midi_control_out::action_play);
+    write_ctrl_event(file, mco, midi_control_out::action_stop);
+    write_ctrl_event(file, mco, midi_control_out::action_pause);
+    write_ctrl_pair
     (
-        midi_control_out::action_play
-    );
-    std::string playstr = p.get_midi_control_out()->get_event_str
-    (
-        midi_control_out::action_play
-    );
-    bool stop = p.get_midi_control_out()->event_is_active
-    (
-        midi_control_out::action_stop
-    );
-    std::string stopstr = p.get_midi_control_out()->get_event_str
-    (
-        midi_control_out::action_stop
-    );
-    bool pause = p.get_midi_control_out()->event_is_active
-    (
-        midi_control_out::action_pause
-    );
-    std::string pausestr = p.get_midi_control_out()->get_event_str
-    (
-        midi_control_out::action_pause
-    );
-    bool queueon = p.get_midi_control_out()->event_is_active
-    (
-        midi_control_out::action_queue_on
-    );
-    std::string queueonstr = p.get_midi_control_out()->get_event_str
-    (
-        midi_control_out::action_queue_on
-    );
-    std::string queueoffstr = p.get_midi_control_out()->get_event_str
-    (
+        file, mco, midi_control_out::action_queue_on,
         midi_control_out::action_queue_off
     );
-    bool oneshoton = p.get_midi_control_out()->event_is_active
+    write_ctrl_pair
     (
-        midi_control_out::action_oneshot_on
-    );
-    std::string oneshotonstr = p.get_midi_control_out()->get_event_str
-    (
-        midi_control_out::action_oneshot_on
-    );
-    std::string oneshotoffstr = p.get_midi_control_out()->get_event_str
-    (
+        file, mco, midi_control_out::action_oneshot_on,
         midi_control_out::action_oneshot_off
     );
-    bool replaceon = p.get_midi_control_out()->event_is_active
+    write_ctrl_pair
     (
-        midi_control_out::action_replace_on
-    );
-    std::string replaceonstr = p.get_midi_control_out()->get_event_str
-    (
-        midi_control_out::action_replace_on
-    );
-    std::string replaceoffstr = p.get_midi_control_out()->get_event_str
-    (
+        file, mco, midi_control_out::action_replace_on,
         midi_control_out::action_replace_off
     );
-    bool snap1on = p.get_midi_control_out()->event_is_active
+    write_ctrl_pair
     (
-        midi_control_out::action_snap1_store
-    );
-    std::string snap1onstr = p.get_midi_control_out()->get_event_str
-    (
-        midi_control_out::action_snap1_store
-    );
-    std::string snap1restorestr = p.get_midi_control_out()->get_event_str
-    (
+        file, mco, midi_control_out::action_snap1_store,
         midi_control_out::action_snap1_restore
     );
-    bool snap2on = p.get_midi_control_out()->event_is_active
+    write_ctrl_pair
     (
-        midi_control_out::action_snap2_store
-    );
-    std::string snap2onstr = p.get_midi_control_out()->get_event_str
-    (
-        midi_control_out::action_snap2_store
-    );
-    std::string snap2restorestr = p.get_midi_control_out()->get_event_str
-    (
+        file, mco, midi_control_out::action_snap2_store,
         midi_control_out::action_snap2_restore
     );
-    bool learnon = p.get_midi_control_out()->event_is_active
+    write_ctrl_pair
     (
-        midi_control_out::action_learn_on
-    );
-    std::string learnonstr = p.get_midi_control_out()->get_event_str
-    (
-        midi_control_out::action_learn_on
-    );
-    std::string learnoffstr = p.get_midi_control_out()->get_event_str
-    (
+        file, mco, midi_control_out::action_learn_on,
         midi_control_out::action_learn_off
     );
-    file
-        << "\n"
-        << "# MIDI control output: play\n"
-        << (play ? "1 " : "0 ")
-        << playstr << "\n\n"
-        << "# MIDI control output: stop\n"
-        << (stop ? "1 " : "0 ")
-        << stopstr << "\n\n"
-        << "# MIDI control output: pause\n"
-        << (pause ? "1 " : "0 ")
-        << pausestr << "\n\n"
-        << "# MIDI control output: queue modifier on/off\n"
-        << (queueon ? "1 " : "0 ")
-        << queueonstr << " "
-        << queueoffstr << "\n\n"
-        << "# MIDI control output: oneshot modifier on/off\n"
-        << (oneshoton ? "1 " : "0 ")
-        << oneshotonstr << " "
-        << oneshotoffstr << "\n\n"
-        << "# MIDI control output: replace modifier on/off\n"
-        << (replaceon ? "1 " : "0 ")
-        << replaceonstr << " "
-        << replaceoffstr << "\n\n"
-        << "# MIDI control output: snapshot 1 store/restore\n"
-        << (snap1on ? "1 " : "0 ")
-        << snap1onstr << " "
-        << snap1restorestr << "\n\n"
-        << "\n# MIDI control output: snapshot 2 store/restore\n"
-        << (snap2on ? "1 " : "0 ")
-        << snap2onstr << " "
-        << snap2restorestr << "\n\n"
-        << "# MIDI control output: learn modifier on/off\n"
-        << (learnon ? "1 " : "0 ")
-        << learnonstr << " "
-        << learnoffstr << "\n\n"
-        ;
-
     return result;
 }
 

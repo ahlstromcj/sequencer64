@@ -123,11 +123,12 @@ public:
 
     typedef enum
     {
-        out_enabled   = 0,
-        out_channel   = 1,
-        out_status    = 2,
-        out_data_1    = 3,
-        out_data_2    = 4
+        out_enabled = 0,
+        out_channel = 1,
+        out_status  = 2,
+        out_data_1  = 3,
+        out_data_2  = 4,
+        out_max     = 5
 
     } out_index;
 
@@ -175,27 +176,24 @@ private:
      *  Provides the events to be sent out for sequence status changes.
      */
 
-    action_list m_seq_event;            // event m_seq_event[32][seq_action_max];
-
-    /**
-     *  True if the respective sequence action is active (i.e. has
-     *  been set in the configuration file).
-
-    status_list m_seq_active;           // bool m_seq_active[32][seq_action_max];
-     */
+    action_list m_seq_events;
 
     /**
      *  Provides the events to be sent out for non-sequence actions.
      */
 
-    action_pair_t m_event[action_max];  // event m_event[action_max];
-
-    // m_event_active[] too
+    action_pair_t m_event[action_max];
 
     /**
      *  True if the respective action is active (i.e. has been set in
      *  the configuration file).
      */
+
+    /**
+     *  Holds the screenset size, to use rather than calling the container.
+     */
+
+    int m_screenset_size;
 
     /**
      *  Current screen set offset. Since the sequences dispatch the output
@@ -218,6 +216,11 @@ public:
     void set_master_bus (mastermidibus * mmbus)
     {
         m_master_bus = mmbus;
+    }
+
+    int screenset_size () const
+    {
+        return m_screenset_size;
     }
 
     /**
@@ -384,6 +387,13 @@ public:
     bool event_is_active (action what) const;
 
 };          // class midi_control_out
+
+/*
+ *  Free functions related to midi_control_out.
+ */
+
+extern std::string seq_action_to_string (midi_control_out::seq_action a);
+extern std::string action_to_string (midi_control_out::action a);
 
 }           // namespace seq64
 

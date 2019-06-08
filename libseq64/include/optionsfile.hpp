@@ -73,9 +73,22 @@ public:
         midi_control_out * mctrl,
         midi_control_out::action a
     );
-    void read_ctrl_event_pair
+    void write_ctrl_event
+    (
+        std::ofstream & file,
+        midi_control_out * mctrl,
+        midi_control_out::action a
+    );
+    void read_ctrl_pair
     (
         std::ifstream & file,
+        midi_control_out * mctrl,
+        midi_control_out::action a1,
+        midi_control_out::action a2
+    );
+    void write_ctrl_pair
+    (
+        std::ofstream & file,
         midi_control_out * mctrl,
         midi_control_out::action a1,
         midi_control_out::action a2

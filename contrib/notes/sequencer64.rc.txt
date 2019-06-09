@@ -1,0 +1,596 @@
+# Sequencer64 0.94.0 (and above) rc configuration file
+#
+# This file holds the main configuration options for Sequencer64.
+# It follows the format of the legacy seq24 'rc' configuration
+# file, but adds some new options, such as LASH, Mod4 interaction
+# support, an auto-save-on-exit option, and more.  Also provided
+# is a legacy mode.
+#
+# The [comments] section lets one document this file.  Lines starting
+# with '#' and '[' are ignored.  Blank lines are ignored.  To show a
+# blank line, add a space character to the line.
+
+[comments]
+
+(Comments added to this section are preserved.  Lines starting with
+ a '#' or '[', or that are blank, are ignored.  Start lines that must
+ be blank with a space.)
+
+
+[midi-control]
+
+# The leftmost number on each line here is the pattern number, from
+# 0 to 31 (and beyond for the mute-groups). Next, there are three
+# groups of bracketed numbers that follow:
+#
+#    [toggle]  [on]  [off]
+#
+# In each group, there are six numbers:
+#
+#    [on/off invert status d0 d1min d1max]
+#
+# 'on/off' enables/disables (1/0) the MIDI control for the pattern.
+# 'invert' (1/0) causes the opposite if data is outside the range.
+# 'status' is by MIDI event to match (channel is NOT ignored).
+# 'd0' is the first data value.  Example: if status is 144 (Note On),
+# then d0 represents Note 0.
+# 'd1min'/'d1max' are the range of second values that should match.
+# Example:  For a Note On for note 0, 0 and 127 indicate that any
+# Note On velocity will cause the MIDI control to take effect.
+
+#     ------------------ on/off (indicate is the section is enabled)
+#    | ----------------- inverse
+#    | |  -------------- MIDI status (event) byte (e.g. note on)
+#    | | |  ------------ data 1 (e.g. note number)
+#    | | | |  ---------- data 2 min
+#    | | | | |  -------- data 2 max
+#    | | | | | |
+#    v v v v v v
+#   [0 0 0 0 0 0]   [0 0 0 0 0 0]   [0 0 0 0 0 0]
+#    Toggle          On              Off
+
+84      # MIDI controls count (74 or 84)
+
+# Pattern-group section:
+0 [1 0 144  81   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+1 [1 0 144  71   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+2 [1 0 144  61   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+3 [1 0 144  51   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+4 [1 0 144  41   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+5 [1 0 144  31   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+6 [1 0 144  21   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+7 [1 0 144  11   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+8 [1 0 144  82   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+9 [1 0 144  72   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+10 [1 0 144  62   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+11 [1 0 144  52   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+12 [1 0 144  42   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+13 [1 0 144  32   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+14 [1 0 144  22   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+15 [1 0 144  12   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+16 [1 0 144  83   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+17 [1 0 144  73   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+18 [1 0 144  63   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+19 [1 0 144  53   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+20 [1 0 144  43   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+21 [1 0 144  33   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+22 [1 0 144  23   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+23 [1 0 144  13   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+24 [1 0 144  84   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+25 [1 0 144  74   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+26 [1 0 144  64   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+27 [1 0 144  54   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+28 [1 0 144  44   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+29 [1 0 144  34   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+30 [1 0 144  24   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+31 [1 0 144  14   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+
+# Mute-in group section:
+32 [1 0 144  85   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+33 [1 0 144  75   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+34 [1 0 144  65   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+35 [1 0 144  55   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+36 [1 0 144  45   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+37 [1 0 144  35   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+38 [1 0 144  25   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+39 [1 0 144  15   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+40 [1 0 144  86   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+41 [1 0 144  76   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+42 [1 0 144  66   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+43 [1 0 144  56   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+44 [1 0 144  46   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+45 [1 0 144  36   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+46 [1 0 144  26   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+47 [1 0 144  16   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+48 [1 0 144  87   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+49 [1 0 144  77   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+50 [1 0 144  67   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+51 [1 0 144  57   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+52 [1 0 144  47   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+53 [1 0 144  37   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+54 [1 0 144  27   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+55 [1 0 144  17   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+56 [1 0 144  88   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+57 [1 0 144  78   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+58 [1 0 144  68   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+59 [1 0 144  58   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+60 [1 0 144  48   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+61 [1 0 144  38   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+62 [1 0 144  28   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+63 [1 0 144  18   0 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+
+# Automation group
+
+# bpm up:
+64 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# bpm down:
+65 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# screen set up:
+66 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# screen set down:
+67 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# mod replace:
+68 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# mod snapshot:
+69 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# mod queue:
+70 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# mod gmute:
+71 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# mod glearn:
+72 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# screen set play:
+73 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+
+# Extended MIDI controls:
+
+# start playback (pause, start, stop):
+74 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# performance record:
+75 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# solo (toggle, on, off):
+76 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI THRU (toggle, on, off):
+77 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# bpm page up:
+78 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# bpm page down:
+79 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# screen set by number:
+80 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI RECORD (toggle, on, off):
+81 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Quantized RECORD (toggle, on, off):
+82 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# oneshot mdifier (toggle, on, off):
+83 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+
+[midi-control-out]
+
+#    ------------------- on/off (indicate is the section is enabled)
+#    | ----------------- MIDI channel (0-15)
+#    | | --------------- MIDI status (event) byte (e.g. note on)
+#    | | | ------------- data 1 (e.g. note number)
+#    | | | | ----------- data 2 (e.g. velocity)
+#    | | | | |
+#    v v v v v
+#   [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+#       Arm         Mute       Queue      Delete
+
+32 # Number of sequences
+
+0 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 81 16] [0 0 0 0 0]
+1 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 71 16] [0 0 0 0 0]
+2 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 61 16] [0 0 0 0 0]
+3 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 51 16] [0 0 0 0 0]
+4 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 41 16] [0 0 0 0 0]
+5 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 31 16] [0 0 0 0 0]
+6 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 21 16] [0 0 0 0 0]
+7 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 11 16] [0 0 0 0 0]
+8 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 82 16] [0 0 0 0 0]
+9 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 72 16] [0 0 0 0 0]
+10 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 62 16] [0 0 0 0 0]
+11 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 52 16] [0 0 0 0 0]
+12 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 42 16] [0 0 0 0 0]
+13 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 32 16] [0 0 0 0 0]
+14 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 22 16] [0 0 0 0 0]
+15 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 12 16] [0 0 0 0 0]
+16 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 83 16] [0 0 0 0 0]
+17 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 73 16] [0 0 0 0 0]
+18 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 63 16] [0 0 0 0 0]
+19 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 53 16] [0 0 0 0 0]
+20 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 43 16] [0 0 0 0 0]
+21 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 33 16] [0 0 0 0 0]
+22 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 23 16] [0 0 0 0 0]
+23 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 13 16] [0 0 0 0 0]
+24 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 84 16] [0 0 0 0 0]
+25 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 74 16] [0 0 0 0 0]
+26 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 64 16] [0 0 0 0 0]
+27 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 54 16] [0 0 0 0 0]
+28 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 44 16] [0 0 0 0 0]
+29 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 34 16] [0 0 0 0 0]
+30 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 24 16] [0 0 0 0 0]
+31 [0 0 0 0 0] [0 0 0 0 0] [1 0 144 14 16] [0 0 0 0 0]
+
+# MIDI control output: play
+0 [0 0 0 0]
+
+# MIDI control output: stop
+0 [0 0 0 0]
+
+# MIDI control output: pause
+0 [0 0 0 0]
+
+# MIDI control output: queue modifier on/off
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI control output: oneshot modifier on/off
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI control output: replace modifier on/off
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI control output: snapshot 1 store/restore
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI control output: snapshot 2 store/restore
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI control output: learn modifier on/off
+0 [0 0 0 0] [0 0 0 0]
+
+[mute-group]
+
+# All mute-group values are saved in this 'rc' file, even if they
+# all are zero; but if all are zero, they will be stripped out from
+# the MIDI file by the new strip-empty-mutes functionality (a build
+# option).  This is less confusing to the user, who expects that
+# section to be intact.
+
+1024       # group mute count
+0 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+1 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+2 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+3 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+4 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+5 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+6 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+7 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+8 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+9 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+10 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+11 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+12 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+13 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+14 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+15 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+16 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+17 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+18 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+19 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+20 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+21 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+22 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+23 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+24 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+25 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+26 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+27 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+28 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+29 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+30 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+31 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+
+# Handling of mute-groups.  If set to 0, a legacy value, then
+# any mute-groups read from the MIDI file (whether modified or
+# not) are saved to the 'rc' file as well.  If set to 1, the
+# 'rc' mute-groups are overwritten only if they were not read
+# from the MIDI file.
+
+1     # preserve 'rc' mute-groups from MIDI mute groups
+
+[midi-clock]
+
+# The first line indicates the number of MIDI busses defined.
+# Each buss line contains the buss (re 0) and the clock status of
+# that buss.  0 = MIDI Clock is off; 1 = MIDI Clock on, and Song
+# Position and MIDI Continue will be sent, if needed; and 2 = MIDI
+# Clock Modulo, where MIDI clocking will not begin until the song
+# position reaches the start modulo value [midi-clock-mod-ticks].
+
+9    # number of MIDI clocks/busses
+
+# Output buss name: [0] 14:0 Midi Through Port-0
+0 0  # buss number, clock status
+# Output buss name: [1] 20:0 Launchpad Pro MIDI 1
+1 0  # buss number, clock status
+# Output buss name: [2] 20:1 Launchpad Pro MIDI 2
+2 0  # buss number, clock status
+# Output buss name: [3] 20:2 Launchpad Pro MIDI 3
+3 0  # buss number, clock status
+# Output buss name: [4] 128:0 TiMidity port 0
+4 0  # buss number, clock status
+# Output buss name: [5] 128:1 TiMidity port 1
+5 0  # buss number, clock status
+# Output buss name: [6] 128:2 TiMidity port 2
+6 0  # buss number, clock status
+# Output buss name: [7] 128:3 TiMidity port 3
+7 0  # buss number, clock status
+# Output buss name: [8] 133:0 KMidimon
+8 0  # buss number, clock status
+
+[midi-clock-mod-ticks]
+
+# The Song Position (in 16th notes) at which clocking will begin
+# if the buss is set to MIDI Clock mod setting.
+
+64
+
+[midi-meta-events]
+
+# This section defines some features of MIDI meta-event handling.
+# Normally, tempo events are supposed to occur in the first track
+# (pattern 0).  But one can move this track elsewhere to accomodate
+# one's existing body of tunes.  If affects where tempo events are
+# recorded.  The default value is 0, the maximum is 1023.
+# A pattern must exist at this number for it to work.
+
+0    # tempo_track_number
+
+[midi-input]
+
+6   # number of input MIDI busses
+
+# The first number is the port number, and the second number
+# indicates whether it is disabled (0), or enabled (1).
+
+# [0] 0:1 system:announce
+0 1
+# [1] 14:0 Midi Through Port-0
+1 1
+# [2] 20:0 Launchpad Pro MIDI 1
+2 1
+# [3] 20:1 Launchpad Pro MIDI 2
+3 0
+# [4] 20:2 Launchpad Pro MIDI 3
+4 0
+# [5] 133:0 KMidimon
+5 0
+
+# If set to 1, this option allows the master MIDI bus to record
+# (filter) incoming MIDI data by channel, allocating each incoming
+# MIDI event to the sequence that is set to that channel.
+# This is an option adopted from the Seq32 project at GitHub.
+
+0   # flag to record incoming data by channel
+
+[manual-alsa-ports]
+
+# Set to 1 to have sequencer64 create its own ALSA ports and not
+# connect to other clients.  Use 1 to expose all 16 MIDI ports to
+# JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports
+# already running on one's computer, or to use the autoconnect
+# feature (Sequencer64 connects to existing JACK ports on startup.
+
+0   # flag for manual ALSA ports
+
+[reveal-alsa-ports]
+
+# Set to 1 to have sequencer64 ignore any system port names
+# declared in the 'user' configuration file.  Use this option if
+# you want to be able to see the port names as detected by ALSA.
+
+0   # flag for reveal ALSA ports
+
+[interaction-method]
+
+# 0 - 'seq24' (original seq24 method)
+# 1 - 'fruity' (similar to a certain fruity sequencer we like)
+
+0   # interaction_method
+
+# Set to 1 to allow Sequencer64 to stay in note-adding mode when
+# the right-click is released while holding the Mod4 (Super or
+# Windows) key.
+
+0   # allow_mod4_mode
+
+# Set to 1 to allow Sequencer64 to split performance editor
+# triggers at the closest snap position, instead of splitting the
+# trigger exactly in its middle.  Remember that the split is
+# activated by a middle click.
+
+0   # allow_snap_split
+
+# Set to 1 to allow a double-click on a slot to bring it up in
+# the pattern editor.  This is the default.  Set it to 0 if
+# it interferes with muting/unmuting a pattern.
+
+1   # allow_click_edit
+
+[keyboard-control]
+
+32     # number of keys
+
+# Key #  Sequence #  Key name
+
+44  31   # comma
+49  0   # 1
+50  4   # 2
+51  8   # 3
+52  12   # 4
+53  16   # 5
+54  20   # 6
+55  24   # 7
+56  28   # 8
+97  2   # a
+98  19   # b
+99  11   # c
+100  10   # d
+101  9   # e
+102  14   # f
+103  18   # g
+104  22   # h
+105  29   # i
+106  26   # j
+107  30   # k
+109  27   # m
+110  23   # n
+113  1   # q
+114  13   # r
+115  6   # s
+116  17   # t
+117  25   # u
+118  15   # v
+119  5   # w
+120  7   # x
+121  21   # y
+122  3   # z
+
+[keyboard-group]
+
+32     # number of key groups
+
+# Key #  group # Key name
+
+33  0   # exclam
+34  1   # quotedbl
+35  2   # numbersign
+36  3   # dollar
+37  4   # percent
+38  5   # ampersand
+40  7   # parenleft
+47  6   # slash
+59  31   # semicolon
+65  16   # A
+66  28   # B
+67  26   # C
+68  18   # D
+69  10   # E
+70  19   # F
+71  20   # G
+72  21   # H
+73  15   # I
+74  22   # J
+75  23   # K
+77  30   # M
+78  29   # N
+81  8   # Q
+82  11   # R
+83  17   # S
+84  12   # T
+85  14   # U
+86  27   # V
+87  9   # W
+88  25   # X
+89  13   # Y
+90  24   # Z
+
+# bpm up and bpm down:
+39 59          # apostrophe semicolon
+# screen set up, screen set down, play:
+93 91 65360    # bracketright bracketleft Home
+# group on, group off, group learn:
+236 65535 65379   # igrave Delete Insert
+# replace, queue, snapshot_1, snapshot 2, keep queue:
+65429 111 65513 65514 92   # KP_Home o Alt_L Alt_R backslash
+1     # show_ui_sequence_key and seq measures (1 = true / 0 = false)
+32    # space start sequencer
+65307    # Escape stop sequencer
+46    # period pause sequencer
+0     # show sequence numbers (1 = true / 0 = false); ignored in legacy mode
+61    # equal is the shortcut key to bring up the pattern editor
+45    # minus is the shortcut key to bring up the event editor
+47    # slash shifts the hot-key so that it toggles pattern + 32
+
+[extended-keys]
+
+# The user interface for this section is Options / Ext Keys.
+
+65470    # F1 handles the Song/Live mode
+65471    # F2 handles the JACK mode
+65472    # F3 handles the menu mode
+65473    # F4 handles the following of JACK transport
+65475    # F6 handles the Fast-Forward function
+65474    # F5 handles Rewind function
+65476    # F7 handles song pointer-position function
+65478    # F9 emulates clicking the Tap (BPM) button
+65477    # F8 handles the toggling-all-pattern-mutes function
+80    # P toggles the song-record function
+112    # p toggles the one-shot queue function
+
+[jack-transport]
+
+# jack_transport - Enable slave synchronization with JACK Transport.
+# Also contains the new flag to use JACK MIDI.
+
+0   # with_jack_transport
+
+# jack_master - Sequencer64 attempts to serve as JACK Master.
+# Also must enable jack_transport (the user interface forces this,
+# and also disables jack_master_cond).
+
+0   # with_jack_master
+
+# jack_master_cond - Sequencer64 is JACK master if no other JACK
+# master exists. Also must enable jack_transport (the user interface
+# forces this, and disables jack_master).
+
+0   # with_jack_master_cond
+
+# song_start_mode (applies mainly if JACK is enabled).
+
+# 0 = Playback in live mode. Allows muting and unmuting of loops.
+#     from the main (patterns) window.  Disables both manual and
+#     automatic muting and unmuting from the performance window.
+# 1 = Playback uses the song (performance) editor's data and mute
+#     controls, regardless of which window was used to start the
+#     playback.
+
+0   # song_start_mode
+
+# jack_midi - Enable JACK MIDI, which is a separate option from
+# JACK Transport.
+
+0   # with_jack_midi
+
+[lash-session]
+
+# Set the following value to 0 to disable LASH session management.
+# Set the following value to 1 to enable LASH session management.
+# This value will have no effect if LASH support is not built into
+# the application.  Use --help option to see if LASH is part of
+# the options list.
+
+0     # LASH session management support flag
+
+[auto-option-save]
+
+# Set the following value to 0 to disable the automatic saving of the
+# current configuration to the 'rc' and 'user' files.  Set it to 1 to
+# follow legacy seq24 behavior of saving the configuration at exit.
+# Note that, if auto-save is set, many of the command-line settings,
+# such as the JACK/ALSA settings, are then saved to the configuration,
+# which can confuse one at first.  Also note that one currently needs
+# this option set to 1 to save the configuration, as there is not a
+# user-interface control for it at present.
+
+1     # auto-save-options-on-exit support flag
+
+[last-used-dir]
+
+# Last-used and currently-active directory:
+
+/home/mathias/Musik/seq64/
+
+[recent-files]
+
+# Holds a list of the last few recently-loaded MIDI files.
+
+1
+
+/home/mathias/Musik/seq64/test.midi
+
+# End of /home/mathias/.config/sequencer64/sequencer64.rc
+#
+# vim: sw=4 ts=4 wm=4 et ft=sh

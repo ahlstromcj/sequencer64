@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Igor Angst
  * \date          2018-03-28
- * \updates       2019-06-08
+ * \updates       2019-06-09
  * \license       GNU GPLv2 or above
  *
  * The class contained in this file encapsulates most of the
@@ -211,11 +211,16 @@ public:
 
     midi_control_out ();
 
-    void initialize (int count);
+    void initialize (int count, int buss = SEQ64_MIDI_CONTROL_OUT_BUSS);
 
     void set_master_bus (mastermidibus * mmbus)
     {
         m_master_bus = mmbus;
+    }
+
+    bussbyte buss () const
+    {
+        return m_buss;
     }
 
     int screenset_size () const

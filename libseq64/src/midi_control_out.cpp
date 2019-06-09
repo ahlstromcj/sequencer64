@@ -72,10 +72,14 @@ midi_control_out::midi_control_out ()
  * \param count
  *      The number of controls to allocate.  Normally, this is 32, but larger
  *      values can now be handled.
+ *
+ * \param buss
+ *      The buss number, which can range from 0 to 31, and defaults to
+ *      SEQ64_MIDI_CONTROL_OUT_BUSS (15).
  */
 
 void
-midi_control_out::initialize (int count)
+midi_control_out::initialize (int count, int buss)
 {
     static event s_dummy_event;
     actions actionstemp;
@@ -85,6 +89,9 @@ midi_control_out::initialize (int count)
     m_seq_events.clear();
     if (count > 0)
     {
+        if (buss >= 0 && buss < SEQ64_DEFAULT_BUSS_MAX)
+            m_buss = bussbyte(buss);
+
         m_screenset_size = count;
         for (int a = 0; a < seq_action_max; ++a)
             actionstemp.push_back(apt);     /* a blank action-pair vector */
@@ -210,6 +217,14 @@ midi_control_out::send_seq_event (int seq, seq_action what, bool flush)
             event ev = m_seq_events[seq][what].apt_action_event;
             if (not_nullptr(m_master_bus))
             {
+#ifdef PLATFORM_DEBUG_TMI
+                std::string act = seq_action_to_string(what);
+                std::string evstring = to_string(ev);
+                printf
+                (
+                    "send_seq_event(%s): %s\n", act.c_str(), evstring.c_str()
+                );
+#endif
                 m_master_bus->play(m_buss, &ev, ev.get_channel());
                 if (flush)
                     m_master_bus->flush();
@@ -297,6 +312,14 @@ midi_control_out::send_event (action what)
         event ev = m_event[what].apt_action_event;
         if (not_nullptr(m_master_bus))
         {
+#ifdef PLATFORM_DEBUG_TMI
+                std::string act = action_to_string(what);
+                std::string evstring = to_string(ev);
+                printf
+                (
+                    "send_event(%s): %s\n", act.c_str(), evstring.c_str()
+                );
+#endif
             m_master_bus->play(m_buss, &ev, ev.get_channel());
             m_master_bus->flush();
         }

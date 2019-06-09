@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-04
+ * \updates       2019-06-09
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -678,7 +678,7 @@ to_string (const event & ev)
     snprintf
     (
         temp, sizeof temp,
-        "[%04lu] status = 0x%02X; channel = 0x%02X; data = [0x%02X, 0x%02X]\n",
+        "[%04lu] status 0x%02X; ch. 0x%02X; data [0x%02X, 0x%02X]\n",
         ev.get_timestamp(), ev.get_status(), ev.get_channel(), d0, d1
     );
     result += std::string(temp);

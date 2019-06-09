@@ -1,21 +1,3 @@
-
-ahlstrom@mlsleno ~/.../ca/mls/git/forks/igor-angst-sequencer64
-midictrlout % git pull
-
-From https://github.com/igorangst/sequencer64
-   6119834e..ad996fa9  midictrlout -> origin/midictrlout
-Updating 6119834e..ad996fa9
-Fast-forward
- libseq64/include/midi_control.hpp     |   2 +-
- libseq64/include/midi_control_out.hpp |  40 +++++++++++-
- libseq64/src/midi_control_out.cpp     |  73 ++++++++++++++++-----
- libseq64/src/optionsfile.cpp          | 129 +++++++++++++++-----------------------
- libseq64/src/perform.cpp              |  88 ++++++++++++++++++++++++--
-
-Don't forget about Makefiles and configure.ac!
-
---------------------------------------
-
 From: mathiasfriman <notifications@github.com>
 To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
 Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Mention <mention@noreply.github.com>
@@ -415,62 +397,6 @@ my hardware. As far as I remember, 15 is the number of the (ALSA/Jack) output an
 does not refer to the MIDI channel.
 
 ------------
-
-Awesome!
-I'll change the m_buss(2) parameter in libseq64/src/midi_control_out.cpp back to
-m_buss(15) then. Wingin' it a bit... :)
-
-If I may make a wish list it would be to have the grid on the Launchpad Pro
-reflect the grid in Sequencer64, maybe with some sort of translation table
-between the default colors in Seq64:
-
-Red
-Green
-Yellow
-Blue
-Magenta
-White
-Dark red
-Dark Green
-Dark Yellow
-Dark Blue
-Dark Magenta
-Dark Cyan
-Orange
-Dark Orange
-
-That would (in my mind at least) allow for e.g. setting a 3-color scheme for the
-controllers that does not have full RGB-color LEDs, just by adjusting the color
-codes. Also, I would not use the Red and Green colors (why, I hope will be
-apparent below), and may want to translate them into some other colors instead.
-
-I would also like Sequencer64 to mimick the behaviour of the Launchpad when used
-with Ableton Live (which I have never done, just seen videos). That means that
-
-When queuing a sequence, it should be flashing green. (MIDI-Ch 2, NoteOn, Pad XX,
-Color)
-
-When playing a sequence, it should be pulsing green. (MIDI-Ch 3, NoteOn, Pad XX,
-Color)
-
-When arming a track to record, it should be flashing red. (MIDI-Ch 2, NoteOn, Pad
-XX, Color)
-
-When recording in a sequence, it should be pulsing red. (MIDI-Ch 3, NoteOn, Pad
-XX, Color)
-
-Stopping these requires a send of a (MIDI-Ch 1, NoteOn, Pad XX, Color) to the
-Launchpad Pro.
-
-It is also possible to light several LEDs with a single SysEx-message on the
-Launchpad Pro, further detailed in the programmers reference but that might not
-be a way forward for other controllers, so maybe it's best to stick with MIDI
-messages.
-
-Also, the pad note numbers seems to vary wildly even within the Launchpad family
-of controllers...
-
----------------
 
 I'm starting seq64 with the -j option to connect it to JACK transport and use
 JACK midi, not ALSA.

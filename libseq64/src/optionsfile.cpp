@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-06-08
+ * \updates       2019-06-09
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -2173,11 +2173,12 @@ optionsfile::parse_midi_control_out (const std::string & fname, perform & p)
     {
         // Sequence actions
 
-        unsigned sequences = 0;                                 /* seq & ctrl #s */
-        sscanf(m_line, "%u", &sequences);
+        int sequences = 0;                                 /* seq & ctrl #s */
+        int buss = SEQ64_MIDI_CONTROL_OUT_BUSS;
+        sscanf(m_line, "%d %d", &sequences, &buss);
         midi_control_out * mctrl = new midi_control_out();
-        mctrl->initialize(sequences);
-        for (unsigned i = 0; i < sequences; ++i)
+        mctrl->initialize(sequences, buss);
+        for (int i = 0; i < sequences; ++i)
         {
             if (! next_data_line(file))
                 return make_error_message("midi-control-out", "no data");
@@ -2263,6 +2264,7 @@ optionsfile::write_midi_control_out
     bool result = false;
     midi_control_out * mco = p.get_midi_control_out();
     int setsize = mco->screenset_size();
+    int buss = int(mco->buss());
     file <<
         "\n"
         "[midi-control-out]\n"
@@ -2277,14 +2279,18 @@ optionsfile::write_midi_control_out
         "#   [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]\n"
         "#       Arm         Mute       Queue      Delete\n"
         "\n"
-        << setsize << "     # Number of sequences in a set\n\n";
+        << setsize << " " << buss << "     # screenset size and output buss\n\n";
 
     for (int seq = 0; seq < setsize; ++seq)
     {
         file << seq;
         for (int a = 0; a < midi_control_out::seq_action_max; ++a)
         {
-            event ev = mco->get_seq_event(seq, (midi_control_out::seq_action) a);
+            event ev = mco->get_seq_event(seq, midi_control_out::seq_action(a));
+            bool active = mco->seq_event_is_active
+            (
+                seq, midi_control_out::seq_action(a)
+            );
             midibyte d0, d1;
 
             /*
@@ -2297,6 +2303,7 @@ optionsfile::write_midi_control_out
             ev.get_data(d0, d1);
             file
                 << " ["
+                << (active ? "1" : "0") << " "
                 << unsigned(ev.get_channel()) << " "
                 << unsigned(ev.get_status()) << " "
                 << unsigned(d0) << " "

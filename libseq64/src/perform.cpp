@@ -1277,10 +1277,9 @@ perform::unset_mode_group_learn ()
 #ifdef SEQ64_MIDI_CTRL_OUT
     m_midi_ctrl_out->send_event(midi_control_out::action_learn_off);
 #endif
+    m_mode_group_learn = false;
     for (size_t x = 0; x < m_notify.size(); ++x)
         m_notify[x]->on_grouplearnchange(false);
-
-    m_mode_group_learn = false;
 }
 
 /**
@@ -2663,11 +2662,12 @@ perform::set_screenset (int ss)
          * Tell control output about new screen-set.
          */
 
+        int setsize = m_midi_ctrl_out->screenset_size();
         m_midi_ctrl_out->set_screenset_offset(m_screenset_offset);
-        for (int i = 0; i < 32; ++i)
+        for (int i = 0; i < setsize; ++i)
         {
             int s = m_screenset_offset + i;
-            sequence *seq = get_sequence(s);
+            sequence * seq = get_sequence(s);
             if (not_nullptr(seq))
             {
                 if (seq->get_playing())

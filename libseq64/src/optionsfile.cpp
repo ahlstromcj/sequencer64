@@ -2345,7 +2345,7 @@ optionsfile::write_midi_control_out
     return result;
 }
 
-#endif
+#endif      // SEQ64_MIDI_CTRL_OUT
 
 }           // namespace seq64
 

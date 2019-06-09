@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Igor Angst
  * \date          2018-03-28
- * \updates       2019-06-08
+ * \updates       2019-06-09
  * \license       GNU GPLv2 or above
  *
  * The class contained in this file encapsulates most of the functionality to
@@ -279,7 +279,7 @@ midi_control_out::set_seq_event (int seq, seq_action what, int * eva)
  */
 
 bool
-midi_control_out::seq_event_is_active(int seq, seq_action what) const
+midi_control_out::seq_event_is_active (int seq, seq_action what) const
 {
     return (seq >= 0 && seq < usr().seqs_in_set()) ?
         m_seq_events[seq][what].apt_action_status : false ;
@@ -321,7 +321,7 @@ midi_control_out::get_event (action what) const
 std::string
 midi_control_out::get_event_str (action what) const
 {
-    if (event_is_active(what))
+    if (what < action_max)              /* not event_is_active(what)!!  */
     {
         event ev(m_event[what].apt_action_event);
         midibyte d0, d1;
@@ -372,7 +372,7 @@ midi_control_out::set_event (action what, int * eva)
         ev.set_status(eva[out_status]);
         ev.set_data(eva[out_data_1], eva[out_data_2]);
         m_event[what].apt_action_event = ev;
-        m_event[what].apt_action_status = eva[out_enabled];
+        m_event[what].apt_action_status = bool(eva[out_enabled]);
     }
 }
 

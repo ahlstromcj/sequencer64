@@ -403,7 +403,89 @@ Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
 
    [1]sequencer64.rc.txt
 
+-------------------------------------------------------
 
+Hi,
+I confirm that there is a problem with inactive entries not being saved and thus
+being reset to 0. It has been some time that I worked on this, and I'm really
+happy that there is somebody out there ready to give it a try with a real piece
+of hardware. I will try and fix this as soon as I can spare some time. It is
+quite possible that I didn't implement the channel, since I only use channel 1 in
+my hardware. As far as I remember, 15 is the number of the (ALSA/Jack) output and
+does not refer to the MIDI channel.
+
+------------
+
+Awesome!
+I'll change the m_buss(2) parameter in libseq64/src/midi_control_out.cpp back to
+m_buss(15) then. Wingin' it a bit... :)
+
+If I may make a wish list it would be to have the grid on the Launchpad Pro
+reflect the grid in Sequencer64, maybe with some sort of translation table
+between the default colors in Seq64:
+
+Red
+Green
+Yellow
+Blue
+Magenta
+White
+Dark red
+Dark Green
+Dark Yellow
+Dark Blue
+Dark Magenta
+Dark Cyan
+Orange
+Dark Orange
+
+That would (in my mind at least) allow for e.g. setting a 3-color scheme for the
+controllers that does not have full RGB-color LEDs, just by adjusting the color
+codes. Also, I would not use the Red and Green colors (why, I hope will be
+apparent below), and may want to translate them into some other colors instead.
+
+I would also like Sequencer64 to mimick the behaviour of the Launchpad when used
+with Ableton Live (which I have never done, just seen videos). That means that
+
+When queuing a sequence, it should be flashing green. (MIDI-Ch 2, NoteOn, Pad XX,
+Color)
+
+When playing a sequence, it should be pulsing green. (MIDI-Ch 3, NoteOn, Pad XX,
+Color)
+
+When arming a track to record, it should be flashing red. (MIDI-Ch 2, NoteOn, Pad
+XX, Color)
+
+When recording in a sequence, it should be pulsing red. (MIDI-Ch 3, NoteOn, Pad
+XX, Color)
+
+Stopping these requires a send of a (MIDI-Ch 1, NoteOn, Pad XX, Color) to the
+Launchpad Pro.
+
+It is also possible to light several LEDs with a single SysEx-message on the
+Launchpad Pro, further detailed in the programmers reference but that might not
+be a way forward for other controllers, so maybe it's best to stick with MIDI
+messages.
+
+Also, the pad note numbers seems to vary wildly even within the Launchpad family
+of controllers...
+
+---------------
+
+I'm starting seq64 with the -j option to connect it to JACK transport and use
+JACK midi, not ALSA.
+
+If in Sequencer64 I open a sequence and select MIDI Output Bus "[0] 0:0
+seq64:system midi_playback_1" and MIDI channel 1, 2 or 3 and connect that
+bus/port in Qjackctl to the writable/input port "system: midi_playback_2" I can
+light up the LaunchPad Pro buttons by playing/sending MIDI notes to it.
+
+However, I can't get anything to light up using the Launchpad Pro triggering
+patterns. They queue up and start playing, but not a single indication on the
+LPPro.
+
+Do I have to connect some ports in JACK to get it to work, or how do I go about
+it?
 
 -------------------------------------------------------
 

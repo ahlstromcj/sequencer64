@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2019-06-06
+ * \updates       2019-06-10
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -90,9 +90,9 @@
  *  be sent to a device like the Novation LaunchPad.
  *
  *  See https://github.com/igorangst/sequencer64
- */
 
-#define SEQ64_MIDI_CTRL_OUT     // experimental
+#define SEQ64_MIDI_CTRL_OUT     // permanent, a run-time option
+ */
 
 /**
  *  A better way to implement the Kepler34 sequence-color feature.  Here,

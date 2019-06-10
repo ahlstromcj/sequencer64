@@ -6,7 +6,7 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
 #ifndef SEQ64_VERSION_DATE_SHORT
-#define SEQ64_VERSION_DATE_SHORT "2019-04-27"
+#define SEQ64_VERSION_DATE_SHORT "2019-06-10"
 #endif
 #ifndef SEQ64_VERSION
 #define SEQ64_VERSION "0.96.5"

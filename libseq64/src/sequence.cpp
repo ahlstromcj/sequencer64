@@ -1110,7 +1110,6 @@ sequence::toggle_queued ()
     m_off_from_snap = true;
     set_dirty_mp();
 
-#ifdef SEQ64_MIDI_CTRL_OUT
     midi_control_out * mco = m_parent->get_midi_control_out();
     if (not_nullptr(mco))
     {
@@ -1121,7 +1120,6 @@ sequence::toggle_queued ()
         else
             mco->send_seq_event(number(), midi_control_out::seq_action_mute);
     }
-#endif
 }
 
 /**
@@ -4991,9 +4989,7 @@ void
 sequence::set_playing (bool p)
 {
     automutex locker(m_mutex);
-#ifdef SEQ64_MIDI_CTRL_OUT
     bool send_play = p ^ get_playing();
-#endif
     if (p != get_playing())
     {
         m_playing = p;
@@ -5011,7 +5007,6 @@ sequence::set_playing (bool p)
     }
     m_queued = false;
     m_one_shot = false;
-#ifdef SEQ64_MIDI_CTRL_OUT
     if (send_play)
     {
         midi_control_out * mco = m_parent->get_midi_control_out();
@@ -5024,7 +5019,6 @@ sequence::set_playing (bool p)
             );
         }
     }
-#endif
 }
 
 /**

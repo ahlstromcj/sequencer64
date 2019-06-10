@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2019-06-07
+dnl \update        2019-06-10
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -692,19 +692,20 @@ fi
 
 dnl Support for MIDI control output. If enabled, the macro
 dnl SEQ64_MIDI_CTRL_OUTPUT is defined.  From igorangst's GitHub fork of
-dnl Sequencer64.
+dnl Sequencer64.  Now a run-time option.
+dnl
+dnl AC_ARG_ENABLE(midictrlout,
+dnl     [AS_HELP_STRING(--enable-midictrlout, [Enable MIDI control output])],
+dnl     [midictrlout=$enableval],
+dnl     [midictrlout=no])
+dnl 
+dnl if test "$midictrlout" != "no"; then
+dnl     AC_DEFINE(MIDI_CTRL_OUT, 1, [Define to enable MIDI control output])
+dnl     AC_MSG_RESULT([MIDI control output enabled.]);
+dnl else
+dnl     AC_MSG_NOTICE([MIDI control output disabled.]);
+dnl fi
 
-AC_ARG_ENABLE(midictrlout,
-    [AS_HELP_STRING(--enable-midictrlout, [Enable MIDI control output])],
-    [midictrlout=$enableval],
-    [midictrlout=no])
-
-if test "$midictrlout" != "no"; then
-    AC_DEFINE(MIDI_CTRL_OUT, 1, [Define to enable MIDI control output])
-    AC_MSG_RESULT([MIDI control output enabled.]);
-else
-    AC_MSG_NOTICE([MIDI control output disabled.]);
-fi
 AM_CONDITIONAL([BUILD_ALSAMIDI], [test "$build_alsamidi" = "yes"])
 AM_CONDITIONAL([BUILD_QTMIDI], [test "$build_qtmidi" = "yes"])
 AM_CONDITIONAL([BUILD_RTMIDI], [test "$build_rtmidi" = "yes"])
@@ -718,7 +719,7 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2019-06-07"
+#define VERSION_DATE_SHORT "2019-06-10"
 #define VERSION "0.96.5"
 
 )

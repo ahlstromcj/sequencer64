@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Igor Angst
  * \date          2018-03-28
- * \updates       2019-06-09
+ * \updates       2019-06-10
  * \license       GNU GPLv2 or above
  *
  * The class contained in this file encapsulates most of the
@@ -182,12 +182,13 @@ private:
      *  Provides the events to be sent out for non-sequence actions.
      */
 
-    action_pair_t m_event[action_max];
+    action_pair_t m_events[action_max];
 
     /**
-     *  True if the respective action is active (i.e. has been set in
-     *  the configuration file).
+     *  Indicates that this container is "empty".
      */
+
+    bool m_is_blank;
 
     /**
      *  Holds the screenset size, to use rather than calling the container.
@@ -223,6 +224,11 @@ public:
         return m_buss;
     }
 
+    bool is_blank () const
+    {
+        return m_is_blank;
+    }
+
     int screenset_size () const
     {
         return m_screenset_size;
@@ -244,23 +250,23 @@ public:
      * Send out notification about playing status of a sequence.
      *
      * \param seq
-     *      The index of the sequence
+     *      The index of the sequence.
      *
      * \param what
-     *      The status action of the sequence
+     *      The status action of the sequence.
      *
      * \param flush
-     *      Flush MIDI buffer after sending (default true)
+     *      Flush MIDI buffer after sending (default true).
      */
 
-    void send_seq_event (int seq, seq_action what, bool flush = false);
+    void send_seq_event (int seq, seq_action what, bool flush = true);
 
     /**
      *  Clears all visible sequences by sending "delete" messages for all
-     *  sequences ranging from 0 to 31.
+     *  sequences ranging from 0 to screenset_size().
      */
 
-    void clear_sequences();
+    void clear_sequences ();
 
     /**
      * Getter for sequence action events.

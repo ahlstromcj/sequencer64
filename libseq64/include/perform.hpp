@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-02-06
+ * \updates       2019-06-10
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -935,15 +935,18 @@ private:
 
     midi_control m_midi_cc_off[c_midi_controls_extended];
 
-#ifdef SEQ64_MIDI_CTRL_OUT
-
     /**
      *  Provides the class encapsulating MIDI control output.
      */
 
     midi_control_out * m_midi_ctrl_out;
 
-#endif
+    /**
+     *  Indicates that the "[midi-control-out]" section is present but
+     *  disabled.
+     */
+
+    bool m_midi_ctrl_out_disabled;
 
     /**
      *  Holds the OR'ed control status values.  Need to learn more about this
@@ -3004,14 +3007,22 @@ private:
     void select_and_mute_group (int g_group);
     void set_song_mute (mute_op_t op);
     void set_playing_screenset ();
-
-#ifdef SEQ64_MIDI_CTRL_OUT
     void set_midi_control_out (midi_control_out * ctrl_out);
+
     midi_control_out * get_midi_control_out () const
     {
         return m_midi_ctrl_out;
     }
-#endif
+
+    bool midi_control_out_disabled () const
+    {
+        return m_midi_ctrl_out_disabled;
+    }
+
+    void midi_control_out_disabled (bool flag)
+    {
+        m_midi_ctrl_out_disabled = flag;
+    }
 
     /**
      * \setter m_mode_group

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-06-09
+ * \updates       2019-06-10
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1072,12 +1072,8 @@ optionsfile::parse_midi_control_section (const std::string & fname, perform & p)
     {
         warnprint("[midi-controls] specifies a count of 0, so skipped");
     }
-
-#ifdef SEQ64_MIDI_CTRL_OUT
     ok = parse_midi_control_out(fname, p);
-#endif
-
-    return true;
+    return ok;
 }
 
 /**
@@ -2047,13 +2043,9 @@ optionsfile::write_midi_control
         if (! result)
             break;
     }
-#ifdef SEQ64_MIDI_CTRL_OUT
     result = write_midi_control_out(p, file);
-#endif
     return result;
 }
-
-#ifdef SEQ64_MIDI_CTRL_OUT
 
 /**
  *
@@ -2175,7 +2167,16 @@ optionsfile::parse_midi_control_out (const std::string & fname, perform & p)
 
         int sequences = 0;                                 /* seq & ctrl #s */
         int buss = SEQ64_MIDI_CONTROL_OUT_BUSS;
-        sscanf(m_line, "%d %d", &sequences, &buss);
+        int enabled = 0;
+        sscanf(m_line, "%d %d %d", &sequences, &buss, &enabled);
+        if (enabled == 0)
+        {
+            p.midi_control_out_disabled(true);
+            return true;
+        }
+        else
+            p.midi_control_out_disabled(false);
+
         midi_control_out * mctrl = new midi_control_out();
         mctrl->initialize(sequences, buss);
         for (int i = 0; i < sequences; ++i)
@@ -2247,6 +2248,9 @@ optionsfile::parse_midi_control_out (const std::string & fname, perform & p)
         if (result)
             p.set_midi_control_out(mctrl);
     }
+    else
+        p.midi_control_out_disabled(false); /* will write a blank section   */
+
     return result;
 }
 
@@ -2268,6 +2272,10 @@ optionsfile::write_midi_control_out
 
     int setsize = mco->screenset_size();
     int buss = int(mco->buss());
+    bool disabled = p.midi_control_out_disabled();
+    if (! disabled && mco->is_blank())
+        disabled = true;
+
     file <<
         "\n"
         "[midi-control-out]\n"
@@ -2282,7 +2290,8 @@ optionsfile::write_midi_control_out
         "#   [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]\n"
         "#       Arm         Mute       Queue      Delete\n"
         "\n"
-        << setsize << " " << buss << "     # screenset size and output buss\n\n";
+        << setsize << " " << buss << " " << (disabled ? "0" : "1")
+        << "     # screenset size, output buss, enabled (1) /disabled (0)\n\n";
 
     for (int seq = 0; seq < setsize; ++seq)
     {
@@ -2354,8 +2363,6 @@ optionsfile::write_midi_control_out
     );
     return result;
 }
-
-#endif      // SEQ64_MIDI_CTRL_OUT
 
 }           // namespace seq64
 

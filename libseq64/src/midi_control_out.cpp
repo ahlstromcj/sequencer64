@@ -50,7 +50,8 @@ midi_control_out::midi_control_out ()
     m_master_bus        (nullptr),
     m_buss              (SEQ64_MIDI_CONTROL_OUT_BUSS),
     m_seq_events        (),             /* [32][seq_action_max] vector      */
-    m_event             (),             /* [action_max] vector              */
+    m_events            (),             /* [action_max] vector              */
+    m_is_blank          (true),
     m_screenset_size    (0),
     m_screenset_offset  (0)
 {
@@ -80,12 +81,15 @@ midi_control_out::midi_control_out ()
 void
 midi_control_out::initialize (int count, int buss)
 {
-    static event s_dummy_event;
+    event dummy_event;
     actions actionstemp;
     action_pair_t apt;
-    apt.apt_action_event = s_dummy_event;
+    dummy_event.set_status(0);
+    dummy_event.set_channel(0);
+    apt.apt_action_event = dummy_event;
     apt.apt_action_status = false;
     m_seq_events.clear();
+    m_is_blank = true;
     if (count > 0)
     {
         if (buss >= 0 && buss < SEQ64_DEFAULT_BUSS_MAX)
@@ -99,7 +103,7 @@ midi_control_out::initialize (int count, int buss)
             m_seq_events.push_back(actionstemp);
 
         for (int a = 0; a < action_max; ++a)
-            m_event[a] = apt;
+            m_events[a] = apt;
     }
     else
         m_screenset_size = 0;
@@ -268,6 +272,7 @@ midi_control_out::set_seq_event (int seq, seq_action what, event & ev)
 {
     m_seq_events[seq][what].apt_action_event = ev;
     m_seq_events[seq][what].apt_action_status = true;
+    m_is_blank = false;
 }
 
 /**
@@ -285,6 +290,7 @@ midi_control_out::set_seq_event (int seq, seq_action what, int * eva)
         ev.set_data(eva[out_data_1], eva[out_data_2]);
         m_seq_events[seq][what].apt_action_event = ev;
         m_seq_events[seq][what].apt_action_status = bool(eva[out_enabled]);
+        m_is_blank = false;
     }
 }
 
@@ -308,7 +314,7 @@ midi_control_out::send_event (action what)
 {
     if (event_is_active(what))
     {
-        event ev = m_event[what].apt_action_event;
+        event ev = m_events[what].apt_action_event;
         if (not_nullptr(m_master_bus))
         {
 #ifdef PLATFORM_DEBUG_TMI
@@ -333,7 +339,8 @@ event
 midi_control_out::get_event (action what) const
 {
     static event s_dummy_event;
-    return event_is_active(what) ? m_event[what].apt_action_event : s_dummy_event;
+    return event_is_active(what) ?
+        m_events[what].apt_action_event : s_dummy_event ;
 }
 
 /**
@@ -345,7 +352,7 @@ midi_control_out::get_event_str (action what) const
 {
     if (what < action_max)              /* not event_is_active(what)!!  */
     {
-        event ev(m_event[what].apt_action_event);
+        event ev(m_events[what].apt_action_event);
         midibyte d0, d1;
         ev.get_data(d0, d1);
         std::ostringstream str;
@@ -368,8 +375,9 @@ midi_control_out::set_event (action what, event & ev)
 {
     if (what < action_max)
     {
-        m_event[what].apt_action_event = ev;
-        m_event[what].apt_action_status = true;
+        m_events[what].apt_action_event = ev;
+        m_events[what].apt_action_status = true;
+        m_is_blank = false;
     }
 }
 
@@ -393,8 +401,8 @@ midi_control_out::set_event (action what, int * eva)
         ev.set_channel(eva[out_channel]);
         ev.set_status(eva[out_status]);
         ev.set_data(eva[out_data_1], eva[out_data_2]);
-        m_event[what].apt_action_event = ev;
-        m_event[what].apt_action_status = bool(eva[out_enabled]);
+        m_events[what].apt_action_event = ev;
+        m_events[what].apt_action_status = bool(eva[out_enabled]);
     }
 }
 
@@ -405,7 +413,7 @@ midi_control_out::set_event (action what, int * eva)
 bool
 midi_control_out::event_is_active (action what) const
 {
-    return what < action_max ?  m_event[what].apt_action_status : false;
+    return what < action_max ?  m_events[what].apt_action_status : false;
 }
 
 }           // namespace seq64

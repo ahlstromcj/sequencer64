@@ -2263,6 +2263,9 @@ optionsfile::write_midi_control_out
 {
     bool result = false;
     midi_control_out * mco = p.get_midi_control_out();
+    if (is_nullptr(mco))
+        return true;
+
     int setsize = mco->screenset_size();
     int buss = int(mco->buss());
     file <<

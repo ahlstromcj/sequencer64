@@ -1111,26 +1111,15 @@ sequence::toggle_queued ()
     set_dirty_mp();
 
 #ifdef SEQ64_MIDI_CTRL_OUT
-    if (m_queued)
+    midi_control_out * mco = m_parent->get_midi_control_out();
+    if (not_nullptr(mco))
     {
-        m_parent->get_midi_control_out()->send_seq_event
-        (
-            number(), midi_control_out::seq_action_queue
-        );
-    }
-    else if (get_playing())
-    {
-        m_parent->get_midi_control_out()->send_seq_event
-        (
-            number(), midi_control_out::seq_action_arm
-        );
-    }
-    else
-    {
-        m_parent->get_midi_control_out()->send_seq_event
-        (
-            number(), midi_control_out::seq_action_mute
-        );
+        if (m_queued)
+            mco->send_seq_event(number(), midi_control_out::seq_action_queue);
+        else if (get_playing())
+            mco->send_seq_event(number(), midi_control_out::seq_action_arm);
+        else
+            mco->send_seq_event(number(), midi_control_out::seq_action_mute);
     }
 #endif
 }
@@ -5025,11 +5014,15 @@ sequence::set_playing (bool p)
 #ifdef SEQ64_MIDI_CTRL_OUT
     if (send_play)
     {
-        m_parent->get_midi_control_out()->send_seq_event
-        (
-            number(), p ? midi_control_out::seq_action_arm :
-                midi_control_out::seq_action_mute
-        );
+        midi_control_out * mco = m_parent->get_midi_control_out();
+        if (not_nullptr(mco))
+        {
+            mco->send_seq_event
+            (
+                number(), p ? midi_control_out::seq_action_arm :
+                    midi_control_out::seq_action_mute
+            );
+        }
     }
 #endif
 }

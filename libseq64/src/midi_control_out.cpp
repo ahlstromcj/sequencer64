@@ -37,7 +37,6 @@
 #include <sstream>                      /* std::ostringstream class         */
 
 #include "midi_control_out.hpp"         /* seq64::midi_control_out class    */
-#include "settings.hpp"                 /* seq64::usr() settings accessor   */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -210,7 +209,7 @@ void
 midi_control_out::send_seq_event (int seq, seq_action what, bool flush)
 {
     seq -= m_screenset_offset;      // adjust relative to current screen-set
-    if (seq >= 0 && seq < usr().seqs_in_set())
+    if (seq >= 0 && seq < screenset_size())
     {
         if (m_seq_events[seq][what].apt_action_status)
         {
@@ -241,7 +240,7 @@ midi_control_out::send_seq_event (int seq, seq_action what, bool flush)
 void
 midi_control_out::clear_sequences ()
 {
-    for (int seq = 0; seq < usr().seqs_in_set(); ++seq)
+    for (int seq = 0; seq < screenset_size(); ++seq)
         send_seq_event(seq, midi_control_out::seq_action_delete, false);
 
     if (not_nullptr(m_master_bus))
@@ -256,7 +255,7 @@ event
 midi_control_out::get_seq_event (int seq, seq_action what) const
 {
     static event s_dummy_event;
-    return seq >= 0 && seq < usr().seqs_in_set() ?
+    return seq >= 0 && seq < screenset_size() ?
         m_seq_events[seq][what].apt_action_event : s_dummy_event;
 }
 
@@ -296,7 +295,7 @@ midi_control_out::set_seq_event (int seq, seq_action what, int * eva)
 bool
 midi_control_out::seq_event_is_active (int seq, seq_action what) const
 {
-    return (seq >= 0 && seq < usr().seqs_in_set()) ?
+    return (seq >= 0 && seq < screenset_size()) ?
         m_seq_events[seq][what].apt_action_status : false ;
 }
 

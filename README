@@ -1,6 +1,6 @@
 README for Sequencer64 0.96.5 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2019-06-08
+2015-09-10 to 2019-06-10
 
 Sequencer64 is a reboot of seq24, extending it with many new features.
 The heart of seq24 remains intact.  It is an old friend with a whole lot

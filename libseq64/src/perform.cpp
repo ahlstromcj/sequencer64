@@ -1254,7 +1254,8 @@ perform::set_mode_group_learn ()
     set_mode_group_mute();                              /* m_mode_group=true */
     m_mode_group_learn = true;
 #ifdef SEQ64_MIDI_CTRL_OUT
-    m_midi_ctrl_out->send_event(midi_control_out::action_learn_on);
+    if (not_nullptr(m_midi_ctrl_out))
+        m_midi_ctrl_out->send_event(midi_control_out::action_learn_on);
 #endif
     for (size_t x = 0; x < m_notify.size(); ++x)
         m_notify[x]->on_grouplearnchange(true);
@@ -1275,7 +1276,8 @@ void
 perform::unset_mode_group_learn ()
 {
 #ifdef SEQ64_MIDI_CTRL_OUT
-    m_midi_ctrl_out->send_event(midi_control_out::action_learn_off);
+    if (not_nullptr(m_midi_ctrl_out))
+        m_midi_ctrl_out->send_event(midi_control_out::action_learn_off);
 #endif
     m_mode_group_learn = false;
     for (size_t x = 0; x < m_notify.size(); ++x)
@@ -1753,8 +1755,14 @@ perform::install_sequence (sequence * seq, int seqnum)
             m_sequence_high = seqnum + 1;
 
 #ifdef SEQ64_MIDI_CTRL_OUT_DISABLED
-        m_midi_ctrl_out->send_seq_event(seqnum, midi_control_out::action_activate);
-#endif                         
+        if (not_nullptr(m_midi_ctrl_out))
+        {
+            m_midi_ctrl_out->send_seq_event
+            (
+                seqnum, midi_control_out::action_activate
+            );
+        }
+#endif
 
         result = true;                  /* a modification occurred  */
     }
@@ -1903,7 +1911,13 @@ perform::delete_sequence (int seq)
             modify();                               /* it is dirty, man     */
         }
 #ifdef SEQ64_MIDI_CTRL_OUT
-        m_midi_ctrl_out->send_seq_event(seq, midi_control_out::seq_action_delete);
+        if (not_nullptr(m_midi_ctrl_out))
+        {
+            m_midi_ctrl_out->send_seq_event
+            (
+                seq, midi_control_out::seq_action_delete
+            );
+        }
 #endif
     }
 }
@@ -2662,38 +2676,41 @@ perform::set_screenset (int ss)
          * Tell control output about new screen-set.
          */
 
-        int setsize = m_midi_ctrl_out->screenset_size();
-        m_midi_ctrl_out->set_screenset_offset(m_screenset_offset);
-        for (int i = 0; i < setsize; ++i)
+        if (not_nullptr(m_midi_ctrl_out))
         {
-            int s = m_screenset_offset + i;
-            sequence * seq = get_sequence(s);
-            if (not_nullptr(seq))
+            int setsize = m_midi_ctrl_out->screenset_size();
+            m_midi_ctrl_out->set_screenset_offset(m_screenset_offset);
+            for (int i = 0; i < setsize; ++i)
             {
-                if (seq->get_playing())
+                int s = m_screenset_offset + i;
+                sequence * seq = get_sequence(s);
+                if (not_nullptr(seq))
                 {
-                    m_midi_ctrl_out->send_seq_event
-                    (
-                        s, midi_control_out::seq_action_arm, false
-                    );
+                    if (seq->get_playing())
+                    {
+                        m_midi_ctrl_out->send_seq_event
+                        (
+                            s, midi_control_out::seq_action_arm, false
+                        );
+                    }
+                    else
+                    {
+                        m_midi_ctrl_out->send_seq_event
+                        (
+                            s, midi_control_out::seq_action_mute, false
+                        );
+                    }
                 }
                 else
                 {
                     m_midi_ctrl_out->send_seq_event
                     (
-                        s, midi_control_out::seq_action_mute, false
+                        s, midi_control_out::seq_action_delete, false
                     );
                 }
             }
-            else
-            {
-                m_midi_ctrl_out->send_seq_event
-                (
-                    s, midi_control_out::seq_action_delete, false
-                );
-            }
+            m_master_bus->flush();
         }
-        m_master_bus->flush();
 #endif
     }
     return m_screenset;
@@ -3117,7 +3134,8 @@ perform::pause_playing (bool songmode)
         m_start_from_perfedit = false;      /* act like stop_playing()      */
     }
 #ifdef SEQ64_MIDI_CTRL_OUT
-    m_midi_ctrl_out->send_event(midi_control_out::action_pause);
+    if (not_nullptr(m_midi_ctrl_out))
+        m_midi_ctrl_out->send_event(midi_control_out::action_pause);
 #endif
 }
 
@@ -3269,7 +3287,8 @@ perform::inner_start (bool songmode)
         m_condition_var.signal();
     }
 #ifdef SEQ64_MIDI_CTRL_OUT
-    m_midi_ctrl_out->send_event(midi_control_out::action_play);
+    if (not_nullptr(m_midi_ctrl_out))
+        m_midi_ctrl_out->send_event(midi_control_out::action_play);
 #endif
     m_condition_var.unlock();
 }
@@ -3297,7 +3316,8 @@ perform::inner_stop (bool midiclock)
     reset_sequences();
     m_usemidiclock = midiclock;
 #ifdef SEQ64_MIDI_CTRL_OUT
-    m_midi_ctrl_out->send_event(midi_control_out::action_stop);
+    if (not_nullptr(m_midi_ctrl_out))
+        m_midi_ctrl_out->send_event(midi_control_out::action_stop);
 #endif
 }
 
@@ -5846,17 +5866,20 @@ perform::set_sequence_control_status (int status)
     m_control_status |= status;
 
 #ifdef SEQ64_MIDI_CTRL_OUT
-    if (status | c_status_queue)
-        m_midi_ctrl_out->send_event(midi_control_out::action_queue_on);
+    if (not_nullptr(m_midi_ctrl_out))
+    {
+        if (status | c_status_queue)
+            m_midi_ctrl_out->send_event(midi_control_out::action_queue_on);
 
-    if (status | c_status_oneshot)
-        m_midi_ctrl_out->send_event(midi_control_out::action_oneshot_on);
+        if (status | c_status_oneshot)
+            m_midi_ctrl_out->send_event(midi_control_out::action_oneshot_on);
 
-    if (status | c_status_replace)
-        m_midi_ctrl_out->send_event(midi_control_out::action_replace_on);
+        if (status | c_status_replace)
+            m_midi_ctrl_out->send_event(midi_control_out::action_replace_on);
 
-    if (status | c_status_snapshot)
-        m_midi_ctrl_out->send_event(midi_control_out::action_snap1_store);
+        if (status | c_status_snapshot)
+            m_midi_ctrl_out->send_event(midi_control_out::action_snap1_store);
+    }
 #endif
 }
 
@@ -5884,17 +5907,20 @@ perform::unset_sequence_control_status (int status)
     m_control_status &= ~status;
 
 #ifdef SEQ64_MIDI_CTRL_OUT
-    if (status | c_status_queue)
-        m_midi_ctrl_out->send_event(midi_control_out::action_queue_off);
+    if (not_nullptr(m_midi_ctrl_out))
+    {
+        if (status | c_status_queue)
+            m_midi_ctrl_out->send_event(midi_control_out::action_queue_off);
 
-    if (status | c_status_oneshot)
-        m_midi_ctrl_out->send_event(midi_control_out::action_oneshot_off);
+        if (status | c_status_oneshot)
+            m_midi_ctrl_out->send_event(midi_control_out::action_oneshot_off);
 
-    if (status | c_status_replace)
-        m_midi_ctrl_out->send_event(midi_control_out::action_replace_off);
+        if (status | c_status_replace)
+            m_midi_ctrl_out->send_event(midi_control_out::action_replace_off);
 
-    if (status | c_status_snapshot)
-        m_midi_ctrl_out->send_event(midi_control_out::action_snap1_restore);
+        if (status | c_status_snapshot)
+            m_midi_ctrl_out->send_event(midi_control_out::action_snap1_restore);
+    }
 #endif
 }
 

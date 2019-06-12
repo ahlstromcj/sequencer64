@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-02-05
+ * \updates       2019-06-12
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -6174,7 +6174,7 @@ sequence::handle_edit_action (int action, int var)
         push_quantize(m_status, m_cc, m_snap, 2);
         break;
 
-    case c_transpose:                           /* regular transpose    */
+    case c_transpose_notes:                     /* regular transpose    */
         transpose_notes(var, 0);
         set_dirty();                            /* updates perfedit     */
         break;

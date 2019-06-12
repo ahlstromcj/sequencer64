@@ -2168,8 +2168,8 @@ optionsfile::parse_midi_control_out (const std::string & fname, perform & p)
         int sequences = 0;                                 /* seq & ctrl #s */
         int buss = SEQ64_MIDI_CONTROL_OUT_BUSS;
         int enabled = 0;
-        sscanf(m_line, "%d %d %d", &sequences, &buss, &enabled);
-        if (enabled == 0)
+        int count = sscanf(m_line, "%d %d %d", &sequences, &buss, &enabled);
+        if (enabled == 0 && count == 3)
         {
             p.midi_control_out_disabled(true);
             return true;

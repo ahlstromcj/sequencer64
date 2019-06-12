@@ -84,8 +84,7 @@ midi_control_out::initialize (int count, int buss)
     event dummy_event;
     actions actionstemp;
     action_pair_t apt;
-    dummy_event.set_status(0);
-    dummy_event.set_channel(0);
+    dummy_event.set_status(0, 0);           /* set status and channel       */
     apt.apt_action_event = dummy_event;
     apt.apt_action_status = false;
     m_seq_events.clear();
@@ -97,7 +96,7 @@ midi_control_out::initialize (int count, int buss)
 
         m_screenset_size = count;
         for (int a = 0; a < seq_action_max; ++a)
-            actionstemp.push_back(apt);     /* a blank action-pair vector */
+            actionstemp.push_back(apt);     /* a blank action-pair vector   */
 
         for (int c = 0; c < count; ++c)
             m_seq_events.push_back(actionstemp);
@@ -276,7 +275,11 @@ midi_control_out::set_seq_event (int seq, seq_action what, event & ev)
 }
 
 /**
- *
+ * \tricky
+ *      We have to call the overloaded two-parameter version of set_status()
+ *      in lieu of calling set_status() and set_channel(), because the
+ *      single-parameter set_status() assumes the channel nybble is present.
+ *      This is too tricky.
  */
 
 void
@@ -285,8 +288,7 @@ midi_control_out::set_seq_event (int seq, seq_action what, int * eva)
     if (what < seq_action_max)
     {
         event ev;
-        ev.set_channel(eva[out_channel]);
-        ev.set_status(eva[out_status]);
+        ev.set_status(eva[out_status], eva[out_channel]);   /* tricky */
         ev.set_data(eva[out_data_1], eva[out_data_2]);
         m_seq_events[seq][what].apt_action_event = ev;
         m_seq_events[seq][what].apt_action_status = bool(eva[out_enabled]);
@@ -398,8 +400,7 @@ midi_control_out::set_event (action what, int * eva)
     if (what < action_max)
     {
         event ev;
-        ev.set_channel(eva[out_channel]);
-        ev.set_status(eva[out_status]);
+        ev.set_status(eva[out_status], eva[out_channel]);   /* tricky */
         ev.set_data(eva[out_data_1], eva[out_data_2]);
         m_events[what].apt_action_event = ev;
         m_events[what].apt_action_status = bool(eva[out_enabled]);

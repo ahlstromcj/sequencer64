@@ -2636,6 +2636,7 @@ public:
     bool is_exportable (int seq) const;
     bool needs_update (int seq = -1);
     int set_screenset (int ss);
+    void announce_playscreen ();
 
     /**
      * \getter m_screenset

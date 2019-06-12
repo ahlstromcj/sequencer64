@@ -555,6 +555,8 @@ perform::launch (int ppqn)
             launch_input_thread();
             launch_output_thread();
         }
+        if (not_nullptr(m_midi_ctrl_out))
+            announce_playscreen();
     }
 }
 
@@ -1462,6 +1464,47 @@ perform::mute_all_tracks (bool flag)
 }
 
 /**
+ * 3 colors?
+ */
+
+void
+perform::announce_playscreen ()
+{
+    int setsize = m_midi_ctrl_out->screenset_size();
+    m_midi_ctrl_out->set_screenset_offset(m_screenset_offset);
+    for (int i = 0; i < setsize; ++i)
+    {
+        int s = m_screenset_offset + i;
+        sequence * seq = get_sequence(s);
+        if (not_nullptr(seq))
+        {
+            if (seq->get_playing())
+            {
+                m_midi_ctrl_out->send_seq_event
+                (
+                    s, midi_control_out::seq_action_arm, false
+                );
+            }
+            else
+            {
+                m_midi_ctrl_out->send_seq_event
+                (
+                    s, midi_control_out::seq_action_mute, false
+                );
+            }
+        }
+        else
+        {
+            m_midi_ctrl_out->send_seq_event
+            (
+                s, midi_control_out::seq_action_delete, false
+            );
+        }
+        m_master_bus->flush();
+    }
+}
+
+/**
  *  Toggles the mutes status of all tracks in the current set of active
  *  patterns/sequences.  Covers tracks from 0 to m_sequence_max.
  *
@@ -1590,14 +1633,17 @@ perform::set_song_mute (mute_op_t op)
     switch (op)
     {
     case MUTE_ON:
+
         mute_all_tracks(true);
         break;
 
     case MUTE_OFF:
+
         mute_all_tracks(false);
         break;
 
     case MUTE_TOGGLE:
+
         toggle_all_tracks();
         break;
     }
@@ -1761,7 +1807,7 @@ perform::install_sequence (sequence * seq, int seqnum)
         if (seqnum >= m_sequence_high)
             m_sequence_high = seqnum + 1;
 
-#ifdef USE_THIS_MIDI_CONTROL_OUT_VALUE  // not present
+#ifdef USE_MIDI_CONTROL_OUT_ACTIVE                          // not present
         if (not_nullptr(m_midi_ctrl_out))
         {
             m_midi_ctrl_out->send_seq_event
@@ -2676,40 +2722,7 @@ perform::set_screenset (int ss)
          */
 
         if (not_nullptr(m_midi_ctrl_out))
-        {
-            int setsize = m_midi_ctrl_out->screenset_size();
-            m_midi_ctrl_out->set_screenset_offset(m_screenset_offset);
-            for (int i = 0; i < setsize; ++i)
-            {
-                int s = m_screenset_offset + i;
-                sequence * seq = get_sequence(s);
-                if (not_nullptr(seq))
-                {
-                    if (seq->get_playing())
-                    {
-                        m_midi_ctrl_out->send_seq_event
-                        (
-                            s, midi_control_out::seq_action_arm, false
-                        );
-                    }
-                    else
-                    {
-                        m_midi_ctrl_out->send_seq_event
-                        (
-                            s, midi_control_out::seq_action_mute, false
-                        );
-                    }
-                }
-                else
-                {
-                    m_midi_ctrl_out->send_seq_event
-                    (
-                        s, midi_control_out::seq_action_delete, false
-                    );
-                }
-            }
-            m_master_bus->flush();
-        }
+            announce_playscreen();
     }
     return m_screenset;
 }

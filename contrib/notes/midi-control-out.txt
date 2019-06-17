@@ -415,3 +415,75 @@ it?
 
 -------------------------------------------------------
 
+From: mathiasfriman <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Mention <mention@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] midi control out (#58)
+
+[-- Autoview using elinks -dump '/tmp/mutt.html' --]
+   I've used the last commit [1]de91c4e and the midi channel output works! I
+   can now arm, mute and queue sequences like a boss. When I queue a non
+   playing track, the pad flashes yellow, and then turns pulsating green when
+   playing. If I mute a playing sequence with queueing enabled, the pad pulse
+   green and occasionally flashes yellow, until it is muted. Instant
+   feedback.
+
+   That is so awesomely cool I can hardly keep myself from jumping up and
+   down :)
+
+   My midi-control-out section looks a lot like this. 16 is Green, 0 is Off,
+   12 is yellow.
+
+   arm, mute, queue
+
+ 0 [1 2 144 81 16] [1 0 144 81 0] [1 1 144 81 12] [0 0 0 0 0]
+ 1 [1 2 144 71 16] [1 0 144 71 0] [1 1 144 71 12] [0 0 0 0 0]
+
+   Started with
+
+ ./seq64 -j -t --option sets=8x8
+
+   and tested the whole 64 grid. I have some weirdness with the mute groups,
+   but the controls work flawlessly. Good work [2]@ahlstromcj and
+   [3]@igorangst :)
+
+   I find that on a grid of 8x8, one needs to check the computer screen for
+   which pads to press since they are all unlit when not being played,
+   regardless if they contain a sequence or not.
+
+   For displaying sequences with some MIDI data in them to work on the
+   Launchpad Pro, sequencer64 needs to send a NoteOn (144) to MIDI channel 1
+   for the corresponding pad with a color value != 0
+
+      Color       Midi-command
+   Red          [1 0 144 XX 72]
+   Green        [1 0 144 XX 76]
+   Yellow       [1 0 144 XX 113]
+   Blue         [1 0 144 XX 79]
+   Magenta      [1 0 144 XX 53]
+   White        [1 0 144 XX 3]
+   Dark red     [1 0 144 XX 120]
+   Dark Green   [1 0 144 XX 18]
+   Dark Yellow  [1 0 144 XX 124]
+   Dark Blue    [1 0 144 XX 46]
+   Dark Magenta [1 0 144 XX 54]
+   Dark Cyan    [1 0 144 XX 77]
+   Orange       [1 0 144 XX 96]
+   Dark Orange  [1 0 144 XX 9]
+   OFF          [1 0 144 XX 0]
+
+   If one would to this for each sequence when a new midi file is loaded or a
+   sequence is created in the GUI, it would definitely be enough for my
+   purposes at least. I would be more than happy with a monochrome
+   visualization too :)
+
+   The "mute" command in [midi-control-out] in the .rc file would also need
+   to be replaced with the above command, since it can only send one color
+   value (= velocity). Instead of just sending [1 0 144 XX 0] for each pad,
+   it would have to take the color value of the sequence i Sequencer64 into
+   account when sending the mute.
+
+   But that's for another day. For now, I just want to say how grateful I am
+   that you guys put so much effort into this wonderful piece of software! :)
+
+

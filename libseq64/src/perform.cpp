@@ -5868,21 +5868,16 @@ perform::set_sequence_control_status (int status)
     m_control_status |= status;
     if (not_nullptr(m_midi_ctrl_out))
     {
-        /*
-         * TODO:  I think these should be "&"!  Test, change them, then test
-         *        again!!!
-         */
-
-        if (status | c_status_queue)
+        if (status & c_status_queue)
             m_midi_ctrl_out->send_event(midi_control_out::action_queue_on);
 
-        if (status | c_status_oneshot)
+        if (status & c_status_oneshot)
             m_midi_ctrl_out->send_event(midi_control_out::action_oneshot_on);
 
-        if (status | c_status_replace)
+        if (status & c_status_replace)
             m_midi_ctrl_out->send_event(midi_control_out::action_replace_on);
 
-        if (status | c_status_snapshot)
+        if (status & c_status_snapshot)
             m_midi_ctrl_out->send_event(midi_control_out::action_snap1_store);
     }
 }
@@ -5911,21 +5906,16 @@ perform::unset_sequence_control_status (int status)
     m_control_status &= ~status;
     if (not_nullptr(m_midi_ctrl_out))
     {
-        /*
-         * TODO:  I think these should be "&"!  Test, change them, then test
-         *        again!!!
-         */
-
-        if (status | c_status_queue)
+        if (status & c_status_queue)
             m_midi_ctrl_out->send_event(midi_control_out::action_queue_off);
 
-        if (status | c_status_oneshot)
+        if (status & c_status_oneshot)
             m_midi_ctrl_out->send_event(midi_control_out::action_oneshot_off);
 
-        if (status | c_status_replace)
+        if (status & c_status_replace)
             m_midi_ctrl_out->send_event(midi_control_out::action_replace_off);
 
-        if (status | c_status_snapshot)
+        if (status & c_status_snapshot)
             m_midi_ctrl_out->send_event(midi_control_out::action_snap1_restore);
     }
 }

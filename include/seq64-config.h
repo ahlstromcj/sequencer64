@@ -19,7 +19,7 @@
 
 /* Names this version of application */
 #ifndef SEQ64_APP_NAME
-#define SEQ64_APP_NAME "seq64"
+#define SEQ64_APP_NAME "qseq64"
 #endif
 
 /* "The name to display as client/port" */
@@ -29,7 +29,7 @@
 
 /* Configuration file name */
 #ifndef SEQ64_CONFIG_NAME
-#define SEQ64_CONFIG_NAME "sequencer64"
+#define SEQ64_CONFIG_NAME "qseq64"
 #endif
 
 /* Define COVFLAGS=-fprofile-arcs -ftest-coverage if coverage support is
@@ -80,14 +80,10 @@
 #endif
 
 /* Define to 1 if you have the `gtkmm-2.4' library (-lgtkmm-2.4). */
-#ifndef SEQ64_HAVE_LIBGTKMM_2_4
-#define SEQ64_HAVE_LIBGTKMM_2_4 1
-#endif
+/* #undef HAVE_LIBGTKMM_2_4 */
 
 /* Define to 1 if you have the `sigc-2.0' library (-lsigc-2.0). */
-#ifndef SEQ64_HAVE_LIBSIGC_2_0
-#define SEQ64_HAVE_LIBSIGC_2_0 1
-#endif
+/* #undef HAVE_LIBSIGC_2_0 */
 
 /* Define to 1 if you have the <limits.h> header file. */
 #ifndef SEQ64_HAVE_LIMITS_H

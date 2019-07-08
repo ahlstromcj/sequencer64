@@ -1025,11 +1025,11 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 
 #ifdef SEQ64_USE_BUILTIN_PALETTE
 
-            int firstcolor = int(SEQ64_COLOR_INT(NONE));
-            int lastcolor = int(SEQ64_COLOR_INT(GREY));
+            int firstcolor = SEQ64_COLOR_INT(NONE);
+            int lastcolor = SEQ64_COLOR_INT(GREY);
             for (int c = firstcolor; c <= lastcolor; ++c)
             {
-                if (c != int(SEQ64_COLOR_INT(BLACK)))
+                if (c != SEQ64_COLOR_INT(BLACK))
                 {
                     PaletteColor pc = PaletteColor(c);
                     QString cname = get_color_name(pc).c_str();     // for now
@@ -1044,8 +1044,8 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
             }
 
             QMenu * submenuColour = new QMenu(tr("More colors"));
-            firstcolor = int(SEQ64_COLOR_INT(DK_RED));
-            lastcolor = int(SEQ64_COLOR_INT(DK_GREY));
+            firstcolor = SEQ64_COLOR_INT(DK_RED);
+            lastcolor = SEQ64_COLOR_INT(DK_GREY);
             for (int c = firstcolor; c <= lastcolor; ++c)
             {
                 PaletteColor pc = PaletteColor(c);

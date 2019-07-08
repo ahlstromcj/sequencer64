@@ -5872,6 +5872,11 @@ perform::set_sequence_control_status (int status)
     m_control_status |= status;
     if (not_nullptr(m_midi_ctrl_out))
     {
+        /*
+         * TODO:  I think these should be "&"!  Test, change them, then test
+         *        again!!!
+         */
+
         if (status | c_status_queue)
             m_midi_ctrl_out->send_event(midi_control_out::action_queue_on);
 
@@ -5910,6 +5915,11 @@ perform::unset_sequence_control_status (int status)
     m_control_status &= ~status;
     if (not_nullptr(m_midi_ctrl_out))
     {
+        /*
+         * TODO:  I think these should be "&"!  Test, change them, then test
+         *        again!!!
+         */
+
         if (status | c_status_queue)
             m_midi_ctrl_out->send_event(midi_control_out::action_queue_off);
 

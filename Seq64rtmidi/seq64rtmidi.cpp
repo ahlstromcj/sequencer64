@@ -143,7 +143,8 @@ main (int argc, char * argv [])
         /*
          * Issue #100, moved this call to before creating the mainwnd.
          * Otherwise, seq64 will not register with LASH (if enabled) in a
-         * timely fashion.
+         * timely fashion.  Also important to announce the play-screen (via
+         * MIDI Control Out) of a file loaded from the command-line.
          */
 
         if (ok)

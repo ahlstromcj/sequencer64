@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2019-06-10
+ * \updates       2019-07-08
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -555,8 +555,7 @@ perform::launch (int ppqn)
             launch_input_thread();
             launch_output_thread();
         }
-        if (not_nullptr(m_midi_ctrl_out))
-            announce_playscreen();
+        announce_playscreen();
     }
 }
 
@@ -1470,37 +1469,40 @@ perform::mute_all_tracks (bool flag)
 void
 perform::announce_playscreen ()
 {
-    int setsize = m_midi_ctrl_out->screenset_size();
-    m_midi_ctrl_out->set_screenset_offset(m_screenset_offset);
-    for (int i = 0; i < setsize; ++i)
+    if (not_nullptr(m_midi_ctrl_out))
     {
-        int s = m_screenset_offset + i;
-        sequence * seq = get_sequence(s);
-        if (not_nullptr(seq))
+        int setsize = m_midi_ctrl_out->screenset_size();
+        m_midi_ctrl_out->set_screenset_offset(m_screenset_offset);
+        for (int i = 0; i < setsize; ++i)
         {
-            if (seq->get_playing())
+            int s = m_screenset_offset + i;
+            sequence * seq = get_sequence(s);
+            if (not_nullptr(seq))
             {
-                m_midi_ctrl_out->send_seq_event
-                (
-                    s, midi_control_out::seq_action_arm, false
-                );
+                if (seq->get_playing())
+                {
+                    m_midi_ctrl_out->send_seq_event
+                    (
+                        s, midi_control_out::seq_action_arm, false
+                    );
+                }
+                else
+                {
+                    m_midi_ctrl_out->send_seq_event
+                    (
+                        s, midi_control_out::seq_action_mute, false
+                    );
+                }
             }
             else
             {
                 m_midi_ctrl_out->send_seq_event
                 (
-                    s, midi_control_out::seq_action_mute, false
+                    s, midi_control_out::seq_action_delete, false
                 );
             }
+            m_master_bus->flush();
         }
-        else
-        {
-            m_midi_ctrl_out->send_seq_event
-            (
-                s, midi_control_out::seq_action_delete, false
-            );
-        }
-        m_master_bus->flush();
     }
 }
 
@@ -2716,13 +2718,7 @@ perform::set_screenset (int ss)
         m_screenset = ss;
         m_screenset_offset = screenset_offset(ss);
         unset_queued_replace();                 /* clear this new feature   */
-
-        /*
-         * Tell control output about new screen-set.
-         */
-
-        if (not_nullptr(m_midi_ctrl_out))
-            announce_playscreen();
+        announce_playscreen();                  /* inform control-out       */
     }
     return m_screenset;
 }

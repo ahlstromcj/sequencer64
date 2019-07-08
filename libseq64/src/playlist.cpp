@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-11-11
+ * \updates       2019-07-08
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -616,12 +616,13 @@ playlist::open_song (const std::string & fname, bool verifymode)
             }
             else
             {
-                usr().file_ppqn(ppqn);          /* save the value from file */
+                usr().file_ppqn(ppqn);              /* save value from file */
                 m_perform.set_ppqn(choose_ppqn());  /* set chosen PPQN      */
-                rc().filename(fname);           /* save current file-name   */
+                rc().filename(fname);               /* save the file-name   */
                 if (unmute_set_now())
                     m_perform.toggle_playing_tracks();
             }
+            m_perform.announce_playscreen();
         }
     }
     return result;

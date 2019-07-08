@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-04-27
+ * \updates       2019-07-08
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -2858,6 +2858,7 @@ open_midi_file
             rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
             rc().filename(fn);                  /* save current file-name   */
             rc().add_recent_file(fn);           /* Oli Kester's Kepler34!   */
+            p.announce_playscreen();            /* tell MIDI control out    */
         }
         else
         {

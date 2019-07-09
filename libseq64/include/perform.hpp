@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-06-10
+ * \updates       2019-07-09
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2637,6 +2637,7 @@ public:
     bool needs_update (int seq = -1);
     int set_screenset (int ss);
     void announce_playscreen ();
+    void announce_exit ();
 
     /**
      * \getter m_screenset

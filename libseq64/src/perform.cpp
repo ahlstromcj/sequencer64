@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2019-07-08
+ * \updates       2019-07-09
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -395,6 +395,8 @@ perform::~perform ()
 {
     m_inputing = m_outputing = m_is_running = false;
     m_condition_var.signal();                       /* signal end of play   */
+
+    announce_exit();                                /* turn off lights      */
     if (m_out_thread_launched)
         pthread_join(m_out_thread, NULL);
 
@@ -1501,6 +1503,28 @@ perform::announce_playscreen ()
                     s, midi_control_out::seq_action_delete, false
                 );
             }
+            m_master_bus->flush();
+        }
+    }
+}
+
+/**
+ *
+ */
+
+void
+perform::announce_exit ()
+{
+    if (not_nullptr(m_midi_ctrl_out))
+    {
+        int setsize = m_midi_ctrl_out->screenset_size();
+        m_midi_ctrl_out->set_screenset_offset(0);
+        for (int i = 0; i < setsize; ++i)
+        {
+            m_midi_ctrl_out->send_seq_event
+            (
+                i, midi_control_out::seq_action_delete, false
+            );
             m_master_bus->flush();
         }
     }

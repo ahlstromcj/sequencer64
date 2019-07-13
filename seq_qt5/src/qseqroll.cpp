@@ -216,7 +216,6 @@ qseqroll::paintEvent (QPaintEvent *)
 
     int ww = width();
     int wh = height();
-printf("width = %d; height = %d\n", ww, wh);
     painter.drawRect(0, 0, ww, wh);
     pen.setColor(Qt::lightGray);
     pen.setStyle(Qt::SolidLine);                    // pen.setStyle(Qt::DotLine)

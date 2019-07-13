@@ -1,6 +1,6 @@
 README for Sequencer64 0.96.5 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2019-06-12
+2015-09-10 to 2019-07-09
 
 Sequencer64 is a reboot of seq24, extending it with many new features.
 The heart of seq24 remains intact.  It is an old friend with a whole lot
@@ -44,7 +44,8 @@ and using a conventional source tarball.
 Recent changes:
 
     -   Version 0.96.5:
-        -   Merged in the midi-control code of igorangst.
+        -   Merged in the midi-control code of igorangst and fixed some
+            misfeatures along the way.
         -   Fixed error in access transpose functionality.
     -   Version 0.96.4:
         -   Tweaks back-ported from Sequencer66.

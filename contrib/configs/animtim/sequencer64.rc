@@ -1,18 +1,32 @@
-# Sequencer64 0.90.0 (and above) rc configuration file
+# Sequencer64 0.96.5 (and above) rc configuration file
 #
 # This file holds the main configuration options for Sequencer64.
 # It follows the format of the legacy seq24 'rc' configuration
 # file, but adds some new options, such as LASH, Mod4 interaction
 # support, an auto-save-on-exit option, and more.  Also provided
 # is a legacy mode.
+#
+# The [comments] section can document this file.  Lines starting
+# with '#' and '[' are ignored.  Blank lines are ignored.  Show a
+# blank line by adding a space character to the line.
+
+[comments]
+
+(Comments added to this section are preserved.  Lines starting with
+ a '#' or '[', or that are blank, are ignored.  Start lines that must
+ be blank with a space.)
 
 [midi-control]
 
 # The leftmost number on each line here is the pattern number, from
-# 0 to 31 (and beyond for the mute-groups). Next, there are three
-# groups of bracketed numbers that follow:
+# 0 to 31; or it is the group number, from 32 to 63, for up to 32 
+# groups; or it is an automation control number, from 64 to 95.
+# This internal MIDI control number is followed by three groups of
+# bracketed numbers, each providing three different type of control:
 #
-#    [toggle]  [on]  [off]
+#    Normal:           [toggle]    [on]      [off]
+#    Playback:         [pause]     [start]   [stop]
+#    Playlist:         [by-value]  [next]    [previous] (if active)
 #
 # In each group, there are six numbers:
 #
@@ -20,47 +34,61 @@
 #
 # 'on/off' enables/disables (1/0) the MIDI control for the pattern.
 # 'invert' (1/0) causes the opposite if data is outside the range.
-# 'status' is by MIDI event to match (channel is ignored).
+# 'status' is by MIDI event to match (channel is NOT ignored).
 # 'd0' is the first data value.  Example: if status is 144 (Note On),
 # then d0 represents Note 0.
 # 'd1min'/'d1max' are the range of second values that should match.
 # Example:  For a Note On for note 0, 0 and 127 indicate that any
 # Note On velocity will cause the MIDI control to take effect.
 
-74      # MIDI controls count
-0 [1 0 144  53 127 127] [0 0   0   0   0   0] [1 0 144  52 127 127]
-1 [1 0 144  54 127 127] [0 0   0   0   0   0] [1 0 144  52 127 127]
-2 [1 0 144  55 127 127] [0 0   0   0   0   0] [1 0 144  52 127 127]
-3 [1 0 144  56 127 127] [0 0   0   0   0   0] [1 0 144  52 127 127]
-4 [1 0 145  53 127 127] [0 0   0   0   0   0] [1 0 145  52 127 127]
-5 [1 0 145  54 127 127] [0 0   0   0   0   0] [1 0 145  52 127 127]
-6 [1 0 145  55 127 127] [0 0   0   0   0   0] [1 0 145  52 127 127]
-7 [1 0 145  56 127 127] [0 0   0   0   0   0] [1 0 145  52 127 127]
-8 [1 0 146  53 127 127] [0 0   0   0   0   0] [1 0 146  52 127 127]
-9 [1 0 146  54 127 127] [0 0   0   0   0   0] [1 0 146  52 127 127]
-10 [1 0 146  55 127 127] [0 0   0   0   0   0] [1 0 146  52 127 127]
-11 [1 0 146  56 127 127] [0 0   0   0   0   0] [1 0 146  52 127 127]
-12 [1 0 147  53 127 127] [0 0   0   0   0   0] [1 0 147  52 127 127]
-13 [1 0 147  54 127 127] [0 0   0   0   0   0] [1 0 147  52 127 127]
-14 [1 0 147  55 127 127] [0 0   0   0   0   0] [1 0 147  52 127 127]
-15 [1 0 147  56 127 127] [0 0   0   0   0   0] [1 0 147  52 127 127]
-16 [1 0 148  53 127 127] [0 0   0   0   0   0] [1 0 148  52 127 127]
-17 [1 0 148  54 127 127] [0 0   0   0   0   0] [1 0 148  52 127 127]
-18 [1 0 148  55 127 127] [0 0   0   0   0   0] [1 0 148  52 127 127]
-19 [1 0 148  56 127 127] [0 0   0   0   0   0] [1 0 148  52 127 127]
-20 [1 0 149  53 127 127] [0 0   0   0   0   0] [1 0 149  52 127 127]
-21 [1 0 149  54 127 127] [0 0   0   0   0   0] [1 0 149  52 127 127]
-22 [1 0 149  55 127 127] [0 0   0   0   0   0] [1 0 149  52 127 127]
-23 [1 0 149  56 127 127] [0 0   0   0   0   0] [1 0 149  52 127 127]
-24 [1 0 150  53 127 127] [0 0   0   0   0   0] [1 0 150  52 127 127]
-25 [1 0 150  54 127 127] [0 0   0   0   0   0] [1 0 150  52 127 127]
-26 [1 0 150  55 127 127] [0 0   0   0   0   0] [1 0 150  52 127 127]
-27 [1 0 150  56 127 127] [0 0   0   0   0   0] [1 0 150  52 127 127]
-28 [1 0 151  53 127 127] [0 0   0   0   0   0] [1 0 151  52 127 127]
-29 [1 0 151  54 127 127] [0 0   0   0   0   0] [1 0 151  52 127 127]
-30 [1 0 151  55 127 127] [0 0   0   0   0   0] [1 0 151  52 127 127]
-31 [1 0 151  56 127 127] [0 0   0   0   0   0] [1 0 151  52 127 127]
-# mute in group section:
+#     ------------------ on/off (indicate is the section is enabled)
+#    | ----------------- inverse
+#    | |  -------------- MIDI status (event) byte (e.g. note on)
+#    | | |  ------------ data 1 (e.g. note number)
+#    | | | |  ---------- data 2 min
+#    | | | | |  -------- data 2 max
+#    | | | | | |
+#    v v v v v v
+#   [0 0 0 0 0 0]   [0 0 0 0 0 0]   [0 0 0 0 0 0]
+#    Toggle          On              Off
+
+96      # MIDI controls count (74/84/96)
+
+# Pattern-group section:
+0 [1 0 128  53 127 127] [0 0   0   0   0   0] [1 0 128  52 127 127]
+1 [1 0 128  54 127 127] [0 0   0   0   0   0] [1 0 128  52 127 127]
+2 [1 0 128  55 127 127] [0 0   0   0   0   0] [1 0 128  52 127 127]
+3 [1 0 128  56 127 127] [0 0   0   0   0   0] [1 0 128  52 127 127]
+4 [1 0 129  53 127 127] [0 0   0   0   0   0] [1 0 129  52 127 127]
+5 [1 0 129  54 127 127] [0 0   0   0   0   0] [1 0 129  52 127 127]
+6 [1 0 129  55 127 127] [0 0   0   0   0   0] [1 0 129  52 127 127]
+7 [1 0 129  56 127 127] [0 0   0   0   0   0] [1 0 129  52 127 127]
+8 [1 0 130  53 127 127] [0 0   0   0   0   0] [1 0 130  52 127 127]
+9 [1 0 130  54 127 127] [0 0   0   0   0   0] [1 0 130  52 127 127]
+10 [1 0 130  55 127 127] [0 0   0   0   0   0] [1 0 130  52 127 127]
+11 [1 0 130  56 127 127] [0 0   0   0   0   0] [1 0 130  52 127 127]
+12 [1 0 131  53 127 127] [0 0   0   0   0   0] [1 0 131  52 127 127]
+13 [1 0 131  54 127 127] [0 0   0   0   0   0] [1 0 131  52 127 127]
+14 [1 0 131  55 127 127] [0 0   0   0   0   0] [1 0 131  52 127 127]
+15 [1 0 131  56 127 127] [0 0   0   0   0   0] [1 0 131  52 127 127]
+16 [1 0 132  53 127 127] [0 0   0   0   0   0] [1 0 132  52 127 127]
+17 [1 0 132  54 127 127] [0 0   0   0   0   0] [1 0 132  52 127 127]
+18 [1 0 132  55 127 127] [0 0   0   0   0   0] [1 0 132  52 127 127]
+19 [1 0 132  56 127 127] [0 0   0   0   0   0] [1 0 132  52 127 127]
+20 [1 0 133  53 127 127] [0 0   0   0   0   0] [1 0 133  52 127 127]
+21 [1 0 133  54 127 127] [0 0   0   0   0   0] [1 0 133  52 127 127]
+22 [1 0 133  55 127 127] [0 0   0   0   0   0] [1 0 133  52 127 127]
+23 [1 0 133  56 127 127] [0 0   0   0   0   0] [1 0 133  52 127 127]
+24 [1 0 134  53 127 127] [0 0   0   0   0   0] [1 0 134  52 127 127]
+25 [1 0 134  54 127 127] [0 0   0   0   0   0] [1 0 134  52 127 127]
+26 [1 0 134  55 127 127] [0 0   0   0   0   0] [1 0 134  52 127 127]
+27 [1 0 134  56 127 127] [0 0   0   0   0   0] [1 0 134  52 127 127]
+28 [1 0 135  53 127 127] [0 0   0   0   0   0] [1 0 135  52 127 127]
+29 [1 0 135  54 127 127] [0 0   0   0   0   0] [1 0 135  52 127 127]
+30 [1 0 135  55 127 127] [0 0   0   0   0   0] [1 0 135  52 127 127]
+31 [1 0 135  56 127 127] [0 0   0   0   0   0] [1 0 135  52 127 127]
+
+# Mute-in group section:
 32 [0 0   0   0   0   0] [1 0 144  57 127 127] [0 0   0   0   0   0]
 33 [0 0   0   0   0   0] [1 0 145  57 127 127] [0 0   0   0   0   0]
 34 [0 0   0   0   0   0] [1 0 146  57 127 127] [0 0   0   0   0   0]
@@ -93,6 +121,9 @@
 61 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 62 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 63 [0 0   0   0   0   0] [1 0 144  85 127 127] [0 0   0   0   0   0]
+
+# Automation group
+
 # bpm up:
 64 [0 0   0   0   0   0] [1 0 144 100 127 127] [0 0   0   0   0   0]
 # bpm down:
@@ -114,11 +145,135 @@
 # screen set play:
 73 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 
+# Extended MIDI controls:
+
+# start playback (pause, start, stop):
+74 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# performance record:
+75 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# solo (toggle, on, off):
+76 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI THRU (toggle, on, off):
+77 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# bpm page up:
+78 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# bpm page down:
+79 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# screen set by number:
+80 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI RECORD (toggle, on, off):
+81 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Quantized RECORD (toggle, on, off):
+82 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Set Replace versus Merge for loop recording:
+83 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# One-shot queueing and replacing.  TO DO.
+84 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control for fast-forward
+85 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control for rewind
+86 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control for top (song beginning or L marker)
+87 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control to select playlist (value, next, previous)
+88 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control to select song in current playlist (value, next, previous)
+89 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Hot-key slot shift (keystroke)
+90 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# A second control for starting playback. TODO.
+91 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# A second control for stopping playback. TODO.
+92 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# A second snapshot control.  TODO.
+93 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# For toggling, muting, and unmuting.  TODO.
+94 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# For setting the position in the song.  TODO.
+95 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+
+[midi-control-out]
+
+#    ------------------- on/off (indicate is the section is enabled)
+#    | ----------------- MIDI channel (0-15)
+#    | | --------------- MIDI status (event) byte (e.g. note on)
+#    | | | ------------- data 1 (e.g. note number)
+#    | | | | ----------- data 2 (e.g. velocity)
+#    | | | | |
+#    v v v v v
+#   [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+#       Arm         Mute       Queue      Delete
+
+32 15 1     # screenset size, output buss, enabled (1) /disabled (0)
+
+0 [1 0 144 53 127] [1 0 144 53 5] [1 0 144 53 2] [1 0 144 53 0]
+1 [1 0 144 54 127] [1 0 144 54 5] [1 0 144 54 2] [1 0 144 54 0]
+2 [1 0 144 55 127] [1 0 144 55 5] [1 0 144 55 2] [1 0 144 55 0]
+3 [1 0 144 56 127] [1 0 144 56 5] [1 0 144 56 2] [1 0 144 56 0]
+4 [1 0 145 53 127] [1 0 145 53 5] [1 0 145 53 2] [1 0 145 53 0]
+5 [1 0 145 54 127] [1 0 145 54 5] [1 0 145 54 2] [1 0 145 54 0]
+6 [1 0 145 55 127] [1 0 145 55 5] [1 0 145 55 2] [1 0 145 55 0]
+7 [1 0 145 56 127] [1 0 145 56 5] [1 0 145 56 2] [1 0 145 56 0]
+8 [1 0 146 53 127] [1 0 146 53 5] [1 0 146 53 2] [1 0 146 53 0]
+9 [1 0 146 54 127] [1 0 146 54 5] [1 0 146 54 2] [1 0 146 54 0]
+10 [1 0 146 55 127] [1 0 146 55 5] [1 0 146 55 2] [1 0 146 55 0]
+11 [1 0 146 56 127] [1 0 146 56 5] [1 0 146 56 2] [1 0 146 56 0]
+12 [1 0 147 53 127] [1 0 147 53 5] [1 0 147 53 2] [1 0 147 53 0]
+13 [1 0 147 54 127] [1 0 147 54 5] [1 0 147 54 2] [1 0 147 54 0]
+14 [1 0 147 55 127] [1 0 147 55 5] [1 0 147 55 2] [1 0 147 55 0]
+15 [1 0 147 56 127] [1 0 147 56 5] [1 0 147 56 2] [1 0 147 56 0]
+16 [1 0 148 53 127] [1 0 148 53 5] [1 0 148 53 2] [1 0 148 53 0]
+17 [1 0 148 54 127] [1 0 148 54 5] [1 0 148 54 2] [1 0 148 54 0]
+18 [1 0 148 55 127] [1 0 148 55 5] [1 0 148 55 2] [1 0 148 55 0]
+19 [1 0 148 56 127] [1 0 148 56 5] [1 0 148 56 2] [1 0 148 56 0]
+20 [1 0 149 53 127] [1 0 149 53 5] [1 0 149 53 2] [1 0 149 53 0]
+21 [1 0 149 54 127] [1 0 149 54 5] [1 0 149 54 2] [1 0 149 54 0]
+22 [1 0 149 55 127] [1 0 149 55 5] [1 0 149 55 2] [1 0 149 55 0]
+23 [1 0 149 56 127] [1 0 149 56 5] [1 0 149 56 2] [1 0 149 56 0]
+24 [1 0 150 53 127] [1 0 150 53 5] [1 0 150 53 2] [1 0 150 53 0]
+25 [1 0 150 54 127] [1 0 150 54 5] [1 0 150 54 2] [1 0 150 54 0]
+26 [1 0 150 55 127] [1 0 150 55 5] [1 0 150 55 2] [1 0 150 55 0]
+27 [1 0 150 56 127] [1 0 150 56 5] [1 0 150 56 2] [1 0 150 56 0]
+28 [1 0 151 53 127] [1 0 151 53 5] [1 0 151 53 2] [1 0 151 53 0]
+29 [1 0 151 54 127] [1 0 151 54 5] [1 0 151 54 2] [1 0 151 54 0]
+30 [1 0 151 55 127] [1 0 151 55 5] [1 0 151 55 2] [1 0 151 55 0]
+31 [1 0 151 56 127] [1 0 151 56 5] [1 0 151 56 2] [1 0 151 56 0]
+
+# MIDI Control Out: play
+0 [0 0 0 0]
+
+# MIDI Control Out: stop
+0 [0 0 0 0]
+
+# MIDI Control Out: pause
+0 [0 0 0 0]
+
+# MIDI Control Out: queue on/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: oneshot on/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: replace on/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: snap1 store/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: snap2 store/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: learn on/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+
 [mute-group]
 
-# All mute-group values are saved, even if the all are zero, and will
-# be stripped out from the MIDI file by the new strip-empty-mutes
-# functionality (a build option).  This is less confusing to the user.
+# All mute-group values are saved in this 'rc' file, even if they
+# all are zero; but if all are zero, they will be stripped out from
+# the MIDI file by the new strip-empty-mutes functionality (a build
+# option).  This is less confusing to the user, who expects that
+# section to be intact.
 
 1024       # group mute count
 0 [1 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
@@ -154,50 +309,61 @@
 30 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 31 [0 0 0 1 0 0 0 1] [0 0 0 1 0 0 0 1] [0 0 0 1 0 0 0 1] [0 0 0 1 0 0 0 1]
 
+# Handling of mute-groups.  If set to 0, a legacy value, then
+# any mute-groups read from the MIDI file (whether modified or
+# not) are saved to the 'rc' file as well.  If set to 1, the
+# 'rc' mute-groups are overwritten only if they were not read
+# from the MIDI file.
+
+1     # preserve 'rc' mute-groups from MIDI mute groups
+
 [midi-clock]
 
 # The first line indicates the number of MIDI busses defined.
-
 # Each buss line contains the buss (re 0) and the clock status of
 # that buss.  0 = MIDI Clock is off; 1 = MIDI Clock on, and Song
-# Position and MIDI Continue will be sent, if needed; and 2 = MIDI
+# Position and MIDI Continue will be sent, if needed; 2 = MIDI
 # Clock Modulo, where MIDI clocking will not begin until the song
 # position reaches the start modulo value [midi-clock-mod-ticks].
+# A value of -1 indicates that the output port is totally
+# disabled.  One can set this value manually for devices that are
+# present, but not available, perhaps because another application
+# has exclusive access to the device (e.g. on Windows).
 
 16    # number of MIDI clocks/busses
 
 # Output buss name: [0] 0:0 seq64 midi out 0 1
-0 1  # buss number, clock status
+0 1    # buss number, clock status
 # Output buss name: [1] 1:1 seq64 midi out 1 2
-1 0  # buss number, clock status
+1 0    # buss number, clock status
 # Output buss name: [2] 2:2 seq64 midi out 2 3
-2 0  # buss number, clock status
+2 0    # buss number, clock status
 # Output buss name: [3] 3:3 seq64 midi out 3 4
-3 0  # buss number, clock status
+3 0    # buss number, clock status
 # Output buss name: [4] 4:4 seq64 midi out 4 5
-4 0  # buss number, clock status
+4 0    # buss number, clock status
 # Output buss name: [5] 5:5 seq64 midi out 5 6
-5 0  # buss number, clock status
+5 0    # buss number, clock status
 # Output buss name: [6] 6:6 seq64 midi out 6 7
-6 0  # buss number, clock status
+6 0    # buss number, clock status
 # Output buss name: [7] 7:7 seq64 midi out 7 8
-7 0  # buss number, clock status
+7 0    # buss number, clock status
 # Output buss name: [8] 8:8 seq64 midi out 8 9
-8 0  # buss number, clock status
+8 0    # buss number, clock status
 # Output buss name: [9] 9:9 seq64 midi out 9 10
-9 0  # buss number, clock status
+9 0    # buss number, clock status
 # Output buss name: [10] 10:10 seq64 midi out 10 11
-10 0  # buss number, clock status
+10 0    # buss number, clock status
 # Output buss name: [11] 11:11 seq64 midi out 11 12
-11 0  # buss number, clock status
+11 0    # buss number, clock status
 # Output buss name: [12] 12:12 seq64 midi out 12 13
-12 0  # buss number, clock status
+12 0    # buss number, clock status
 # Output buss name: [13] 13:13 seq64 midi out 13 14
-13 0  # buss number, clock status
+13 0    # buss number, clock status
 # Output buss name: [14] 14:14 seq64 midi out 14 15
-14 0  # buss number, clock status
+14 0    # buss number, clock status
 # Output buss name: [15] 15:15 seq64 midi out 15 16
-15 0  # buss number, clock status
+15 0    # buss number, clock status
 
 [midi-clock-mod-ticks]
 
@@ -206,6 +372,17 @@
 
 64
 
+[midi-meta-events]
+
+# This section defines some features of MIDI meta-event handling.
+# Normally, tempo events are supposed to occur in the first track
+# (pattern 0).  But one can move this track elsewhere to accomodate
+# one's existing body of tunes.  If affects where tempo events are
+# recorded.  The default value is 0, the maximum is 1023.
+# A pattern must exist at this number for it to work.
+
+0    # tempo_track_number
+
 [midi-input]
 
 1   # number of input MIDI busses
@@ -213,8 +390,8 @@
 # The first number is the port number, and the second number
 # indicates whether it is disabled (0), or enabled (1).
 
-# [0] -1:0 seq64 midi in 0 0
-0 1
+# Input buss name: [0] 0:0 seq64 midi in 0 0
+0 1  # buss number, input status
 
 # If set to 1, this option allows the master MIDI bus to record
 # (filter) incoming MIDI data by channel, allocating each incoming
@@ -226,10 +403,10 @@
 [manual-alsa-ports]
 
 # Set to 1 to have sequencer64 create its own ALSA ports and not
-# connect to other clients.  Use 1 to expose all the MIDI ports to
+# connect to other clients.  Use 1 to expose all 16 MIDI ports to
 # JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports
-# already running on one's computer, or to use the MIDI Through
-# (capture) output alone in JACK.
+# already running on one's computer, or to use the autoconnect
+# feature (Sequencer64 connects to existing JACK ports on startup.
 
 1   # flag for manual ALSA ports
 
@@ -242,6 +419,10 @@
 0   # flag for reveal ALSA ports
 
 [interaction-method]
+
+# Sets the mouse handling style for drawing and editing a pattern
+# This feature is current NOT supported in the Qt version of
+# Sequencer64 (qpseq64).
 
 # 0 - 'seq24' (original seq24 method)
 # 1 - 'fruity' (similar to a certain fruity sequencer we like)
@@ -269,46 +450,56 @@
 
 [keyboard-control]
 
+# Defines the keys that toggle the state of each of up to 32
+# patterns in the pattern/sequence window.  These keys are normally
+# shown in each box.  The first number below specifies the key
+# code, and the second number specifies the pattern number.
+
 32     # number of keys
 
-# Key #  Sequence #  Key name
+# Key-No.  Sequence-No.  Key-Name
 
-44  31   # comma
-49  0   # 1
-50  4   # 2
-51  8   # 3
-52  12   # 4
-53  16   # 5
-54  20   # 6
-55  24   # 7
-56  28   # 8
-97  2   # a
-98  19   # b
-99  11   # c
-100  10   # d
-101  9   # e
-102  14   # f
-103  18   # g
-104  22   # h
-105  29   # i
-106  26   # j
-107  30   # k
-109  27   # m
-110  23   # n
-113  1   # q
-114  13   # r
-115  6   # s
-116  17   # t
-117  25   # u
-118  15   # v
-119  5   # w
-120  7   # x
-121  21   # y
-122  3   # z
+44 31   # comma
+49 0   # 1
+50 4   # 2
+51 8   # 3
+52 12   # 4
+53 16   # 5
+54 20   # 6
+55 24   # 7
+56 28   # 8
+97 2   # a
+98 19   # b
+99 11   # c
+100 10   # d
+101 9   # e
+102 14   # f
+103 18   # g
+104 22   # h
+105 29   # i
+106 26   # j
+107 30   # k
+109 27   # m
+110 23   # n
+113 1   # q
+114 13   # r
+115 6   # s
+116 17   # t
+117 25   # u
+118 15   # v
+119 5   # w
+120 7   # x
+121 21   # y
+122 3   # z
 
 [keyboard-group]
 
-32     # number of key groups
+# This section actually defines the mute-group keys for the group
+# learn function.  Pressing the 'L' button and then pressing one
+# of the keys in this list will cause the current set of armed
+# patterns to be memorized and associated with that key.
+
+32     # number of group-learn keys (key groups)
 
 # Key #  group # Key name
 
@@ -353,17 +544,18 @@
 96 39 65379   # grave apostrophe Insert
 # replace, queue, snapshot_1, snapshot 2, keep queue:
 65507 65508 65513 65514 92   # Control_L Control_R Alt_L Alt_R backslash
-1     # show_ui_sequence_key (1 = true / 0 = false)
+1     # show_ui_sequence_key and seq measures (1 = true / 0 = false)
 32    # space start sequencer
 65307    # Escape stop sequencer
 46    # period pause sequencer
 0     # show sequence numbers (1 = true / 0 = false); ignored in legacy mode
 61    # equal is the shortcut key to bring up the pattern editor
 45    # minus is the shortcut key to bring up the event editor
+47    # slash shifts the hot-key so that it toggles pattern + 32
 
 [extended-keys]
 
-# Currently there is no user interface for this section.
+# The user interface for this section is Options / Ext Keys.
 
 65470    # F1 handles the Song/Live mode
 65471    # F2 handles the JACK mode
@@ -374,6 +566,8 @@
 65476    # F7 handles song pointer-position function
 65478    # F9 emulates clicking the Tap (BPM) button
 65477    # F8 handles the toggling-all-pattern-mutes function
+0    #  toggles the song-record function
+0    #  toggles the one-shot queue function
 
 [jack-transport]
 
@@ -410,7 +604,6 @@
 
 0   # with_jack_midi
 
-
 [lash-session]
 
 # Set the following value to 0 to disable LASH session management.
@@ -436,10 +629,27 @@
 
 [last-used-dir]
 
-# Last used directory:
+# Last-used and currently-active directory:
 
-/home/
+/home
 
-# End of sequencer64.rc
+[recent-files]
+
+# Holds a list of the last few recently-loaded MIDI files.
+
+3
+
+[playlist]
+
+# Provides a configured play-list and a flag to activate it.
+
+0     # playlist_active, 1 = active, 0 = do not use it
+
+# Provides the name of a play-list.  If there is none, use '""'.
+# Or set the flag above to 0.
+
+""
+
+# End of /home/user/.config/sequencer64/sequencer64.rc
 #
 # vim: sw=4 ts=4 wm=4 et ft=sh

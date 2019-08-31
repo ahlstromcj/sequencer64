@@ -241,7 +241,7 @@
          <x>10</x>
          <y>10</y>
          <width>271</width>
-         <height>63</height>
+         <height>64</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayoutUiValues">
@@ -303,7 +303,7 @@
      </widget>
      <widget class="QWidget" name="tabJackSync">
       <attribute name="title">
-       <string>&amp;Jack Sync</string>
+       <string>&amp;JACK</string>
       </attribute>
       <widget class="QGroupBox" name="groupBoxJackTransport">
        <property name="geometry">

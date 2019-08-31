@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-04-25
+ * \updates       2019-08-31
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -2641,6 +2641,9 @@ mainwnd::about_dialog ()
     );
 
     std::list<std::string> list_authors;
+    list_authors.push_back("Chris Ahlstrom <ahlstromcj@gmail.com>");
+    list_authors.push_back("Oli Kester <https://github.com/oli-kester/kepler34>");
+    list_authors.push_back("Stan Preston <stazed10@gmail.com>");
     list_authors.push_back("Rob C. Buse <rcb@filter24.org>");
     list_authors.push_back("Ivan Hernandez <ihernandez@kiusys.com>");
     list_authors.push_back("Guido Scholz <guido.scholz@bayernline.de>");
@@ -2651,14 +2654,11 @@ mainwnd::about_dialog ()
     list_authors.push_back("Sebastien Alaiwan <sebastien.alaiwan@gmail.com>");
     list_authors.push_back("Kevin Meinert <kevin@subatomicglue.com>");
     list_authors.push_back("Andrea delle Canne <andreadellecanne@gmail.com>");
-    list_authors.push_back("Stan Preston <stazed10@gmail.com>");
-    list_authors.push_back("Chris Ahlstrom <ahlstromcj@gmail.com>");
     dialog.set_authors(list_authors);
 
     std::list<std::string> list_documenters;
-    list_documenters.push_back("Dana Olson <seq24@ubuntustudio.com>");
     list_documenters.push_back("Chris Ahlstrom <ahlstromcj@gmail.com>:");
-    list_documenters.push_back("<https://github.com/ahlstromcj/seq24-doc.git>");
+    list_documenters.push_back("Dana Olson <seq24@ubuntustudio.com>");
     list_documenters.push_back
     (
         "<https://github.com/ahlstromcj/sequencer64-doc.git>"

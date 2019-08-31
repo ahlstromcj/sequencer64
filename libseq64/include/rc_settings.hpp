@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2019-01-21
+ * \updates       2019-08-31
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -455,6 +455,15 @@ public:
     void with_jack_master_cond (bool flag);
 
     /**
+     * \setter m_with_jack_midi
+     */
+
+    void with_jack_midi (bool flag)
+    {
+        m_with_jack_midi = flag;
+    }
+
+    /**
      * \getter m_with_jack_transport m_with_jack_master, and
      * m_with_jack_master_cond, to save client code some trouble.  Do not
      * confuse these original options with the new "no JACK MIDI" option.
@@ -834,15 +843,6 @@ protected:
     void pass_sysex (bool flag)
     {
         m_pass_sysex = flag;
-    }
-
-    /**
-     * \setter m_with_jack_midi
-     */
-
-    void with_jack_midi (bool flag)
-    {
-        m_with_jack_midi = flag;
     }
 
     /**

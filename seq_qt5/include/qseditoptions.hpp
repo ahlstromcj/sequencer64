@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-21
+ * \updates       2018-08-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -98,15 +98,17 @@ private:
     bool backupTimeMaster;
     bool backupMasterCond;
     bool backupNoteResume;
+    bool backupJackMidi;
     int  backupKeyHeight;
 
 private slots:
 
-    void update_transport_support ();
-    void update_time_master ();
-    void update_master_cond ();
     void update_jack_connect ();
     void update_jack_disconnect ();
+    void update_master_cond ();
+    void update_time_master ();
+    void update_transport_support ();
+    void update_jack_midi ();
     void okay ();
     void cancel ();
     void update_note_resume ();

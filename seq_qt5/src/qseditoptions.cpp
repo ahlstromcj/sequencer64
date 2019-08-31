@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-10-20
+ * \updates       2019-08-31
  * \license       GNU GPLv2 or above
  *
  *      This version is located in Edit / Preferences.
@@ -67,6 +67,7 @@ qseditoptions::qseditoptions (perform & p, QWidget * parent)
     backupTimeMaster    (false),
     backupMasterCond    (false),
     backupNoteResume    (false),
+    backupJackMidi      (false),
     backupKeyHeight     (usr().key_height())
 {
     ui->setupUi(this);
@@ -106,6 +107,11 @@ qseditoptions::qseditoptions (perform & p, QWidget * parent)
     (
         ui->chkJackMaster, SIGNAL(stateChanged(int)),
         this, SLOT(update_time_master())
+    );
+    connect     /* fixed issue #176 qseq64 does not use JACK after restart  */
+    (
+        ui->chkJackNative, SIGNAL(stateChanged(int)),
+        this, SLOT(update_jack_midi())
     );
     connect
     (
@@ -259,6 +265,17 @@ qseditoptions::update_transport_support ()
 }
 
 /**
+ *
+ */
+
+void
+qseditoptions::update_jack_midi ()
+{
+    rc().with_jack_midi(ui->chkJackNative->isChecked());
+    syncWithInternals();
+}
+
+/**
  *  Backs up the current settings logged into the various settings object into
  *  the "backup" members, then calls close().
  */
@@ -281,6 +298,7 @@ qseditoptions::cancel ()
     rc().with_jack_transport(backupJackTransport);
     rc().with_jack_master_cond(backupMasterCond);
     rc().with_jack_master(backupTimeMaster);
+    rc().with_jack_midi(backupJackMidi);
     usr().key_height(backupKeyHeight);
     perf().resume_note_ons(backupNoteResume);
     syncWithInternals();
@@ -297,6 +315,7 @@ void
 qseditoptions::backup ()
 {
     backupJackTransport = rc().with_jack_transport();
+    backupJackMidi = rc().with_jack_midi();
     backupMasterCond = rc().with_jack_master_cond();
     backupTimeMaster = rc().with_jack_master();
     backupKeyHeight = usr().key_height();
@@ -313,6 +332,7 @@ void
 qseditoptions::syncWithInternals ()
 {
     ui->chkJackTransport->setChecked(rc().with_jack_transport());
+    ui->chkJackNative->setChecked(rc().with_jack_midi());
     ui->chkJackMaster->setChecked(rc().with_jack_master());
     ui->chkJackConditional->setChecked(rc().with_jack_master_cond());
 

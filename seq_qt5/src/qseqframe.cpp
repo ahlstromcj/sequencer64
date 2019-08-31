@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Oli Kester; modifications by Chris Ahlstrom
  * \date          2018-07-27
- * \updates       2018-07-31
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  Sequencer64 (Qt version) has two different pattern editor frames to
@@ -140,10 +140,10 @@ qseqframe::set_zoom (int z)
         if (not_nullptr(m_seqtime))
             m_seqtime->set_zoom(z);
 
-        if (not_nullptr(m_seqevent))
+        if (not_nullptr(m_seqdata))
             m_seqdata->set_zoom(z);
 
-        if (not_nullptr(m_seqdata))
+        if (not_nullptr(m_seqevent))
             m_seqevent->set_zoom(z);
     }
 }

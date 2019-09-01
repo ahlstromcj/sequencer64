@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2019-06-10
+ * \updates       2019-09-01
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -397,6 +397,7 @@ extern const std::string & seq_client_name ();
 extern const std::string & seq_version ();
 extern const std::string & seq_version_text ();
 extern const std::string & seq_app_tag ();
+extern std::string seq_build_details ();
 
 }           // namespace seq64
 

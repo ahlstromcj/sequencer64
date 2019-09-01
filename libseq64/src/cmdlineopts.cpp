@@ -47,7 +47,6 @@
  *  at some point.
  */
 
-#include <sstream>                      /* std::ostringstream               */
 #include <stdlib.h>                     /* atoi(), atof(), 32-bit old gcc   */
 #include <string.h>                     /* strlen() <gasp!>                 */
 #include "easy_macros.h"                /* not_nullptr() and other macros   */
@@ -56,7 +55,6 @@
 #include <getopt.h>
 #endif
 
-#include "app_limits.h"                 /* macros for build_details()       */
 #include "cmdlineopts.hpp"              /* this module's header file        */
 #include "daemonize.hpp"                /* seqg4::reroute_stdio()           */
 #include "file_functions.hpp"           /* file_accessible()                */
@@ -75,9 +73,9 @@ namespace seq64
 /**
  *  Sets up the "hardwired" version text for Sequencer64.  This value
  *  ultimately comes from the configure.ac script.
- */
 
 static const std::string versiontext = seq_version_text();
+ */
 
 /**
  *  A structure for command parsing that provides the long forms of
@@ -1013,8 +1011,11 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             break;
 
         case 'V':
-            printf("%s", versiontext.c_str());
-            printf("%s", build_details().c_str());
+            printf
+            (
+                "%s%s", seq64::seq_version_text().c_str(),
+                seq64::seq_build_details().c_str()
+            );
             result = SEQ64_NULL_OPTION_INDEX;
             break;
 
@@ -1133,101 +1134,6 @@ write_options_files (const perform & p, const std::string & errrcname)
             result = false;
     }
     return result;
-}
-
-/**
- *  This section of variables provide static information about the options
- *  enabled or disabled during the build.
- */
-
-#ifdef PLATFORM_32_BIT
-const static std::string s_bitness = "32-bit";
-#else
-const static std::string s_bitness = "64-bit";
-#endif
-
-/**
- *  Generates a string describing the features of the build.
- *
- * \return
- *      Returns an ordered, human-readable string enumerating the built-in
- *      features of this application.
- */
-
-std::string
-build_details ()
-{
-    std::ostringstream result;
-    result
-        << "Build features:" << std::endl << std::endl
-        << "C++ version " << std::to_string(__cplusplus) << std::endl
-#ifdef SEQ64_RTMIDI_SUPPORT
-        << "Native JACK/ALSA (rtmidi) on" << std::endl
-#endif
-#ifdef SEQ64_ALSAMIDI_SUPPORT
-        << "ALSA-only MIDI support on" << std::endl
-#endif
-#ifdef SEQ64_PORTMIDI_SUPPORT
-        << "PortMIDI support on" << std::endl
-#endif
-        << "Event editor on" << std::endl
-#ifdef SEQ64_USE_EVENT_MAP
-        << "Event multimap (vs list) on" << std::endl
-#endif
-        << "Follow progress bar on" << std::endl
-#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-        << "Highlight edit pattern on" << std::endl
-#endif
-#ifdef SEQ64_HIGHLIGHT_EMPTY_SEQS
-        << "Highlight empty patterns on" << std::endl
-#endif
-#ifdef SEQ64_JACK_SESSION
-        << "JACK session on" << std::endl
-#endif
-#ifdef SEQ64_JACK_SUPPORT
-        << "JACK support on" << std::endl
-#endif
-#ifdef SEQ64_LASH_SUPPORT
-        << "LASH support on" << std::endl
-#endif
-        << "MIDI vector (vs list) on" << std::endl
-        << "Seq32 chord generator on" << std::endl
-        << "Seq32 LFO window on" << std::endl
-        << "Seq32 menu buttons on" << std::endl
-        << "Seq32 transpose on" << std::endl
-        << "BPM Tap button on" << std::endl
-        << "Solid piano-roll grid on" << std::endl
-#ifdef SEQ64_JE_PATTERN_PANEL_SCROLLBARS
-        << "Main window scroll-bars on" << std::endl
-#endif
-#ifdef SEQ64_SHOW_COLOR_PALETTE
-        << "Optional pattern coloring on" << std::endl
-#endif
-#ifdef SEQ64_MULTI_MAINWID
-        << "Multiple main windows on" << std::endl
-#endif
-        << "Song performance recording on" << std::endl
-#ifdef SEQ64_SONG_BOX_SELECT
-        << "Box song selection on" << std::endl
-#endif
-#ifdef SEQ64_STATISTICS_SUPPORT
-        << "Statistics support on" << std::endl
-#endif
-#ifdef PLATFORM_WINDOWS
-        << "Windows support on" << std::endl
-#endif
-        << "Pause support on" << std::endl
-        << "Save time-sig/tempo on" << std::endl
-#ifdef PLATFORM_DEBUG
-        << "Debug code on" << std::endl
-#endif
-        << s_bitness << " support enabled" << std::endl
-        << std::endl
-    << "Options are enabled/disabled via the configure script," << std::endl
-    << "libseq64/include/seq64_features.h, or the build-specific" << std::endl
-    << "seq64-config.h file in include or in include/qt/portmidi" << std::endl
-    ;
-    return result.str();
 }
 
 }           // namespace seq64

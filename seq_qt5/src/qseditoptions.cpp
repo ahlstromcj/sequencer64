@@ -72,7 +72,6 @@ qseditoptions::qseditoptions (perform & p, QWidget * parent)
 {
     ui->setupUi(this);
     backup();
-    // Move to end: syncWithInternals();
 
     /*
      * Jack Sync tab.  JACK Transport Connect/Disconnect buttons.

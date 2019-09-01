@@ -67,13 +67,8 @@ public:
 
 private:
 
-    // makes sure the dialog properly reflects internal settings
-
-    void syncWithInternals();
-
-    // backup preferences incase we cancel changes
-
-    void backup();
+    void syncWithInternals();   /* makes dialog reflect internal settings   */
+    void backup();              /* backup preferences for cancel-changes    */
 
     const perform & perf () const
     {
@@ -121,6 +116,7 @@ private slots:
     void on_pushButtonTempoTrack_clicked ();
     void on_checkBoxRecordByChannel_clicked (bool checked);
     void on_chkJackConditional_stateChanged (int arg1);
+
 };          // class qseditoptions
 
 }           // namespace seq64

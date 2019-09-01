@@ -25,13 +25,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-05-30
- * \updates       2018-05-30
+ * \updates       2018-09-01
  * \license       GNU GPLv2 or above
  *
  */
 
-#include "seq64-config.h"
-#include "cmdlineopts.hpp"              /* for build info function          */
+#include "seq64_features.h"             /* for build info function          */
 #include "qsbuildinfo.hpp"
 
 /*
@@ -62,7 +61,7 @@ qsbuildinfo::qsbuildinfo (QWidget * parent)
     QString name(SEQ64_PACKAGE_NAME);
     QString version(SEQ64_VERSION);
     QString comment("\n");
-    comment += build_details().c_str();
+    comment += seq64::seq_build_details().c_str();
 
     ui->buildProgramLabel->setText(name);
     ui->buildVersionLabel->setText(version);

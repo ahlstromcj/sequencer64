@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-08-31
+ * \updates       2019-09-03
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -2679,7 +2679,7 @@ mainwnd::build_info_dialog ()
 {
 #ifdef USE_ABOUT_DIALOG
     std::string comment("\n");
-    comment += build_details();
+    comment += seq_build_details();
     Gtk::AboutDialog dialog;
     dialog.set_transient_for(*this);
     dialog.set_name(SEQ64_PACKAGE_NAME " " SEQ64_VERSION "\n");
@@ -2687,7 +2687,7 @@ mainwnd::build_info_dialog ()
     dialog.show_all_children();
 #else
     std::string caption(SEQ64_PACKAGE_NAME " " SEQ64_VERSION);
-    std::string comment = build_details();
+    std::string comment = seq_build_details();
     std::string junk("JUNK");
     Gtk::MessageDialog dialog
     (

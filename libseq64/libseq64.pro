@@ -6,7 +6,7 @@
 # \library    	qseq64 and qpseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-10-13
+# \update      2019-09-03
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -59,6 +59,7 @@ HEADERS += \
  include/mastermidibus.hpp \
  include/midi_container.hpp \
  include/midi_control.hpp \
+ include/midi_control_out.hpp \
  include/midi_list.hpp \
  include/midi_splitter.hpp \
  include/midi_vector.hpp \
@@ -109,6 +110,7 @@ SOURCES += \
  src/mastermidibase.cpp \
  src/midi_container.cpp \
  src/midi_control.cpp \
+ src/midi_control_out.cpp \
  src/midi_list.cpp \
  src/midi_splitter.cpp \
  src/midi_vector.cpp \

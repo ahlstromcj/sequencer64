@@ -3,8 +3,8 @@
 ; File:         Seq64Setup.nsi
 ; Author:       Chris Ahlstrom
 ; Date:         2018-05-26
-; Updated:      2019-04-28
-; Version:      0.96.4
+; Updated:      2019-09-03
+; Version:      0.96.5
 ;
 ;       Installation is silent.
 ;

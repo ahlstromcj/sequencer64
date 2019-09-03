@@ -8,7 +8,7 @@
 :: \library     Sequencer64 for Windows
 :: \author      Chris Ahlstrom
 :: \date        2018-05-26
-:: \update      2019-04-28
+:: \update      2019-09-03
 :: \license     $XPC_SUITE_GPL_LICENSE$
 ::
 ::      This script sets up and creates a release build of Sequencer64 for
@@ -41,7 +41,10 @@
 ::       3. a. In Windows Explorer, just double-click on this batch file in its
 ::             location in the "nsis" directory, and watch the build run in a
 ::             DOS window.
-::          b. Alternatively, create a "shadow" directory at the same level
+::          b. Or navigate to "sequencer64\nsis" and run simply
+::             "build_release_package.bat".  The shadow directory
+::             "seq64-release" is created in "sequencer64\..".
+::          c. Alternatively, create a "shadow" directory at the same level
 ::             as "sequencer64", change to it, and run
 ::             "..\sequencer64\nsis\build_release_package.bat".
 ::       4. The result is a file such as "qpseq64-release-package-0.95.1.7z".
@@ -51,7 +54,7 @@
 ::       5. In Linux (have not tried NSIS in Windows yet), copy this 7z file
 ::          to the root sequencer64 directory.
 ::       6. Use 7zip to extract this file; it will unpack the contents into
-::          the 'release' directory.  Then move it out of the way.
+::          the 'release' directory.  Then move the 7zip package out of the way.
 ::
 ::          $ 7z x qpseq64-release-package-0.95.2.7z
 ::          $ mv qpseq64-release-package-0.95.2.7z ..
@@ -72,7 +75,8 @@
 ::          $ zip -u -r qpseq64-portable-0.95.1-0.zip qpseq64/
 ::          $ mv qpseq64-portable-0.95.1-0.zip ../sequencer64-packages/latest
 ::
-::      10. Make a standard Linux source/configure tarball:
+::      10. Make a standard Linux source/configure tarball for a version
+::          built using bootstrap (to generate the "configure" script):
 ::
 ::          $ ./pack --release rtmidi 0.95.1
 ::          $ mv ../sequencer64-master-rtmidi-0.95.1.tar.xz \
@@ -81,12 +85,14 @@
 ::          where "rtmidi" can be replaced with whatever the current build
 ::          is, such as "cli" or "portmidi" or "qt".
 ::
-:: This batch file completely removes the old release directory and re-does
-:: everything.
+:: This batch file completely removes the old Windows seq64-release directory
+:: and re-does everything.
+::
+:: See the set of variable immediately below.
 ::
 ::---------------------------------------------------------------------------
  
-set PROJECT_VERSION=0.96.4
+set PROJECT_VERSION=0.96.5
 set PROJECT_DRIVE=C:
 set PROJECT_BASE=\Users\Chris\Documents\Home
 set PROJECT_ROOT=..\sequencer64

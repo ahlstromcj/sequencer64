@@ -38,7 +38,7 @@
 #include <sstream>                      /* std::ostringstream               */
 
 #include "seq64_features.h"             /* more build-time configuration    */
-#include "app_limits.h"                 /* macros for build_details()       */
+#include "app_limits.h"                 /* macros for seq_build_details()   */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

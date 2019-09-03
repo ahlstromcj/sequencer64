@@ -9,7 +9,7 @@
  *
  * \author  Chris Ahlstrom
  * \date    2015-11-20
- * \updates 2018-09-29
+ * \updates 2019-09-01
  * \version $Revision$
  *
  *    Also see the file_functions.cpp module.  These modules together simplify
@@ -52,7 +52,6 @@ extern bool write_options_files
 (
     const perform & p, const std::string & errrcname = ""
 );
-extern std::string build_details ();
 
 #endif      // SEQ64_CMDLINEOPTS_HPP
 

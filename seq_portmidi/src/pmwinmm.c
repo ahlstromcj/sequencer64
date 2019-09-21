@@ -523,7 +523,6 @@ static MIDIHDR *
 allocate_sysex_buffer (long data_size)
 {
     LPMIDIHDR hdr = (LPMIDIHDR) pm_alloc(MIDIHDR_SYSEX_SIZE(data_size));
-    MIDIEVENT * evt;
     if (not_nullptr(hdr))
     {
         MIDIEVENT * evt = (MIDIEVENT *)(hdr + 1);   /* placed after header */

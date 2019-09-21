@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-06-10
+ * \updates       2019-09-20
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -2165,17 +2165,24 @@ optionsfile::parse_midi_control_out (const std::string & fname, perform & p)
     {
         // Sequence actions
 
-        int sequences = 0;                                 /* seq & ctrl #s */
+        int sequences = 0;                          /* seq & ctrl numbers   */
         int buss = SEQ64_MIDI_CONTROL_OUT_BUSS;
         int enabled = 0;
         int count = sscanf(m_line, "%d %d %d", &sequences, &buss, &enabled);
-        if (enabled == 0 && count == 3)
+        if (count == 3)
         {
-            p.midi_control_out_disabled(true);
-            return true;
+            p.midi_control_out_disabled(enabled == 0);
         }
         else
-            p.midi_control_out_disabled(false);
+        {
+            /*
+             * For an issue noted in #58, we exit the function only if the value
+             * count is wrong, to be safe.
+             */
+
+            p.midi_control_out_disabled(true);
+            return true;                            /* can't trust the data */
+        }
 
         midi_control_out * mctrl = new midi_control_out();
         mctrl->initialize(sequences, buss);

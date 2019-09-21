@@ -606,7 +606,7 @@ qsliveframe::drawSequence (int seq)
 
                     pen.setWidth(2);
                     drawcolor = tempo_paint();
-                    note_y = m_slot_w -
+                    note_y = m_slot_h -                 // BAD? m_slot_w -
                          m_slot_h * (note + 1) / SEQ64_MAX_DATA_VALUE;
                 }
                 else

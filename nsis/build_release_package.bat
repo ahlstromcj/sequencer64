@@ -8,7 +8,7 @@
 :: \library     Sequencer64 for Windows
 :: \author      Chris Ahlstrom
 :: \date        2018-05-26
-:: \update      2019-09-03
+:: \update      2019-09-21
 :: \license     $XPC_SUITE_GPL_LICENSE$
 ::
 ::      This script sets up and creates a release build of Sequencer64 for
@@ -38,23 +38,24 @@
 ::          to specify the current date and Sequencer64 version number.
 ::          The macros to modify are: VER_NUMBER (e.g. "0.95") and
 ::          VER_REVISION (e.g. "1", as in "0.95.1").
-::       3. a. In Windows Explorer, just double-click on this batch file in its
+::       3. a. In Windows Explorer, make sure there is no existing Qt Creator
+::             build or shadow directory/configuration, especially a Debug
+::             configuration.
+::          b. In Windows Explorer, just double-click on this batch file in its
 ::             location in the "nsis" directory, and watch the build run in a
 ::             DOS window.
-::          b. Or navigate to "sequencer64\nsis" and run simply
-::             "build_release_package.bat".  The shadow directory
-::             "seq64-release" is created in "sequencer64\..".
 ::          c. Alternatively, create a "shadow" directory at the same level
 ::             as "sequencer64", change to it, and run
 ::             "..\sequencer64\nsis\build_release_package.bat".
 ::       4. The result is a file such as "qpseq64-release-package-0.95.1.7z".
 ::          It is found in ../sequencer64/seq64-release/Seq64qt5.  Also, a
 ::          log file is made in ../sequencer64/seq64-release/make.log,
-::          which can be checked for build warnings and errors.
+::          which can be checked for build warnings and errors. If you cannot
+::          find these files, search for "seq64-release".
 ::       5. In Linux (have not tried NSIS in Windows yet), copy this 7z file
 ::          to the root sequencer64 directory.
 ::       6. Use 7zip to extract this file; it will unpack the contents into
-::          the 'release' directory.  Then move the 7zip package out of the way.
+::          the 'release' directory.  Then move the 7z file out of the way.
 ::
 ::          $ 7z x qpseq64-release-package-0.95.2.7z
 ::          $ mv qpseq64-release-package-0.95.2.7z ..

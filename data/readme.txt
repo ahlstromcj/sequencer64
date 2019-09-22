@@ -27,6 +27,9 @@ Windows support:
     some configuration can be done manually in the "rc" and "usr" files.  See
     README.windows for more information.
 
+    See the file C:\Program Files(x86)\Sequencer64\data for README.windows,
+    which explains some things to watch for with Windows.
+
 See the INSTALL file for build-from-source instructions or using a
 conventional source tarball.  This file is part of:
 

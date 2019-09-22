@@ -9,13 +9,16 @@
 ;   Provides constants commonly used by the installer for Sequencer64 for
 ;   Windows.
 ;
+;   Note that "PRODUCT_NAME" determines the name of the directory in
+;   C:/Program Files(x86) where the application is installed.
+;
 ;---------------------------------------------------------------------------
 
 ;============================================================================
 ; Product Registry keys.
 ;============================================================================
 
-!define PRODUCT_NAME        "Sequencer64 (qpseq64)"
+!define PRODUCT_NAME        "Sequencer64"
 !define PRODUCT_DIR_REGKEY  "Software\Microsoft\Windows\CurrentVersion\App Paths\qpseq64.exe"
 !define PRODUCT_UNINST_KEY  "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY     "HKLM"

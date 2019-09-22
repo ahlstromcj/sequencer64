@@ -1,3 +1,154 @@
+2019-09-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* NEWS, README, README.jack, README.windows, ROADMAP,
+	aux-files/compile, aux-files/depcomp, aux-files/missing, bootstrap,
+	configure.ac, data/README, data/license.txt, data/readme.txt,
+	data/readme.windows, include/config.h.in,
+	libseq64/src/optionsfile.cpp, nsis/Seq64Constants.nsh,
+	nsis/Seq64Setup.nsi, nsis/build_release_package.bat,
+	seq_qt5/forms/qsabout.ui, strap_functions: Build updates for pending
+	version 0.96.5.
+
+2019-09-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Grabbed minor windows changes from master.
+	* configure, libseq64/src/optionsfile.cpp,
+	seq_qt5/src/qsliveframe.cpp: Fixed related #58 issue, not reading
+	midi-control-out if disabled.
+
+2019-09-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/libseq64.pro, nsis/Seq64Constants.nsh,
+	nsis/Seq64Setup.nsi, nsis/build_release_package.bat: Fixes for
+	Windows version 0.96.5.
+	* aux-files/compile, aux-files/depcomp, aux-files/missing,
+	seq_gtkmm2/src/mainwnd.cpp: Fixed info bug for seq_build_details()
+	Gtkmm.
+	* libseq64/include/cmdlineopts.hpp, libseq64/src/seq64_features.cpp: 
+	A couple minor build-info fixes.
+
+2019-09-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ROADMAP, libseq64/include/seq64_features.h,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/seq64_features.cpp,
+	seq_qt5/forms/qsabout.ui, seq_qt5/include/qseditoptions.hpp,
+	seq_qt5/src/qsbuildinfo.cpp, seq_qt5/src/qseditoptions.cpp: 
+	Refactored version info.
+
+2019-08-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, include/config.h.in,
+	libseq64/include/rc_settings.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_qt5/forms/qseditoptions.ui, seq_qt5/include/qperfroll.hpp,
+	seq_qt5/include/qseditoptions.hpp, seq_qt5/src/qperfroll.cpp,
+	seq_qt5/src/qseditoptions.cpp, seq_qt5/src/qseqframe.cpp: Fixed
+	qseq64 does not use JACK after restart #176.
+
+2019-07-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : commit afa04734482cee55738dccfd0b920cc5585344a4 Author:
+	TimothÃ©e Giet <animtim@gmail.com> Date:   Wed Jul 17 16:51:20 2019
+	+0200
+
+2019-07-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure, include/seq64-config.h,
+	seq_qt5/src/qseqroll.cpp: Removed a left-over printf from qseqroll.
+
+2019-07-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp: Added
+	announce_exit() to turn off sequence MIDI control outs when quitting
+	the application.
+
+2019-07-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/perform.cpp: Fixed bit-masking for MIDI control out
+	in set/unset_midi_control_status().
+	* : commit 18e4da19ef158599d666622394cbf5f8cf9424c3 Author: Chris
+	Ahlstrom <ahlstromcj@gmail.com> Date:   Mon Jul 8 17:40:55 2019
+	-0400
+	* Seq64rtmidi/seq64rtmidi.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/playlist.cpp: Added pattern
+	announcing to the opening of midi files.
+
+2019-06-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure, contrib/notes/midi-control-out.txt: More notes for MIDI
+	out control.
+
+2019-06-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp: Added
+	playscreen MIDI out announcement function.
+	* README, libseq64/src/sequence.cpp: Fixed usage of wrong transpose
+	flag value in handle_edit_action().
+	* aux-files/compile, aux-files/depcomp, aux-files/missing,
+	configure, libseq64/src/midi_control_out.cpp,
+	libseq64/src/optionsfile.cpp: Fixed channel-setting bug in MIDI
+	control out.
+
+2019-06-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, include/config.h.in, include/seq64-config.h,
+	libseq64/include/midi_control_out.hpp,
+	libseq64/include/optionsfile.hpp, libseq64/include/perform.hpp,
+	libseq64/include/seq64_features.h,
+	libseq64/src/midi_control_out.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp: MIDI control
+	out a run-time option, fixed missing flush() calls, added enable bit
+	to the rcfile.
+	* README, libseq64/src/midi_control_out.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp: Starting to make MIDI control out a
+	run-time option.
+
+2019-06-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/midi-control-out.txt,
+	contrib/notes/sequencer64.rc.txt,
+	libseq64/include/midi_control_out.hpp, libseq64/src/event.cpp,
+	libseq64/src/midi_control_out.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp: Fixed more MIDI control out bugs, but not
+	yet the queuing bug.
+	* contrib/notes/midi-control-out.txt,
+	libseq64/src/midi_control_out.cpp, libseq64/src/optionsfile.cpp: 
+	Fixed setting and writing of disabled MIDI control out actions.
+
+2019-06-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, libseq64/include/midi_control_out.hpp,
+	libseq64/include/optionsfile.hpp,
+	libseq64/src/midi_control_out.cpp, libseq64/src/optionsfile.cpp: 
+	Interim, fixing bugs in midi-control-out implementation.
+	* contrib/notes/midi-control-out.txt,
+	libseq64/include/midi_control_out.hpp,
+	libseq64/include/midibyte.hpp, libseq64/src/midi_control_out.cpp,
+	libseq64/src/optionsfile.cpp: Interim check-in, refactoring
+	MIDI-control-out to allow larger set sizes, still in progress.
+
+2019-06-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure, contrib/notes/midi-control-out.txt,
+	include/seq64-config.h, libseq64/include/app_limits.h,
+	libseq64/include/midi_control_out.hpp,
+	libseq64/src/midi_control_out.cpp, libseq64/src/optionsfile.cpp: 
+	Some tweaking of the midi-control-out code, still studying it.
+	* configure.ac, libseq64/include/configfile.hpp,
+	libseq64/include/midi_control.hpp,
+	libseq64/include/midi_control_out.hpp,
+	libseq64/include/optionsfile.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/sequence.cpp: Updated midi-control-out handling.
+	* contrib/scripts/show_tags: Added the show_tags script.
+	* README, contrib/notes/midi-control-out.txt,
+	include/seq64-config.h, libseq64/include/Makefile.am,
+	libseq64/include/midi_control_out.hpp,
+	libseq64/include/optionsfile.hpp, libseq64/include/perform.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/Makefile.am,
+	libseq64/src/midi_control_out.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp: Initial addition of igorangst
+	MIDI-control-out.
+
 2019-06-06  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* seq_qt5/src/qseqroll.cpp: qseqrollpix works, but need to try

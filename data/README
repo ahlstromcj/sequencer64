@@ -1,14 +1,15 @@
-Data Directory
+Data Directory for Sequencer64 0.96.5
 Chris Ahlstrom
-2018-01-02 to 2018-05-27
+2018-01-02 to 2019-09-22
 
 This directory contains files to be installed in the ${prefix}/share
-directory (e.g. /usr/share or /usr/local/share) on Linux, or in the
-installation directory (e.g.  C:/Program Files (x86)/Sequencer64/data) on
+directory [e.g. /usr/share or /usr/local/share] on Linux, or in the
+installation directory [e.g.  C:/Program Files (x86)/Sequencer64/data] on
 Windows.
 
 The files include alternate configuration files that the user can copy to
-$HOME/.config/sequencer64 and modify to satisfaction, and sample
-Sequencer64 MIDI files.
+$HOME/.config/sequencer64 [or C:/Users/YourName/AppData/Local/sequencer64 on
+Windows] and modify to satisfaction, plus some sample Sequencer64 MIDI
+files.
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

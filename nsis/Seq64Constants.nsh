@@ -3,7 +3,7 @@
 ; File:         Seq64Constants.nsh
 ; Author:       Chris Ahlstrom
 ; Date:         2018-05-26
-; Updated:      2019-09-03
+; Updated:      2019-09-22
 ; Version:      0.96.5
 ;
 ;   Provides constants commonly used by the installer for Sequencer64 for
@@ -15,7 +15,7 @@
 ; Product Registry keys.
 ;============================================================================
 
-!define PRODUCT_NAME        "Sequencer64"
+!define PRODUCT_NAME        "Sequencer64 (qpseq64)"
 !define PRODUCT_DIR_REGKEY  "Software\Microsoft\Windows\CurrentVersion\App Paths\qpseq64.exe"
 !define PRODUCT_UNINST_KEY  "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY     "HKLM"

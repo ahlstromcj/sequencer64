@@ -1,6 +1,6 @@
-NEWS for Sequencer64 0.96.0
+NEWS for Sequencer64 0.96.5
 Chris Ahlstrom
-2015-07-10 to 2018-09-27
+2015-07-10 to 2019-09-22
 
 This file collects major changes that are older and clutter up
 the README file.  This file should be called "OLD NEWS".
@@ -29,6 +29,38 @@ Pull Request #150 from user jfrey-xx:
         control nor GUI.
     -	Biggest change: the MIDI control "reserved for expansion" is now used
         to set the "replace" flag while recording.
+    -   Version 0.96.3:
+        A long time in coming, busy with refactoring Seq66 (now available).
+        Fixes issue #171 (GitHub), and some minor tweakage.
+    -   Version 0.96.2:
+        -   Fixed issue with qsliveframe when expanding vertically, and in
+            showing hot-keys when an external live-frame with set > 0 is
+            created..
+        -   Beefing up play-lists to support editing better.
+    -   Version 0.96.1:
+        -   Fixes to bugs in the Qt live-frame, including coloring.
+        -   Varisets implemented in the Qt live-frame.
+        -   Fixes to the CLI version of Sequencer64.
+        -   Fixes to file import in the Qt version.
+        -   Fix to the Qt song-editor transpose combo-box.
+        -   File cleanup, usage of PLATFORM_CPP_11 macro.
+        -   Fixes to seqkeys issues in Gtkmm and Qt pattern editors.
+        -   Fixed GitHub issue #170, where we exited prematurely from
+            processing all of the MIDI controls set up in the "rc" file.
+        -   Fixed a Qt performance editor seqfault.
+        -   Fixed a bug in process the "rc" file [midi-clock] entries.
+    -   Version 0.96.0:
+        -   Support for playlists and MIDI selections of playlists and songs.
+            Includes the command-line option, "rc" file, keystroke selection,
+            and MIDI control.
+        -   Fixed ALSA issue with port system:announce being enabled in the
+            File / Options / MIDI input GUI.
+        -   Added an external window for additional Qt live-frame views.
+        -   Updated the command-line version, seq64cli, to use the same
+            MIDI/WRK file-open function as the rest of the versions.
+        -   Fixed the wrkfile parser to set the buss-override value if specified.
+        -   Fixed the B:B:T calculation for displaying the current position
+            in non-4/4 time signatures.
     -   Version 0.95.4:
         -   Enable a JACK-less version of the rtmidi build.  GitHub issue #165.  
             If --disable-jack is used, rtmidi will come up as ALSA even if

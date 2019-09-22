@@ -24,7 +24,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Sequencer64 [qpseq64]</string>
+      <string>Sequencer64 [qseq64/qpseq64]</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -48,7 +48,7 @@
       </font>
      </property>
      <property name="text">
-      <string>2019-09-01 v. 0.96.5 * midi_control</string>
+      <string>2019-09-21 v. 0.96.5 * midi_control</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

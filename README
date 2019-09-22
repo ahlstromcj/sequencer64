@@ -1,17 +1,17 @@
 README for Sequencer64 0.96.5 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2019-07-09
+2015-09-10 to 2019-09-22
 
-Sequencer64 is a reboot of seq24, extending it with many new features.
-The heart of seq24 remains intact.  It is an old friend with a whole lot
-of added equipment.  It has an extensive manual and prebuilt Debian packages,
+Sequencer64 is a reboot of seq24, extending it greatly over the last four years.
+The heart of seq24 remains intact.  It is an old friend with a whole lot of
+added equipment.  It has an extensive manual, prebuilt Debian packages,
 source tarballs, and Windows installers:
 
     https://github.com/ahlstromcj/sequencer64-doc.git
     https://github.com/ahlstromcj/sequencer64-packages.git
 
-Sequencer64 has builds for ALSA, PortMidi, JACK, Gtkmm 2.4, Qt 5, Windows,
-and the command-line/daemon.
+Sequencer64 has build options for ALSA, PortMidi, JACK, Gtkmm 2.4, Qt 5, Windows,
+and for a command-line/daemon.
 
 Native JACK support: Seq64rtmidi/seq64
 
@@ -35,8 +35,8 @@ Windows support derived from PortMidi: Seq64qt5/qpseq64.exe
     devices are ignored, and playback (e.g. to the Windows wavetable
     synthesizer) work. It is built easily via Qt Creator or qmake, using
     MingW.  The Qt 5 GUI still has a few features to be added, but will
-    eventually be the official GUI of Seq64.  See README.windows for more
-    information.
+    be the official GUI of Seq66 (in the near future).  See README.windows for
+    more information.
 
 See the INSTALL file for build-from-source instructions for Linux or Window,
 and using a conventional source tarball.
@@ -47,43 +47,12 @@ Recent changes:
         -   Merged in the midi-control code of igorangst and fixed some
             misfeatures along the way.
         -   Fixed error in access transpose functionality.
+        -   Many minor issues fixed.
     -   Version 0.96.4:
         -   Tweaks back-ported from Sequencer66.
         -   Added arrow movement of notes in qseqroll, and fixed drawing the
             selection box.
         -   Fixed enabling event-editor save button when an event is deleted.
-    -   Version 0.96.3:
-        A long time in coming, busy with refactoring Seq66 (not yet available).
-        Fixes issue #171 (GitHub), and some minor tweakage.
-    -   Version 0.96.2:
-        -   Fixed issue with qsliveframe when expanding vertically, and in
-            showing hot-keys when an external live-frame with set > 0 is
-            created..
-        -   Beefing up play-lists to support editing better.
-    -   Version 0.96.1:
-        -   Fixes to bugs in the Qt live-frame, including coloring.
-        -   Varisets implemented in the Qt live-frame.
-        -   Fixes to the CLI version of Sequencer64.
-        -   Fixes to file import in the Qt version.
-        -   Fix to the Qt song-editor transpose combo-box.
-        -   File cleanup, usage of PLATFORM_CPP_11 macro.
-        -   Fixes to seqkeys issues in Gtkmm and Qt pattern editors.
-        -   Fixed GitHub issue #170, where we exited prematurely from
-            processing all of the MIDI controls set up in the "rc" file.
-        -   Fixed a Qt performance editor seqfault.
-        -   Fixed a bug in process the "rc" file [midi-clock] entries.
-    -   Version 0.96.0:
-        -   Support for playlists and MIDI selections of playlists and songs.
-            Includes the command-line option, "rc" file, keystroke selection,
-            and MIDI control.
-        -   Fixed ALSA issue with port system:announce being enabled in the
-            File / Options / MIDI input GUI.
-        -   Added an external window for additional Qt live-frame views.
-        -   Updated the command-line version, seq64cli, to use the same
-            MIDI/WRK file-open function as the rest of the versions.
-        -   Fixed the wrkfile parser to set the buss-override value if specified.
-        -   Fixed the B:B:T calculation for displaying the current position
-            in non-4/4 time signatures.
     -   For earlier version information, see the NEWS and ChangeLog files.
 
 This package is oriented to developers and users who do not mind building from

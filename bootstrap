@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2018-09-11
+# \update     	2019-09-22
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -35,9 +35,9 @@ LANG=C
 export LANG
 CYGWIN=binmode
 export CYGWIN
-export SEQ64_SCRIPT_EDIT_DATE="2018-10-31"
+export SEQ64_SCRIPT_EDIT_DATE="2019-09-22"
 export SEQ64_LIBRARY_API_VERSION="0.96"
-export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.96.1"
+export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.96.5"
 
 #******************************************************************************
 #  Version info
@@ -68,11 +68,11 @@ checkdir Sequencer64
 DOBOOTSTRAP="yes"
 DOALSAMIDI="no"
 DOCLEAN="no"
+DORELEASE="yes"
 DODEBUG="no"
 DOFULLCLEAN="no"
 DOMINGW="no"
 DOPORTMIDI="no"
-DORELEASE="no"
 DORTCLI="no"
 DOSTATIC="no"
 DOTESTONLY="no"
@@ -98,7 +98,7 @@ EXTRAFLAGS=""
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.96.1-2018-10-31)
+Usage: ./bootstrap [options]                                 (0.96.5-2019-09-22)
 
  'bootstrap' sets up GNU automake and libtool support for the Sequencer64
  projects, and creates the 'configure' script.  It can also super-clean the
@@ -164,9 +164,11 @@ if [ $# -ge 1 ] ; then
 
          --debug | -ed | --enable-debug | --ed)
             DODEBUG="yes"
+            DORELEASE="no"
             ;;
 
          --release | -er | --enable-release | --er)
+            DODEBUG="no"
             DORELEASE="yes"
             ;;
 
@@ -271,7 +273,7 @@ if [ $DOFULLCLEAN == "yes" ] ; then
    rm -f include/stamp-h1
    rm -f include/seq64-config.h
    rm -rf po
-   rm -f configure
+#  rm -f configure
    clean_debfiles
    echo "   All junk files removed."
 

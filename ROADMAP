@@ -1,6 +1,6 @@
 Sequencer64 Roadmap
 Chris Ahlstrom
-2015-09-10 to 2019-09-01
+2015-09-10 to 2019-09-21
 
 Latest version: 0.96.5
 
@@ -13,5 +13,8 @@ This roadmap is a bit old.  Lots of good suggestions have come in from users,
 and we have tended to give them what they want.  :-)  See the TODO instead.
 Also see the contrib/notes/bugs-to-investigate.txt file, which is also a bit
 out-of-date.
+
+Also note that there is a major refactoring of Sequencer64, called Seq66. It is
+experimental but it works.
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

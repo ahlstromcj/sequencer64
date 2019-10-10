@@ -56,7 +56,7 @@
  *          <- sc_drawarea_x  ->
  *          <- sc_keyarea_x ->
  *           ----------------
- *          |     C5 |       | |    sc_key_y
+ *          |     C5 |       | |    m_key_y
  *          |         -------| |
  *          |        |bbbbbbb| |
  *          |         -------| |
@@ -91,7 +91,7 @@
 namespace seq64
 {
 
-static const int sc_key_x = 20;     // 16;
+static const int sc_key_x = 20;
 static const int sc_key_y =  8;
 
 /**
@@ -100,9 +100,7 @@ static const int sc_key_y =  8;
  */
 
 static const int sc_keyarea_x = sc_key_x + 20 - 4;
-static const int sc_keyarea_y = sc_key_y * c_num_keys + 1;
 static const int sc_drawarea_x = sc_keyarea_x + 1;
-static const int sc_drawarea_y = sc_keyarea_y - 2;
 static const int sc_keyoffset_x = sc_keyarea_x - sc_key_x + 1;
 
 /**
@@ -139,6 +137,9 @@ seqkeys::seqkeys
     m_keying_note           (0),
     m_scale                 (0),
     m_key                   (0),
+    m_key_y                 (usr().key_height()),
+    m_keyarea_y             (m_key_y * c_num_keys + 1),
+    m_drawarea_y            (m_keyarea_y - 2),
     m_show_octave_letters   (true)
 {
     // Empty body
@@ -221,14 +222,14 @@ seqkeys::update_pixmap ()
 
     draw_rectangle_on_pixmap
     (
-        white_paint(), 1, 1, sc_keyoffset_x + 2, sc_drawarea_y
+        white_paint(), 1, 1, sc_keyoffset_x + 2, m_drawarea_y
     );
     for (int key = 0; key < c_num_keys; ++key)
     {
-        int yofkey = sc_key_y * key;
+        int yofkey = m_key_y * key;
         draw_rectangle_on_pixmap
         (
-            white_key_paint(), kx, yofkey + 1, sc_key_x - 2, sc_key_y - 1
+            white_key_paint(), kx, yofkey + 1, sc_key_x - 2, m_key_y - 1
         );
 
         int okey = (c_num_keys - key - 1) % SEQ64_OCTAVE_SIZE;
@@ -236,7 +237,7 @@ seqkeys::update_pixmap ()
         {
             draw_rectangle_on_pixmap
             (
-                black_key_paint(), kx, yofkey + 2, sc_key_x - 2, sc_key_y - 3
+                black_key_paint(), kx, yofkey + 2, sc_key_x - 2, m_key_y - 3
             );
         }
 
@@ -276,7 +277,7 @@ void
 seqkeys::draw_area()
 {
     update_pixmap();
-    draw_drawable(0, m_scroll_offset_y, 0, 0, sc_keyarea_x, sc_keyarea_y);
+    draw_drawable(0, m_scroll_offset_y, 0, 0, sc_keyarea_x, m_keyarea_y);
 }
 
 /**
@@ -306,7 +307,7 @@ seqkeys::force_draw ()
 void
 seqkeys::convert_y (int y, int & note)
 {
-    note = (sc_drawarea_y - y) / sc_key_y;     // instead of c_rollarea_y
+    note = (m_drawarea_y - y) / m_key_y;
 }
 
 /**
@@ -361,9 +362,9 @@ seqkeys::draw_key (int key, bool state)
     key = c_num_keys - key - 1;
 
     int x = sc_keyoffset_x + 4; // + 1;
-    int y = (sc_key_y * key) + 2 - m_scroll_offset_y;
+    int y = (m_key_y * key) + 2 - m_scroll_offset_y;
     int w = sc_key_x - 3;                           /* x length of key      */
-    int h = sc_key_y - 3;                           /* y height of key      */
+    int h = m_key_y - 3;                           /* y height of key      */
     if (state)
     {
         if (usr().inverse_colors())
@@ -398,7 +399,7 @@ seqkeys::draw_key (int key, bool state)
  *  We fixed it, but must beware!
  *
 \verbatim
-    m_scroll_offset_y = m_scroll_offset_key * sc_key_y,  // comma operator!!!
+    m_scroll_offset_y = m_scroll_offset_key * m_key_y,  // comma operator!!!
     force_draw();
 \endverbatim
  */
@@ -407,7 +408,7 @@ void
 seqkeys::change_vert ()
 {
     m_scroll_offset_key = int(m_vadjust.get_value());
-    m_scroll_offset_y = m_scroll_offset_key * sc_key_y;
+    m_scroll_offset_y = m_scroll_offset_key * m_key_y;
     force_draw();
 }
 
@@ -421,7 +422,7 @@ void
 seqkeys::on_realize ()
 {
     gui_drawingarea_gtk2::on_realize();
-    m_pixmap = Gdk::Pixmap::create(m_window, sc_keyarea_x, sc_keyarea_y, -1);
+    m_pixmap = Gdk::Pixmap::create(m_window, sc_keyarea_x, m_keyarea_y, -1);
     update_pixmap();
     m_vadjust.signal_value_changed().connect
     (

@@ -123,8 +123,7 @@ void
 qseqbase::set_scroll_y (int y)
 {
     m_scroll_offset_y = y;
-    m_scroll_offset_key * c_key_y;          // m_unit_height
-    m_scroll_offset_key = y / c_key_y;      // m_unit_height
+    m_scroll_offset_key = y / usr().key_height();
 }
 
 #endif  // USE_SCROLLING_CODE

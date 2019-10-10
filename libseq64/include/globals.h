@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2018-10-26
+ * \updates       2019-10-10
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -307,9 +307,11 @@ const int c_keyboard_padding_x = 6;         // Qt version
  *  The height of the piano roll is the same as the height of the virtual
  *  keyboard area.  Note that only a subset of the piano roll will be
  *  shown; one must scroll to see it all.
+ *
+ *  Now determined by usr().key_height().
+ *
+ * const int c_rollarea_y = c_key_y * c_num_keys + 1;
  */
-
-const int c_rollarea_y = c_key_y * c_num_keys + 1;  // c_keyarea_y
 
 /**
  *  The dimensions of the little rectangles, in pixels, that represent the

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-10
+ * \updates       2019-10-10
  * \license       GNU GPLv2 or above
  *
  *  The event pane is the thin gridded drawing-area below the seqedit's piano
@@ -41,6 +41,7 @@
 #include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
 #include "midibyte.hpp"                 /* seq64::midibyte, etc.        */
+#include "settings.hpp"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -293,7 +294,7 @@ protected:
 
     void snap_y (int & y)
     {
-        y -= (y % c_key_y);
+        y -= (y % usr().key_height());
     }
 
     void snap_x (int & x);

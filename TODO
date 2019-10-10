@@ -1,6 +1,47 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-10-29
+2016-12-03 to 2019-10-09
+
+Note lengths recorded are fixed to grid when in MIDI sync instead of lenght
+played #179:
+
+   I am using Alsa for MIDI. When I record with seq64 as clock master, the
+   note lenghts are recorded as played. But when I switch to seq64 being the
+   clock slave, the note length that is played is ignored, and the note
+   length is fixed to the grid quantisation (not note lenght) setting.
+   The keyboard used for recording is a separate midi device and is not the
+   clock master when seq64 is the clock slave.
+   I changed no settings in seq64 when going from clock slave to master and
+   vice versa.
+
+   Also, when going back from clock slave to master again, there seems to be
+   a lot of notes in the MIDI buffer that get played rapidly until the buffer
+   is empty. I have to start/stop several times to get a clean start.
+
+Sequencer64 0.96.5 on Windows Issues:
+
+    #1
+    On the pattern editor, "Incoming Midi goes through to output" does not
+    work; this works as expected if I use older build "0.95.4 Master"
+    #2
+    Edit -> Preferences
+    Midi Clock tab is initially visible, but is never accessible again after
+    user clicks onto another tab (program must be restarted to access this
+    Note this tab was never available in build "0.95.4 Master"
+
+    Q: what is the difference between On (Pos) and On (Mod)?
+    FYI: I am using a virtual midi port (which is set to OFF in "Midi Clock"
+    tab); neither ON option affects issue #1...
+
+    Hello and thanks for Sequencer64!
+    Getting my feet wet with v 0.95 on Windows7 x64- is it expected that
+    some keyboard shortcuts under Windows don t work?
+    There is no mention of this in section 12.2 of manual; also my usr and
+    rc files are unmodified and contain the defaults.
+    Here are two examples of the many I have come across, making following
+    along with the manual difficult...
+    1. p in patternEditor (have to press and hold right mouse to 'paint'
+    2. =, -, modifier keys as described below:
 
 Midi patterns note assignment #170:
 
@@ -109,7 +150,7 @@ d1 e1 f1 g1 a1 notes:
 94 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
 95 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
 
-matt-bel commented 13 hours ago • 
+matt-bel commented 13 hours ago •
 
 i mean if i change pattern group by pressing note buttons, i have to turn off
 the previous one (the playing one) and turn on the next (next pattern group)
@@ -198,7 +239,7 @@ Random bugs:
         Kepler34 devotes the "." to the one-shot feature.  Where can we put
         this, our main keyboard tab is filled!  Looks like [extended-keys] is
         the only place for "One-Shot Song Record".  For the queue key, 'o' is
-        a good mnemonic choice for "queue on/off". 
+        a good mnemonic choice for "queue on/off".
     -   Song-recording does not respect the snap setting on muting.
     -   Song-recording does not respect the queuing feature; the trigger
         is created as soon as queuing is turned on.
@@ -211,7 +252,7 @@ Rtmidi implementation issues to work out:
     -   Make the STRIP_MUTES option permanent.
 
 Hot ideas (from GitHub):
-    
+
     -   Mute button should be inactive unless there are armed sequences.  The
         name is a bit misleading.  Maybe it should toggle them all on if none
         are armed.

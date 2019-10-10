@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-11
+ * \updates       2019-10-10
  * \license       GNU GPLv2 or above
  *
  *      We've added the feature of a right-click toggling between showing the
@@ -131,6 +131,19 @@ private:
      */
 
     int m_key;
+
+    /**
+     *  A copy of usr().key_height().
+     */
+
+    int m_key_y;
+
+    /**
+     *  Additional values determined partly by usr().key_height().
+     */
+
+    int m_keyarea_y;
+    int m_drawarea_y;
 
     /**
      *  The default value is to show the octave letters on the vertical

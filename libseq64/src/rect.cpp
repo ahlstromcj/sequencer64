@@ -246,12 +246,9 @@ rect::xy_to_rect_get
  *
  *      c_num_keys   = 128
  *      c_key_x      = 16
- *      c_key_y      =  8
  *      c_key_height = 12
  *      c_keyarea_x  = 36
  *      c_keyoffset_x = c_keyarea_x - c_key_x
- *      c_keyarea_y   = c_key_y * c_num_keys + 1
- *      c_rollarea_y  = c_keyarea_y
  *      m_zoom
  *
  *  At some point, we might derive classes from rect to better manage the
@@ -284,7 +281,6 @@ rect::convert_tn_box_to_rect
     convert_tn(tick_f, note_l, x2, y2);
     int x, y, w, h;
     rect::xy_to_rect_get(x1, y1, x2, y2, x, y, w, h);
-    h += c_key_y;
     set(x, y, w, h);
     xy_to_rect(x1, y1, x2, y2);
 }

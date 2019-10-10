@@ -224,7 +224,9 @@ seqroll::seqroll
     m_drawing_background_seq(false),
     m_ignore_redraw         (false),
     m_status                (0),
-    m_cc                    (0)
+    m_cc                    (0),
+    m_key_y                 (usr().key_height()),
+    m_rollarea_y            (m_key_y * c_num_keys + 1)
 {
     m_old.clear();
 
@@ -311,11 +313,11 @@ seqroll::update_sizes ()
 
     m_vadjust.set_lower(0);
     m_vadjust.set_upper(c_num_keys);
-    m_vadjust.set_page_size(m_window_y / c_key_y);
+    m_vadjust.set_page_size(m_window_y / m_key_y);
     m_vadjust.set_step_increment(12);
     m_vadjust.set_page_increment(12);
 
-    int v_max_value = c_num_keys - (m_window_y / c_key_y);
+    int v_max_value = c_num_keys - (m_window_y / m_key_y);
     if (m_vadjust.get_value() > v_max_value)
         m_vadjust.set_value(v_max_value);
 
@@ -348,7 +350,7 @@ void
 seqroll::set_scroll_y ()
 {
     m_scroll_offset_key = int(m_vadjust.get_value());
-    m_scroll_offset_y = m_scroll_offset_key * c_key_y;
+    m_scroll_offset_y = m_scroll_offset_key * m_key_y;
 }
 
 /**
@@ -470,7 +472,7 @@ seqroll::update_background ()
     set_line(Gdk::LINE_SOLID);
 
     int octkey = SEQ64_OCTAVE_SIZE - m_key;         /* used three times     */
-    for (int key = 0; key < (m_window_y / c_key_y) + 1; ++key)
+    for (int key = 0; key < (m_window_y / m_key_y) + 1; ++key)
     {
         int remkeys = c_num_keys - key;             /* remaining keys?      */
         int modkey = remkeys - m_scroll_offset_key + octkey;
@@ -492,7 +494,7 @@ seqroll::update_background ()
                 set_line(Gdk::LINE_SOLID);
             }
         }
-        int y = key * c_key_y;
+        int y = key * m_key_y;
         draw_line(m_background, 0, y, m_window_x, y);
         if (m_scale != c_scale_off)
         {
@@ -501,7 +503,7 @@ seqroll::update_background ()
                 draw_rectangle
                 (
                     m_background, light_grey_paint(),
-                    0, y + 1, m_window_x, c_key_y - 1
+                    0, y + 1, m_window_x, m_key_y - 1
                 );
             }
         }
@@ -825,8 +827,8 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                 int note_width;
                 int note_off_width = 0;         /* for wrapped Note Off     */
                 int note_x = tick_s / m_zoom;   /* turn into screen coords  */
-                int note_y = c_rollarea_y - (note * c_key_y) - c_key_y + 1;
-                int note_height = c_key_y - 3;
+                int note_y = m_rollarea_y - (note * m_key_y) - m_key_y + 1;
+                int note_height = m_key_y - 3;
                 int in_shift = 0;
                 int length_add = 0;
                 if (dt == DRAW_NORMAL_LINKED)
@@ -993,7 +995,7 @@ seqroll::draw_selection_on_window ()
         );
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
-        h += c_key_y;
+        h += m_key_y;
     }
     if (drop_action())                              /* move, paste          */
     {
@@ -1054,7 +1056,7 @@ void
 seqroll::convert_xy (int x, int y, midipulse & tick, int & note)
 {
     tick = x * m_zoom;
-    note = (c_rollarea_y - y - 2) / c_key_y;        // why -2 ?
+    note = (m_rollarea_y - y - 2) / m_key_y;        // why -2 ?
 }
 
 /**
@@ -1079,7 +1081,7 @@ void
 seqroll::convert_tn (midipulse tick, int note, int & x, int & y)
 {
     x = tick / m_zoom;
-    y = c_rollarea_y - ((note + 1) * c_key_y) - 1;
+    y = m_rollarea_y - ((note + 1) * m_key_y) - 1;
 }
 
 /**
@@ -1124,7 +1126,7 @@ seqroll::convert_tn_box_to_rect
     convert_tn(tick_s, note_h, x1, y1);     /* convert box to X,Y values */
     convert_tn(tick_f, note_l, x2, y2);
     rect::xy_to_rect_get(x1, y1, x2, y2, x, y, w, h);
-    h += c_key_y;
+    h += m_key_y;
 }
 
 /**
@@ -1159,7 +1161,7 @@ seqroll::convert_tn_box_to_rect
     convert_tn(tick_s, note_h, x1, y1);     /* convert box to X,Y values */
     convert_tn(tick_f, note_l, x2, y2);
     rect::xy_to_rect(x1, y1, x2, y2, r);
-    r.height_incr(c_key_y);
+    r.height_incr(m_key_y);
 }
 
 /**
@@ -1303,7 +1305,7 @@ void
 seqroll::move_selection_box (int dx, int dy)
 {
     int x = m_old.x() + dx * m_snap / m_zoom;
-    int y = m_old.y() + dy * c_key_y;
+    int y = m_old.y() + dy * m_key_y;
     set_current_offset_x_y(x, y);
 
 	int note;

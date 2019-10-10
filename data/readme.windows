@@ -1,6 +1,6 @@
-README.windows for Sequencer64 0.96.5
+README.windows for Sequencer64 0.96.6
 Chris Ahlstrom
-2018-05-13 to 2019-09-22
+2018-05-13 to 2019-10-10
 
 This README provides what you need to know to run the new native Windows
 implementation of Sequencer64 (qpseq64.exe).  It provides notes on Sequencer64
@@ -91,7 +91,7 @@ Configuration Files:
 
 Building the Application:
 
-    To buil
+    To build
 
     After a build, one can change to the shadow-build directory
     and run
@@ -141,6 +141,8 @@ Building the Application:
     The operator system may have some devices locked out, though.
 
 	qpseq64 --buss 1 --option log=filename.out 
+
+    The log-file also goes into the AppData/Local directory.
 
 Keystroke Support:
 

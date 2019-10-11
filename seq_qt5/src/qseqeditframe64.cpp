@@ -2825,10 +2825,13 @@ qseqeditframe64::play_change (bool ischecked)
  *      set_sequence_input() for the same sequence. We only need to call it if
  *      it is not already set, if setting. And, we should not unset it if the
  *      m_toggle_thru->get_active() is true.
+ *
+ * \param ischecked
+ *      UNUSED !!!!
  */
 
 void
-qseqeditframe64::thru_change (bool ischecked)
+qseqeditframe64::thru_change (bool /* ischecked */)
 {
     bool thru_active = ui->m_toggle_thru->isChecked();
     bool record_active = ui->m_toggle_record->isChecked();
@@ -2844,10 +2847,13 @@ qseqeditframe64::thru_change (bool ischecked)
  *      set_sequence_input() for the same sequence. We only need to call it if
  *      it is not already set, if setting. And, we should not unset it if the
  *      m_toggle_thru->get_active() is true.
+ *
+ * \param ischecked
+ *      UNUSED !!!!
  */
 
 void
-qseqeditframe64::record_change (bool ischecked)
+qseqeditframe64::record_change (bool /* ischecked */)
 {
     bool thru_active = ui->m_toggle_thru->isChecked();
     bool record_active = ui->m_toggle_record->isChecked();

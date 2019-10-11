@@ -820,8 +820,14 @@ qseqeditframe::toggleMidiQRec (bool newval)
 void
 qseqeditframe::toggleMidiRec (bool newval)
 {
+#ifdef USE_OLD_CODE
     perf().master_bus().set_sequence_input(true, &seq());
     seq().set_recording(newval);
+#else
+    bool thru_active = seq().get_thru();
+    bool record_active = newval;              /* seq().get_recording()  */
+    perf().set_thru(record_active, thru_active, &seq());
+#endif
 }
 
 /**
@@ -831,8 +837,14 @@ qseqeditframe::toggleMidiRec (bool newval)
 void
 qseqeditframe::toggleMidiThru (bool newval)
 {
+#ifdef USE_OLD_CODE
     perf().master_bus().set_sequence_input(true, &seq());
     seq().set_thru(newval);
+#else
+    bool thru_active = newval;                      /* seq().get_thru() */
+    bool record_active = seq().get_recording();
+    perf().set_thru(record_active, thru_active, &seq());
+#endif
 }
 
 /**

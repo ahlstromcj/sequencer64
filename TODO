@@ -18,6 +18,27 @@ played #179:
    a lot of notes in the MIDI buffer that get played rapidly until the buffer
    is empty. I have to start/stop several times to get a clean start.
 
+   Part 2:
+
+   I started Seq64 without launching Jack on Lubuntu (I did not start the
+   Jack UI and server, but I can check if this is maybe launched in the
+   background), with the -p --alsa options.
+   I switched from Jack to Alsa because the seq64 clock in external sync has
+   way less jitter using Alsa.
+   In internal clocking also Alsa is quite jittery (this is a separate
+   topic).
+   I compiled the newest sources using the Gtkmm interface with all the
+   standard settings, no changes were made after the git clone. The Midi
+   channel recorded is on a seperate Midi input port using a midi-keyboard. I
+   can send a screensot of the settings later on, as this is on a separate
+   PC. Basically all the Jack flags in the settings are switched off (--alsa
+   command line option).
+   Also with these settings I can start seq24 up as a sync master with the
+   play button.
+   I am in "Live" mode and set the "fruity" interaction method.
+   I hope this helps! Thank you for looking into this issue!
+
+
 Sequencer64 0.96.5 on Windows Issues:
 
     #1

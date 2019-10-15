@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-11-05
+ * \updates       2019-10-14
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -1063,6 +1063,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
 
 qseqeditframe64::~qseqeditframe64 ()
 {
+    m_timer->stop();
     delete ui;
 }
 
@@ -1197,8 +1198,13 @@ qseqeditframe64::conditional_update ()
         follow_progress();
     }
     (void) seq().check_loop_reset();
-    if (seq().is_dirty_edit())
-        set_dirty();
+
+    /*
+     * Never set dirt in this function!
+     *
+     * if (seq().is_dirty_edit())
+     *     set_dirty();
+     */
 }
 
 /**
@@ -2203,6 +2209,7 @@ qseqeditframe64::set_note_length (int notelength)
 
     m_note_length = notelength;
     m_initial_note_length = notelength;
+    seq().set_snap_tick(notelength);            /* fix for issue #179       */
     if (not_nullptr(m_seqroll))
         m_seqroll->set_note_length(notelength);
 }
@@ -2827,14 +2834,19 @@ qseqeditframe64::play_change (bool ischecked)
  *      m_toggle_thru->get_active() is true.
  *
  * \param ischecked
- *      UNUSED !!!!
+ *      Indicates that this checkable button is checked.
  */
 
 void
-qseqeditframe64::thru_change (bool /* ischecked */)
+qseqeditframe64::thru_change (bool ischecked)
 {
+#ifdef USE_OLD_CODE
     bool thru_active = ui->m_toggle_thru->isChecked();
     bool record_active = ui->m_toggle_record->isChecked();
+#else
+    bool thru_active = ischecked;
+    bool record_active = seq().get_recording();
+#endif
     perf().set_thru(record_active, thru_active, &seq());
 }
 
@@ -2849,14 +2861,19 @@ qseqeditframe64::thru_change (bool /* ischecked */)
  *      m_toggle_thru->get_active() is true.
  *
  * \param ischecked
- *      UNUSED !!!!
+ *      Indicates that this checkable button is checked.
  */
 
 void
-qseqeditframe64::record_change (bool /* ischecked */)
+qseqeditframe64::record_change (bool ischecked)
 {
+#ifdef USE_OLD_CODE
     bool thru_active = ui->m_toggle_thru->isChecked();
     bool record_active = ui->m_toggle_record->isChecked();
+#else
+    bool thru_active = seq().get_thru();
+    bool record_active = ischecked;
+#endif
     perf().set_recording(record_active, thru_active, &seq());
 }
 
@@ -2875,9 +2892,16 @@ qseqeditframe64::record_change (bool /* ischecked */)
 void
 qseqeditframe64::q_record_change (bool ischecked)
 {
+#ifdef USE_OLD_CODE
     perf().set_quantized_recording(ischecked, &seq());
     if (ui->m_toggle_qrecord->isChecked() && ! ui->m_toggle_record->isChecked())
         ui->m_toggle_record->setChecked(true);
+#else
+    bool qrecord_active = ischecked;
+    perf().set_quantized_recording(qrecord_active, &seq());
+    if (qrecord_active && ! ui->m_toggle_record->isChecked())
+        ui->m_toggle_record->setChecked(true);
+#endif
 }
 
 /**

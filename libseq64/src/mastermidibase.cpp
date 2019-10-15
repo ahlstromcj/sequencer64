@@ -181,6 +181,8 @@ mastermidibase::stop ()
  *  api_clock() function, which does nothing for the <i> original </i> ALSA
  *  implementation and the PortMidi implementation.
  *
+ *  Where do we call flush()?
+ *
  * \threadsafe
  *
  * \param tick

@@ -831,7 +831,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             seq64::rc().with_jack_master(false);
             seq64::rc().with_jack_master_cond(false);
             seq64::rc().with_jack_midi(false);
-            printf("Forcing all-ALSA mode.\n");
+            printf("[Forcing all-ALSA mode]\n");
             break;
 
         case 'a':
@@ -874,7 +874,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 'H':
             seq64::rc().config_directory(optarg);
-            printf("Set home to %s.\n", seq64::rc().config_directory().c_str());
+            printf("[Set home to %s]\n", seq64::rc().config_directory().c_str());
             break;
 
         case 'h':
@@ -946,7 +946,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 'n':
             seq64::rc().lash_support(false);
-            printf("Deactivating LASH support.\n");
+            printf("[Deactivating LASH support]\n");
             break;
 
         case 'o':

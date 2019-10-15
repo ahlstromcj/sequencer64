@@ -535,8 +535,8 @@ private:
     midipulse m_length;
 
     /**
-     *  The size of snap in units of pulses (ticks).  It starts out as the
-     *  value m_ppqn / 4.
+     *  The size of recording snap in units of pulses (ticks).  It starts out as
+     *  the value m_ppqn / 4.
      */
 
     midipulse m_snap_tick;

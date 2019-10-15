@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-07-09
+ * \updates       2019-10-13
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -894,6 +894,12 @@ private:
      */
 
     int m_midiclocktick;
+
+    /**
+     *  We need to adjust the clock increment for the PPQN that is in force.
+     */
+
+    int m_midiclockincrement;
 
     /**
      *  More MIDI clock support.

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-11-04
+ * \updates       2019-10-14
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2200,7 +2200,7 @@ seqedit::set_snap (int s)
         m_initial_snap = s;
         m_seqroll_wid->set_snap(s);
         m_seqevent_wid->set_snap(s);
-        m_seq.set_snap_tick(s);
+        m_seq.set_snap_tick(s);                 /* fix for issue #179       */
     }
 }
 
@@ -2240,6 +2240,7 @@ seqedit::set_note_length (int notelength)
     m_note_length = notelength;
     m_initial_note_length = notelength;
     m_seqroll_wid->set_note_length(notelength);
+    m_seq.set_snap_tick(notelength);
 }
 
 /**

@@ -38,6 +38,37 @@ played #179:
    I am in "Live" mode and set the "fruity" interaction method.
    I hope this helps! Thank you for looking into this issue!
 
+   Part 3:
+
+   I am starting the sequencer like this:
+
+   `seq64 -p --alsa --verbose --no-jack-midi
+   Forcing all-ALSA mode.
+   [Deactivating JACK MIDI]
+
+   37 rtmidi ports created:
+   Input ports (19):
+   [0] 0:1 system:announce (system)
+   [1] 14:0 Midi Through:Midi Through Port-0
+   [2] 20:0 USB Device 0x86a:0x01:USB Device 0x86a:0x01 MIDI 1
+   ...
+   Output ports (18):
+   [0] 14:0 Midi Through:Midi Through Port-0
+   [1] 20:0 USB Device 0x86a:0x01:USB Device 0x86a:0x01 MIDI 1
+   ...
+
+   When I record synced to external Midi clock and record notes, they are all
+   recorded with the snap to grid value for the length, no matter how long I
+   hold the notes (I played some random stuff just for illustration):
+   [2]grafik
+
+   Apart from this issue, the timing in this sync mode is very good.
+
+   If I do not sync externally but just hit play in seq64, the notes are
+   recorded correctly, but unfortunately the clock and playback of seq64 is a
+   lot more jittery.
+
+   Note:  make_clock() is unused!!!!!
 
 Sequencer64 0.96.5 on Windows Issues:
 

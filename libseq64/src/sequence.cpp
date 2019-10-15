@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-06-12
+ * \updates       2019-10-14
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -2127,7 +2127,7 @@ midipulse
 sequence::clip_timestamp (midipulse ontime, midipulse offtime)
 {
     if (offtime <= ontime)
-        offtime = ontime + m_snap_tick - note_off_margin();
+        offtime = ontime + get_snap_tick() - note_off_margin();
     else if (offtime >= m_length)
         offtime = m_length - note_off_margin();
 
@@ -3373,7 +3373,7 @@ sequence::add_event
 
 /**
  *  Handles loop/replace status on behalf of seqrolls.  This sets the
- *  loop-reset status, which is check in the stream_event() function in this
+ *  loop-reset status, which is checked in the stream_event() function in this
  *  module.
  */
 
@@ -3381,7 +3381,7 @@ bool
 sequence::check_loop_reset ()
 {
     bool result = false;
-    if (m_overwrite_recording)
+    if (m_overwrite_recording && m_length > 0)
     {
         midipulse tstamp = m_parent->get_tick() % m_length;
         if (tstamp < (m_ppqn / 4))
@@ -3492,7 +3492,7 @@ sequence::stream_event (event & ev)
                     m_events_undo.push(m_events);       /* push_undo()      */
                     add_note                            /* more locking     */
                     (
-                        mod_last_tick(), m_snap_tick - m_note_off_margin,
+                        mod_last_tick(), get_snap_tick() - m_note_off_margin,
                         ev.get_note(), false, velocity
                     );
                     set_dirty();
@@ -3502,7 +3502,7 @@ sequence::stream_event (event & ev)
                     --m_notes_on;
 
                 if (m_notes_on <= 0)
-                    m_last_tick += m_snap_tick;
+                    m_last_tick += get_snap_tick();
             }
         }
         if (m_thru)
@@ -3516,7 +3516,7 @@ sequence::stream_event (event & ev)
                 midipulse timestamp = ev.get_timestamp();
                 midibyte note = ev.get_note();
                 select_note_events(timestamp, note, timestamp, note, e_select);
-                quantize_events(EVENT_NOTE_ON, 0, m_snap_tick, 1, true);
+                quantize_events(EVENT_NOTE_ON, 0, get_snap_tick(), 1, true);
             }
         }
     }
@@ -3650,7 +3650,7 @@ sequence::play_note_on (int note)
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_ON);
-    e.set_data(note, midibyte(m_note_on_velocity));      // SEQ64_MIDI_COUNT_MAX-1
+    e.set_data(note, midibyte(m_note_on_velocity)); // SEQ64_MIDI_COUNT_MAX-1
     m_master_bus->play(m_bus, &e, m_midi_channel);
     m_master_bus->flush();
 }
@@ -5109,7 +5109,8 @@ void
 sequence::set_snap_tick (int st)
 {
     automutex locker(m_mutex);
-    m_snap_tick = st;
+    if (st > 0)
+        m_snap_tick = st;
 }
 
 /**
@@ -5338,12 +5339,16 @@ sequence::put_event_on_bus (event & ev)
         /*
          * \change ca 2016-03-19
          *      Move the flush call into this condition; why flush() unless
-         *      actually playing an event?
+         *      actually playing an event?  On the other hand, issue #179 seems
+         *      to indicate an opportunity to leave events, so revert to Seq24
+         *      usage.
          */
 
         m_master_bus->play(m_bus, &ev, m_midi_channel);
-        m_master_bus->flush();
+
+        // m_master_bus->flush();
     }
+    m_master_bus->flush();
 }
 
 /**
@@ -5363,7 +5368,7 @@ sequence::off_playing_notes ()
         while (m_playing_notes[x] > 0)
         {
             e.set_status(EVENT_NOTE_OFF);
-            e.set_data(x, midibyte(127));               /* or is 0 better?  */
+            e.set_data(x, midibyte(0));               /* or is 127 better?  */
             m_master_bus->play(m_bus, &e, m_midi_channel);
             if (m_playing_notes[x] > 0)
                 m_playing_notes[x]--;

@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2019-09-22
+dnl \update        2019-10-14
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -719,7 +719,7 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2019-10-10"
+#define VERSION_DATE_SHORT "2019-10-14"
 #define VERSION "0.96.6"
 
 )
@@ -881,11 +881,11 @@ AC_MSG_RESULT([$SEQ64_APP_NAME]);
 
 cat << E_O_F
 
-Do 'make' to compile the selected application.  Do 'make install'
+Run 'make' to compile the selected application.  Run 'make install'
 as root/sudo to install the selected application.  Some tests can be run
 using the separate seq64-tests project.  Do 'make dist', etc. to create gzip
-and other archives.  To build the PDF documentation, make sure Doxygen and
-TexLive are installed, change to the doc/dox directory, and run './make_dox
+and other archives.  To build the PDF documentation, make sure Doxygen, Graphviz,
+and TexLive are installed, change to the doc/dox directory, and run './make_dox
 reference'.  To clean the documentation, run './make_dox clean'.  'install' and
 'uninstall' are other options for make_dox.
 

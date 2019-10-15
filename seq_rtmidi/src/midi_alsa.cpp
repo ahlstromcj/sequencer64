@@ -753,7 +753,8 @@ midi_alsa::api_stop ()
  *  Generates the MIDI clock, starting at the given tick value.
  *  Also sets the event tag to 127 so the sequences won't remove it.
  *
- * \threadsafe
+ *  Note that the caller should insure thread safety, and that the caller should
+ *  flush the buffer.  See midibase::clock() for this setup.
  *
  * \param tick
  *      Provides the starting tick, unused in the ALSA implementation.
@@ -773,7 +774,7 @@ midi_alsa::api_clock (midipulse tick)
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);                          /* clear event          */
     ev.type = SND_SEQ_EVENT_CLOCK;
-    ev.tag = 127;
+    ev.tag = 127;                                   /* so seqs won't remove */
     snd_seq_ev_set_fixed(&ev);
     snd_seq_ev_set_priority(&ev, 1);
     snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set source           */

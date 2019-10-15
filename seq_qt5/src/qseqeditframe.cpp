@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Oli Kester; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-11-04
+ * \updates       2019-10-14
  * \license       GNU GPLv2 or above
  *
  *  This version of the qseqedit-frame class is basically the Kepler34
@@ -411,17 +411,26 @@ qseqeditframe::qseqeditframe
         ui->cmbRecVol, SIGNAL(currentIndexChanged(int)),
         this, SLOT(updateRecVol())
     );
-    connect(ui->btnPlay, SIGNAL(clicked(bool)), this, SLOT(toggleMidiPlay(bool)));
+
+    /*
+     * Set some buttons to be checkable to work on issues with Windows.
+     */
+
     qt_set_icon(play_xpm, ui->btnPlay);
+    ui->btnPlay->setCheckable(true);
+    connect(ui->btnPlay, SIGNAL(clicked(bool)), this, SLOT(toggleMidiPlay(bool)));
 
-    connect(ui->btnQRec, SIGNAL(clicked(bool)), this, SLOT(toggleMidiQRec(bool)));
     qt_set_icon(quantize_xpm, ui->btnQRec);
+    ui->btnQRec->setCheckable(true);
+    connect(ui->btnQRec, SIGNAL(clicked(bool)), this, SLOT(toggleMidiQRec(bool)));
 
-    connect(ui->btnRec, SIGNAL(clicked(bool)), this, SLOT(toggleMidiRec(bool)));
     qt_set_icon(rec_xpm, ui->btnRec);
+    ui->btnRec->setCheckable(true);
+    connect(ui->btnRec, SIGNAL(clicked(bool)), this, SLOT(toggleMidiRec(bool)));
 
-    connect(ui->btnThru, SIGNAL(clicked(bool)), this, SLOT(toggleMidiThru(bool)));
     qt_set_icon(thru_xpm, ui->btnThru);
+    ui->btnThru->setCheckable(true);
+    connect(ui->btnThru, SIGNAL(clicked(bool)), this, SLOT(toggleMidiThru(bool)));
 
     m_timer = new QTimer(this);                             // redraw timer !!!
     m_timer->setInterval(2 * usr().window_redraw_rate());   // 20
@@ -546,7 +555,7 @@ qseqeditframe::updateGridSnap (int snapindex)
     default: snap = p * 4; break;
     }
     m_seqroll->set_snap(snap);
-    seq().set_snap_tick(snap);
+    seq().set_snap_tick(snap);                  /* fix for issue #179       */
 }
 
 /**
@@ -639,6 +648,7 @@ qseqeditframe::updateNoteLength (int newindex)
     default: len = p * 4; break;
     }
     m_seqroll->set_note_length(len);
+    seq().set_snap_tick(len);
 }
 
 /**

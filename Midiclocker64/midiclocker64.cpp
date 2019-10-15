@@ -1,4 +1,5 @@
-/* JACK-Transport MIDI Beat Clock Generator
+/*
+ * JACK-Transport MIDI Beat Clock Generator
  *
  * Copyright (C) 2013 Robin Gareus <robin@gareus.org>
  * Copyright (C) 2009 Gabriel M. Beddingfield <gabriel@teuton.org>
@@ -58,7 +59,7 @@ static struct option const long_options [] =
  */
 
 static const std::string s_help_intro =
-"A JACK application to generate MIDI Clock and other system event via JACK\n"
+"A JACK application to generate MIDI Clock and other system events via JACK\n"
 "transport.  Based on jack_midi_clock, but using Sequencer64 libraries.\n\n"
 "Usage: midiclocker [ options ] [JACK-port] *\n\n"
 ;

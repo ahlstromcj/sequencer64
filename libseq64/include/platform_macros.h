@@ -11,10 +11,10 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-19
+ * \updates       2019-10-13
  * \license       GNU GPLv2 or above
  *
- *  Copyright (C) 2013-2018 Chris Ahlstrom <ahlstromcj@gmail.com>
+ *  Copyright (C) 2013-2019 Chris Ahlstrom <ahlstromcj@gmail.com>
  *
  *  We need a uniform way to specify OS and compiler features without
  *  have to litter our code with many macros.  (Littering this file
@@ -121,6 +121,7 @@
 
 #define PLATFORM_UNIX
 #define PLATFORM_POSIX_API
+#define PLATFORM_PTHREADS               /* for issue #179, raggy playback   */
 
 #endif                                  /* PLATFORM_LINUX                   */
 

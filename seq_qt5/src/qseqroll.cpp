@@ -197,7 +197,7 @@ void
 qseqroll::paintEvent (QPaintEvent *)
 {
     QPainter painter(this);
-    QBrush brush(Qt::NoBrush);
+    QBrush brush(Qt::white);                // QBrush brush(Qt::NoBrush);
     mFont.setPointSize(6);
 
     bool fruity_lines = true;

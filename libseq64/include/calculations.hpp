@@ -378,7 +378,8 @@ clock_tick_duration_bogus (midibpm bpm, int ppqn)
 }
 
 /**
- *  A simple calculation to convert PPQN to MIDI clock ticks.
+ *  A simple calculation to convert PPQN to MIDI clock ticks, which are emitting
+ *  24 times per quarter note.
  *
  * \param ppqn
  *      The number of pulses per quarter note.  For example, the default value

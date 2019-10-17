@@ -37,7 +37,6 @@
 #include <QDesktopWidget>
 #include <QErrorMessage>
 #include <QFileDialog>
-#include <QInputDialog>
 #include <QMessageBox>
 #include <QResizeEvent>
 #include <QTimer>
@@ -1267,6 +1266,7 @@ qsmainwnd::show_import_dialog ()
      * screen-set, prompt for the set/bank number.  Could make this a user
      * option at some point.
      *
+     *  #include <QInputDialog>
      *  bool ok;
      *  int sset = QInputDialog::getInt
      *  (
@@ -1465,7 +1465,12 @@ qsmainwnd::remove_editor (int seqid)
 {
     edit_container::iterator ei = m_open_editors.find(seqid);
     if (ei != m_open_editors.end())
+    {
+        qseqeditex * qep = ei->second;      /* save the pointer             */
         m_open_editors.erase(ei);
+        if (not_nullptr(qep))
+            delete qep;                     /* delete the pointer           */
+    }
 }
 
 /**

@@ -47,7 +47,7 @@
  *          not in the range 0x2a to to 0x39.
  *
  *  For Qt 5 keystrokes, this level of distinguishing the characters from their
- *  keyboard keys is not done.  But Qt 5 allow two ways to retrieve key events:
+ *  keyboard keys is not done.  But Qt 5 allows two ways to retrieve key events:
  *  QKeyEvent::key() and QKeyEvent::text().  For ASCII keys, these functions
  *  yield the same value, the ASCII value of the character/keystroke.  For
  *  special keys, however, QKeyEvent::key() returns number from 0x01000000 on

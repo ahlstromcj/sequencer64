@@ -99,6 +99,8 @@ qseqeditex::qseqeditex (perform & p, int seqid, qsmainwnd * parent)
 qseqeditex::~qseqeditex()
 {
     delete ui;
+    if (not_nullptr(m_edit_frame))
+        delete m_edit_frame;
 }
 
 /**

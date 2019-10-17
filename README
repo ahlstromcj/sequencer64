@@ -50,6 +50,7 @@ Recent changes:
         -   Fixed the plain qseqeditframe handling of the
             play/record/qrecord/thru buttons.
         -   Fixed --priority option to use pthread schedule setting function.
+        -   Fixed external seqedit window remaining after closure.
         -   Still working on odd issues and Windows fixes.
     -   Version 0.96.5:
         -   Merged in the midi-control code of igorangst and fixed some

@@ -542,10 +542,20 @@ void
 seqmenu::remove_seqedit (sequence & s)
 {
     int seqnum = s.number();
-    int count = int(sm_seqedit_list.erase(seqnum));
-    if (count == 0)
+    SeqeditMap::iterator si = sm_seqedit_list.find(seqnum);
+    if (si != sm_seqedit_list.end())
     {
-        errprint("seqedit::on_delete_event() found nothing to delete");
+        seqedit * sed = si->second;
+        int count = int(sm_seqedit_list.erase(seqnum));
+        if (count == 0)
+        {
+            errprint("seqedit::on_delete_event() found nothing to delete");
+        }
+        else
+        {
+            if (not_nullptr(sed))
+                delete sed;
+        }
     }
 }
 

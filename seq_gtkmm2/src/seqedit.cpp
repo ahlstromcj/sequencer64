@@ -3008,8 +3008,7 @@ seqedit::on_delete_event (GdkEventAny *)
      * remove it from that list.
      */
 
-    seqmenu::remove_seqedit(m_seq);
-    delete this;
+    seqmenu::remove_seqedit(m_seq);     /* it deletes this  */
     return false;
 }
 

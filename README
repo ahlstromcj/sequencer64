@@ -1,17 +1,16 @@
 README for Sequencer64 0.96.6 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2019-10-15
+2015-09-10 to 2019-10-19
 
 Sequencer64 is a reboot of seq24, extending it greatly over the last four years.
 The heart of seq24 remains intact.  It is an old friend with a whole lot of
-added equipment.  It has an extensive manual, prebuilt Debian packages,
-source tarballs, and Windows installers:
+added equipment.  It has an extensive manual and Windows installers:
 
     https://github.com/ahlstromcj/sequencer64-doc.git
     https://github.com/ahlstromcj/sequencer64-packages.git
 
 Sequencer64 has build options for ALSA, PortMidi, JACK, Gtkmm 2.4, Qt 5, Windows,
-and for a command-line/daemon.
+and a command-line/daemon.
 
 Native JACK support: Seq64rtmidi/seq64
 
@@ -47,11 +46,13 @@ Recent changes:
         -   Fixed issue #180 by enabling the (user_ui_) key_height option.
             Change this value in sequencer64.usr from 8 to a larger value as
             desired.
-        -   Fixed the plain qseqeditframe handling of the
-            play/record/qrecord/thru buttons.
-        -   Fixed --priority option to use pthread schedule setting function.
+        -   Fixed issue #179 where note lengths recorded were fixed to grid snap
+            (in "slave" mode) instead of length played.
+        -   Fixed the plain qseqeditframe handling of the play / record /
+            qrecord / thru buttons, reported by a Windows user.
+        -   Fixed --priority option to use pthread schedule-setting function.
         -   Fixed external seqedit window remaining after closure.
-        -   Still working on odd issues and Windows fixes.
+        -   Other oddities encountered.
     -   Version 0.96.5:
         -   Merged in the midi-control code of igorangst and fixed some
             misfeatures along the way.

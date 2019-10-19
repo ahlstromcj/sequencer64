@@ -2,230 +2,163 @@ To-Do Items
 Chris Ahlstrom
 2016-12-03 to 2019-10-09
 
-Note lengths recorded are fixed to grid when in MIDI sync instead of lenght
-played #179:
+Related issues for #179 remaining:
 
-   I am using Alsa for MIDI. When I record with seq64 as clock master, the
-   note lenghts are recorded as played. But when I switch to seq64 being the
-   clock slave, the note length that is played is ignored, and the note
-   length is fixed to the grid quantisation (not note lenght) setting.
-   The keyboard used for recording is a separate midi device and is not the
-   clock master when seq64 is the clock slave.
-   I changed no settings in seq64 when going from clock slave to master and
-   vice versa.
-
-   Also, when going back from clock slave to master again, there seems to be
-   a lot of notes in the MIDI buffer that get played rapidly until the buffer
+   When going back from clock slave to master again, there seems to be
+   a lot of notes in the MIDI buffer that get played rapidly till the buffer
    is empty. I have to start/stop several times to get a clean start.
 
-   Part 2:
-
-   I started Seq64 without launching Jack on Lubuntu (I did not start the
-   Jack UI and server, but I can check if this is maybe launched in the
-   background), with the -p --alsa options.
-   I switched from Jack to Alsa because the seq64 clock in external sync has
-   way less jitter using Alsa.
-   In internal clocking also Alsa is quite jittery (this is a separate
-   topic).
-   I compiled the newest sources using the Gtkmm interface with all the
-   standard settings, no changes were made after the git clone. The Midi
-   channel recorded is on a seperate Midi input port using a midi-keyboard. I
-   can send a screensot of the settings later on, as this is on a separate
-   PC. Basically all the Jack flags in the settings are switched off (--alsa
-   command line option).
-   Also with these settings I can start seq24 up as a sync master with the
-   play button.
-   I am in "Live" mode and set the "fruity" interaction method.
-   I hope this helps! Thank you for looking into this issue!
-
-   Part 3:
-
-   I am starting the sequencer like this:
-
-   `seq64 -p --alsa --verbose --no-jack-midi
-   Forcing all-ALSA mode.
-   [Deactivating JACK MIDI]
-
-   37 rtmidi ports created:
-   Input ports (19):
-   [0] 0:1 system:announce (system)
-   [1] 14:0 Midi Through:Midi Through Port-0
-   [2] 20:0 USB Device 0x86a:0x01:USB Device 0x86a:0x01 MIDI 1
-   ...
-   Output ports (18):
-   [0] 14:0 Midi Through:Midi Through Port-0
-   [1] 20:0 USB Device 0x86a:0x01:USB Device 0x86a:0x01 MIDI 1
-   ...
-
-   When I record synced to external Midi clock and record notes, they are all
-   recorded with the snap to grid value for the length, no matter how long I
-   hold the notes (I played some random stuff just for illustration):
-   [2]grafik
-
-   Apart from this issue, the timing in this sync mode is very good.
+   Switched from Jack to Alsa because the seq64 clock in external sync has
+   way less jitter using Alsa.  In internal clocking also Alsa is quite
+   jittery (this is a separate topic).
 
    If I do not sync externally but just hit play in seq64, the notes are
    recorded correctly, but unfortunately the clock and playback of seq64 is a
    lot more jittery.
 
-   Note:  make_clock() is unused!!!!!
-
 Sequencer64 0.96.5 on Windows Issues:
 
-    #1
-    On the pattern editor, "Incoming Midi goes through to output" does not
-    work; this works as expected if I use older build "0.95.4 Master"
-    #2
-    Edit -> Preferences
-    Midi Clock tab is initially visible, but is never accessible again after
-    user clicks onto another tab (program must be restarted to access this
-    Note this tab was never available in build "0.95.4 Master"
+    #1 Fixed: On the pattern editor, "Incoming Midi goes through to output" does
+       not work; this works as expected if I use older build "0.95.4 Master"
+    #2 Still an issue: Edit -> Preferences, Midi Clock tab is initially visible,
+       but is never accessible again after user clicks onto another tab (program
+       must be restarted to access this.  The work around is to use Alt-C, or
+       click near the edge.  This occurs on Linux as well.
+    #3 Getting my feet wet with v 0.95 on Windows7 x64- is it expected that
+       some keyboard shortcuts under Windows do not work?  Here are two
+       examples of the many I have come across:
 
-    Q: what is the difference between On (Pos) and On (Mod)?
-    FYI: I am using a virtual midi port (which is set to OFF in "Midi Clock"
-    tab); neither ON option affects issue #1...
-
-    Hello and thanks for Sequencer64!
-    Getting my feet wet with v 0.95 on Windows7 x64- is it expected that
-    some keyboard shortcuts under Windows don t work?
-    There is no mention of this in section 12.2 of manual; also my usr and
-    rc files are unmodified and contain the defaults.
-    Here are two examples of the many I have come across, making following
-    along with the manual difficult...
-    1. p in patternEditor (have to press and hold right mouse to 'paint'
-    2. =, -, modifier keys as described below:
+        1. p in patternEditor (have to press and hold right mouse to 'paint')
+        2. =, -, modifier keys as described below:
 
 Midi patterns note assignment #170:
 
-matt-bel commented 15 hours ago
+    matt-bel commented 15 hours ago
 
-Thanks for all again, ill leave here my 12 * 8 (looks really like ableton now
-lol!, the only thing its one has to turn off the previous pattern
-group, so i have to press 2 button on my nanopad, its boring a little
-but i can deal with it!) midi sequencer64.rc conf file with a0 b0 c1
-d1 e1 f1 g1 a1 notes:
+    Thanks for all again, ill leave here my 12 * 8 (looks really like ableton
+    now lol!, the only thing its one has to turn off the previous pattern group,
+    so i have to press 2 button on my nanopad, its boring a little but i can
+    deal with it!) midi sequencer64.rc conf file with a0 b0 c1 d1 e1 f1 g1 a1
+    notes:
 
-0 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127] 1 [0 0 0 0 0 0] [1 0 144
-23 0 127] [1 0 128 23 0 127]
-2 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
-3 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
-4 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
-5 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
-6 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
-7 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
-8 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
-9 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
-10 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
-11 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
-12 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
-13 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
-14 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
-15 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
-16 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
-17 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
-18 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
-19 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
-20 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
-21 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
-22 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
-23 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
-24 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
-25 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
-26 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
-27 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
-28 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
-29 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
-30 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
-31 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
-32 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
-33 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
-34 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
-35 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
-36 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
-37 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
-38 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
-39 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
-40 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
-41 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
-42 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
-43 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
-44 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
-45 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
-46 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
-47 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
-48 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
-49 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
-50 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
-51 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
-52 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
-53 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
-54 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
-55 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
-56 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
-57 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
-58 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
-59 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
-60 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
-61 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
-62 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
-63 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
-64 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
-65 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
-66 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
-67 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
-68 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
-69 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
-70 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
-71 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
-72 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
-73 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
-74 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
-75 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
-76 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
-77 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
-78 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
-79 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
-80 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
-81 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
-82 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
-83 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
-84 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
-85 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
-86 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
-87 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
-88 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
-89 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
-90 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
-91 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
-92 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
-93 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
-94 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
-95 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
+    0 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
+    1 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
+    2 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
+    3 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
+    4 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
+    5 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
+    6 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
+    7 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
+    8 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
+    9 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
+    10 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
+    11 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
+    12 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
+    13 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
+    14 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
+    15 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
+    16 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
+    17 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
+    18 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
+    19 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
+    20 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
+    21 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
+    22 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
+    23 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
+    24 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
+    25 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
+    26 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
+    27 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
+    28 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
+    29 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
+    30 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
+    31 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
+    32 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
+    33 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
+    34 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
+    35 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
+    36 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
+    37 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
+    38 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
+    39 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
+    40 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
+    41 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
+    42 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
+    43 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
+    44 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
+    45 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
+    46 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
+    47 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
+    48 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
+    49 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
+    50 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
+    51 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
+    52 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
+    53 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
+    54 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
+    55 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
+    56 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
+    57 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
+    58 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
+    59 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
+    60 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
+    61 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
+    62 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
+    63 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
+    64 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
+    65 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
+    66 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
+    67 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
+    68 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
+    69 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
+    70 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
+    71 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
+    72 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
+    73 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
+    74 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
+    75 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
+    76 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
+    77 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
+    78 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
+    79 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
+    80 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
+    81 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
+    82 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
+    83 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
+    84 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
+    85 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
+    86 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
+    87 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
+    88 [0 0 0 0 0 0] [1 0 144 21 0 127] [1 0 128 21 0 127]
+    89 [0 0 0 0 0 0] [1 0 144 23 0 127] [1 0 128 23 0 127]
+    90 [0 0 0 0 0 0] [1 0 144 24 0 127] [1 0 128 24 0 127]
+    91 [0 0 0 0 0 0] [1 0 144 26 0 127] [1 0 128 26 0 127]
+    92 [0 0 0 0 0 0] [1 0 144 28 0 127] [1 0 128 28 0 127]
+    93 [0 0 0 0 0 0] [1 0 144 29 0 127] [1 0 128 29 0 127]
+    94 [0 0 0 0 0 0] [1 0 144 31 0 127] [1 0 128 31 0 127]
+    95 [0 0 0 0 0 0] [1 0 144 33 0 127] [1 0 128 33 0 127]
 
-matt-bel commented 13 hours ago •
+    matt-bel commented 13 hours ago •
 
-i mean if i change pattern group by pressing note buttons, i have to turn off
-the previous one (the playing one) and turn on the next (next pattern group)
-at the same time.
+    i mean if i change pattern group by pressing note buttons, i have to turn off
+    the previous one (the playing one) and turn on the next (next pattern group)
+    at the same time.
 
-A0 B0 C1 D1 E1 F1 G1 are piano keyboard notes+octave (lecter = note;
-number=octave) corresponding to my nanopad buttons.
+    A0 B0 C1 D1 E1 F1 G1 are piano keyboard notes+octave (lecter = note;
+    number=octave) corresponding to my nanopad buttons.
 
-https://support.keithmcmillen.com/hc/en-us/article_attachments/200973519/midi_note_reference.png
+    https://support.keithmcmillen.com/hc/en-us/article_attachments/200973519/midi_note_reference.png
 
-Make fruity more fruity #169:
+    Make fruity more fruity #169:
 
-zwerverinteractive commented 10 days ago
+    zwerverinteractive commented 10 days ago
 
-to make the roll more fruity: left-click, hold and horizontal movement should
-not draw more notes, this is brush behavior not pencil. odds are you don't
-click exactly right immediately.  holding control while dragging temp-disables
-snap.  right-click hold on empty space draws selection-box, should start
-erasing notes middle-click,hold and move should scroll roll not resize
-selected notes can't resize notes after drawing a couple of them and leave
-them unedited (separate issue?)
-
-    would love these fixed :D
+    to make the roll more fruity: left-click, hold and horizontal movement should
+    not draw more notes, this is brush behavior not pencil. Odds are you do not
+    click exactly right immediately.  holding control while dragging temp-disables
+    snap.  right-click hold on empty space draws selection-box, should start
+    erasing notes middle-click,hold and move should scroll roll not resize
+    selected notes cannot them unedited (separate issue?)
 
 Debian (and other) Packaging:
 

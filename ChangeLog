@@ -1,5 +1,54 @@
+2019-10-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, TODO, aux-files/compile, aux-files/depcomp,
+	aux-files/missing, configure: Check-in of notes and configuration.
+
+2019-10-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* aux-files/compile, aux-files/depcomp, aux-files/missing,
+	configure, include/config.h.in, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Change location of seqedit deletion.
+	* README, configure.ac, seq_qt5/src/qseqeditex.cpp,
+	seq_qt5/src/qskeymaps.cpp, seq_qt5/src/qsmainwnd.cpp: Fixed
+	non-deletion of closed seqedit, code cleanup.
+
+2019-10-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Midiclocker64/midiclocker64.cpp, README, TODO, configure,
+	configure.ac, include/config.h.in,
+	libseq64/include/calculations.hpp, libseq64/include/perform.hpp,
+	libseq64/include/platform_macros.h, libseq64/include/sequence.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/mastermidibase.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/user_settings.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_qt5/src/qseqeditframe.cpp, seq_qt5/src/qseqeditframe64.cpp,
+	seq_qt5/src/qseqroll.cpp, seq_rtmidi/src/midi_alsa.cpp: Working a
+	grab-bag of issues, in progress.
+
+2019-10-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, seq_qt5/src/qseqeditframe.cpp,
+	seq_qt5/src/qseqeditframe64.cpp: Interim check-in for Windows
+	MIDI-thru fix.
+
+2019-10-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* NEWS, README, README.jack, README.windows, ROADMAP, TODO,
+	bootstrap, configure, configure.ac, data/README, data/license.txt,
+	data/readme.txt, data/readme.windows, include/config.h.in,
+	libseq64/include/globals.h, libseq64/src/rect.cpp,
+	nsis/Seq64Constants.nsh, nsis/Seq64Setup.nsi,
+	nsis/build_release_package.bat, seq_gtkmm2/include/seqevent.hpp,
+	seq_gtkmm2/include/seqkeys.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/seqkeys.cpp, seq_gtkmm2/src/seqroll.cpp,
+	seq_qt5/forms/qsabout.ui, seq_qt5/src/qseqbase.cpp: Added workaround
+	for issue #180 related to adjusting the key/note height in the piano
+	roll.
+
 2019-09-22  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* ChangeLog, data/readme.txt, nsis/Seq64Constants.nsh: Version
+	0.96.5 pending, script fixes.
 	* NEWS, README, README.jack, README.windows, ROADMAP,
 	aux-files/compile, aux-files/depcomp, aux-files/missing, bootstrap,
 	configure.ac, data/README, data/license.txt, data/readme.txt,

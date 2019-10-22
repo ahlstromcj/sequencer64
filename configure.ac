@@ -26,7 +26,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.96$)
-AC_INIT(Sequencer64, [0.96.6], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.96.7], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -161,7 +161,7 @@ AC_SUBST(APP_NAME)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.96.6"
+VERSION="0.96.7"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -720,7 +720,7 @@ dnl      automatically for us.
 AH_TOP(
 
 #define VERSION_DATE_SHORT "2019-10-20"
-#define VERSION "0.96.6"
+#define VERSION "0.96.7"
 
 )
 

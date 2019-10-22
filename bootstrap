@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2019-10-10
+# \update     	2019-10-20
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -35,9 +35,9 @@ LANG=C
 export LANG
 CYGWIN=binmode
 export CYGWIN
-export SEQ64_SCRIPT_EDIT_DATE="2019-10-10"
+export SEQ64_SCRIPT_EDIT_DATE="2019-10-20"
 export SEQ64_LIBRARY_API_VERSION="0.96"
-export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.96.6"
+export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.96.7"
 
 #******************************************************************************
 #  Version info
@@ -98,7 +98,7 @@ EXTRAFLAGS=""
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.96.6-2019-10-10)
+Usage: ./bootstrap [options]                                 (0.96.7-2019-10-20)
 
  'bootstrap' sets up GNU automake and libtool support for the Sequencer64
  projects, and creates the 'configure' script.  It can also super-clean the

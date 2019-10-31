@@ -1102,7 +1102,7 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies the default beats per measure, or beats per bar.\n"
-            "# The default value is 4.\n"
+            "# The default value is 4, the range is 1 to 20.\n"
             "\n"
             << usr().midi_beats_per_bar()
             << "       # midi_beats_per_measure/bar\n"

@@ -504,8 +504,6 @@ timebase_callback
       return;
 
    tempo = smf_get_tempo_by_pulses(smf, event->time_pulses);
-   // assert(tempo);
-
    if (new_pos || previous_tempo != tempo)
    {
       pos->valid = JackPositionBBT;

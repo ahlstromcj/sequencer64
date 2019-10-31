@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2018-08-22
+ * \updates       2018-10-31
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -515,10 +515,11 @@
 
 /**
  *  Maximum value for "beats-per-measure".  A new addition for the Qt 5
- *  user-interface.
+ *  user-interface. Note that the seqedit (Gtkmm) allows for a manual entry of
+ *  the exact number, from 0 to 128.
  */
 
-#define SEQ64_MAXIMUM_BEATS_PER_MEASURE   16
+#define SEQ64_MAXIMUM_BEATS_PER_MEASURE   20    /* was 16; for issue #181   */
 
 /**
  *  Minimum number of measures in the official length of a pattern.

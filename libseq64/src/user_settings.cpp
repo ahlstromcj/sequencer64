@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2019-10-12
+ * \updates       2019-10-31
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -990,14 +990,21 @@ user_settings::midi_ppqn (int value)
 
 /**
  * \setter m_midi_beats_per_measure
- *      This value can be set from 1 to 16.  The default value is 4.
+ *      This value can be set from 1 to 20 (issue #181).  The default value is
+ *      4.
  */
 
 void
 user_settings::midi_beats_per_bar (int value)
 {
-    if (value >= 1 && value <= 16)
+    if
+    (
+        value >= SEQ64_MINIMUM_BEATS_PER_MEASURE &&
+        value <= SEQ64_MAXIMUM_BEATS_PER_MEASURE
+    )
+    {
         m_midi_beats_per_measure = value;
+    }
 }
 
 /**

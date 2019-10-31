@@ -402,12 +402,12 @@ Your conditional:
 
         if (new_pos || ! (pos->valid & JackPositionBBT))
 
-and seq24 original's version:
+and seq24 original version:
 
           if (state_last == JackTransportStarting && state_current ==
             JackTransportRolling )
 
-Why is this needed? Obviously seq24's callback did not work regardless of the
+Why is this needed? Obviously seq24s callback did not work regardless of the
 check, but why bother??  You get a new jack frame or the transport sends one,
 and calculate BBT to plug into pos->.  And by the time jack slow sync catches
 up and changes to JackTransportRolling you are a number of cycles past new_pos
@@ -442,8 +442,8 @@ start_playing(). I think you did something similar. nightmares!
 
 Anyway regarding position_jack(). As you know, there was the code after the
 above return that was never used. My guess is that the seq24 team decided to
-follow Rob Buse's original plan of a minimalist sequencer for LIVE performance
-only. Jack reposition's hesitate because jack waits for slow sync clients to
+follow Rob Buses original plan of a minimalist sequencer for LIVE performance
+only. Jack repositions hesitate because jack waits for slow sync clients to
 catch up, thus making repositions useless in a live setup. They just abandoned
 any running position changes and if synced to jack, just start at 0.
 

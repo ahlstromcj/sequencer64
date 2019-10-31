@@ -443,7 +443,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     for
     (
         int b = SEQ64_MINIMUM_BEATS_PER_MEASURE - 1;
-        b <= SEQ64_MAXIMUM_BEATS_PER_MEASURE - 1; ++b
+        b < SEQ64_MAXIMUM_BEATS_PER_MEASURE; ++b
     )
     {
         QString combo_text = QString::number(b + 1);

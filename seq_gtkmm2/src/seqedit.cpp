@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-10-14
+ * \updates       2019-10-31
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -830,10 +830,10 @@ seqedit::create_menus ()
      *  "beats per minute").
      */
 
-#define SET_BPM         mem_fun(*this, &seqedit::set_beats_per_bar)
-#define SET_MEASURES    mem_fun(*this, &seqedit::set_measures)
+#define SET_BPM             mem_fun(*this, &seqedit::set_beats_per_bar)
+#define SET_MEASURES        mem_fun(*this, &seqedit::set_measures)
 
-    for (int i = 0; i < 16; ++i)                        /* seq length menu   */
+    for (int i = 0; i < SEQ64_MAXIMUM_BEATS_PER_MEASURE; ++i)
     {
         int len = i + 1;
         snprintf(b, sizeof b, "%d", len);

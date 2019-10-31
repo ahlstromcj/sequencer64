@@ -1,6 +1,6 @@
 README for Sequencer64 0.96.7 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2019-10-20
+2015-09-10 to 2019-10-31
 
 Sequencer64 is a reboot of seq24, extending it greatly over the last four years.
 The heart of seq24 remains intact.  It is an old friend with a whole lot of
@@ -43,7 +43,9 @@ and using a conventional source tarball.
 Recent changes:
 
     -   Version 0.96.7:
-        -   To be determined.
+        -   Fixed issue #181 by adding more beats/bar menu values up to 20.
+            Note that the fix to issue #77 allows numbers up to 128 to be
+            typed in.
     -   Version 0.96.6:
         -   Fixed issue #180 by enabling the (user_ui_) key_height option.
             Change this value in sequencer64.usr from 8 to a larger value as

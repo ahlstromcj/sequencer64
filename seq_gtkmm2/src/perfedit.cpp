@@ -315,7 +315,7 @@ perfedit::perfedit (perform & p, bool second_perfedit)
 #define SET_BPB     mem_fun(*this, &perfedit::set_beats_per_bar)
 
     char b[4];
-    for (int i = 0; i < 16; ++i)
+    for (int i = 0; i < SEQ64_MAXIMUM_BEATS_PER_MEASURE; ++i)
     {
         snprintf(b, sizeof b, "%d", i + 1);
         m_menu_bpm->items().push_back(MenuElem(b, sigc::bind(SET_BPB, i + 1)));
@@ -693,7 +693,12 @@ perfedit::set_snap (int snap)
 void
 perfedit::set_beats_per_bar (int bpm)
 {
-    if (bpm != m_bpm && bpm > 0 && bpm < 32)
+    if
+    (
+        bpm != m_bpm &&
+        bpm >= SEQ64_MINIMUM_BEATS_PER_MEASURE &&
+        bpm <= SEQ64_MAXIMUM_BEATS_PER_MEASURE
+    )
     {
         char b[8];
         snprintf(b, sizeof b, "%d", bpm);

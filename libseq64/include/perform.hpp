@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-10-13
+ * \updates       2019-11-04
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -394,6 +394,15 @@ private:
      */
 
     static midi_control sm_mc_dummy;
+
+    /**
+     *  Indicates what level of shifting we are at, via MIDI control.  See
+     *  mainwnd::m_call_seq-shift, which handles this concept for keystroke
+     *  control of the mute statuses of sequences.  The default value of this
+     *  counter is 0, and it can range upward to 2, to support 96 sequences.
+     */
+
+    int m_seq_shift;
 
     /**
      *  Provides an optional play-list, loosely patterned after Stazed's Seq32
@@ -2015,6 +2024,13 @@ public:
     void reposition (midipulse tick);
 
 public:
+
+    void increment_seq_shift ()
+    {
+        ++m_seq_shift;
+        if (m_seq_shift > 2)
+            m_seq_shift = 0;
+    }
 
     /**
      * \getter m_master_bus->set_sequence_input()

@@ -3336,6 +3336,11 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     }
                     else if (m_call_seq_shift > 0)      /* variset support  */
                     {
+                        /*
+                         * Here, c_seqs_in_set is a constant value set to
+                         * SEQ64_DEFAULT_SEQS_IN_SET = 32.
+                         */
+
                         int keynum = seqnum + m_call_seq_shift * c_seqs_in_set;
                         sequence_key(keynum);
                         result = true;
@@ -3356,7 +3361,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 else if (k.is(PREFKEY(pattern_shift)))
                 {
                     ++m_call_seq_shift;
-                    if (m_call_seq_shift == 3)
+                    if (m_call_seq_shift > 2)
                         m_call_seq_shift = 0;
 
                     std::string temp = "";

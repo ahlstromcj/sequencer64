@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2019-10-14
+ * \updates       2019-11-04
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -313,6 +313,7 @@ midi_control perform::sm_mc_dummy;
 
 perform::perform (gui_assistant & mygui, int ppqn)
  :
+    m_seq_shift                 (0),        // sets multiple for loop control
     m_play_list                 (),         // optional, not owned by perform
     m_song_start_mode           (false),    // set later during options read
     m_start_from_perfedit       (false),
@@ -4946,7 +4947,8 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 
     case c_midi_control_slot_shift:
 
-        result = false;
+        result = true;
+        increment_seq_shift();
         break;
 
     case c_midi_control_start:
@@ -5295,6 +5297,20 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
             }
             if (is_a_sequence)
             {
+                /*
+                 * Here, the offset is into the sequences in a set. The
+                 * supported offsets range from 0 to 31 (c_seqs_in_set -1).
+                 * The MIDI control shift value (0 to 2) can be used to offset
+                 * the sequence number for the next loop MIDI control message
+                 * that comes in.  TODO: shift for edit ("=") and event ("-")
+                 * operations.
+                 */
+
+                if (m_seq_shift > 0)
+                {
+                    offset += m_seq_shift * c_seqs_in_set;
+                    m_seq_shift = 0;
+                }
                 sequence_playing_toggle(offset);
                 result = true;
             }
@@ -7062,52 +7078,7 @@ perform::toggle_other_names (int seqnum, bool isshiftkey)
 bool
 perform::toggle_sequences (int seqnum, bool isshiftkey)
 {
-#define USE_THIS_WORKING_CODE
-#ifdef USE_THIS_WORKING_CODE
     bool result = toggle_other_names(seqnum, isshiftkey);
-#else
-    bool result = false;
-    if (is_active(seqnum))
-    {
-        if (isshiftkey)
-        {
-            /*
-             *  If the Shift key is pressed, toggle the mute state of all
-             *  other sequences.  Inactive sequences are skipped.
-             */
-
-            for (int s = 0; s < m_sequence_high; ++s)
-            {
-                if (s != seqnum)
-                {
-                    sequence * seq = get_sequence(s);
-                    if (not_nullptr(seq))
-                    {
-                        bool muted = seq->get_song_mute();
-                        seq->set_song_mute(! muted);
-
-                        // What about calling seq->set_playing()?
-
-                        result = true;
-                    }
-                }
-            }
-        }
-        else
-        {
-            sequence * seq = get_sequence(seqnum);
-            if (not_nullptr(seq))
-            {
-                bool muted = seq->get_song_mute();
-                seq->set_song_mute(! muted);
-
-                // What about calling seq->set_playing()?
-
-                result = true;
-            }
-        }
-    }
-#endif
     return result;
 }
 

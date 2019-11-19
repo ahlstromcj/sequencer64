@@ -116,7 +116,7 @@ seq24 (0.9.0-2) unstable; urgency=low
     - Build-Depends on liblash-dev.
     - Drop build-dependency on libasound2-dev for kfreebsd,hurd architectures
       they don't provide ALSA support.
-  * Switch to format 3.0 (quilt). 
+  * Switch to format 3.0 (quilt).
   * Drop CDBS.
   * Switch to DH 7 + autotools_dev add-on.
   * Fix menu file as per spec.
@@ -267,4 +267,3 @@ seq24 (0.4.3-1) unstable; urgency=low
   * Initial Release (closes: #223807).
 
  -- Guenter Geiger (Debian/GNU) <geiger@debian.org>  Wed,  9 Jul 2003 17:51:02 +0200
-

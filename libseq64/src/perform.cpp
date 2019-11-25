@@ -614,8 +614,8 @@ perform::launch (int ppqn)
         {
             launch_input_thread();
             launch_output_thread();
+            announce_playscreen();
         }
-        announce_playscreen();
     }
 }
 

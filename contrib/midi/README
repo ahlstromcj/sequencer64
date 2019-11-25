@@ -1,6 +1,6 @@
 Contributed MIDI/Test Files
 Chris Ahlstrom
-2015-09-11 to 2018-10-26
+2015-09-11 to 2019-11-24
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -49,6 +49,12 @@ the "example1" file.
         message.  Sequencer64 tries to parse this extra data as its
         "proprietary" track.  We have modified the error message to be
         more accurate.
+
+   2rock.mid:
+
+        This drum file we found has "Lyric" sections in it that broke
+        reading of the MIDI file.  So this is a new test case.  It resulted
+        in a fix to the handling of running status.
 
    buffalo.mid
 

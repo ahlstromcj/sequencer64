@@ -23995,13 +23995,12 @@ $as_echo "$SEQ64_APP_NAME" >&6; };
 
 cat << E_O_F
 
-Run 'make' to compile the selected application.  Run 'make install'
-as root/sudo to install the selected application.  Some tests can be run
-using the separate seq64-tests project.  Do 'make dist', etc. to create gzip
-and other archives.  To build the PDF documentation, make sure Doxygen, Graphviz,
-and TexLive are installed, change to the doc/dox directory, and run './make_dox
-reference'.  To clean the documentation, run './make_dox clean'.  'install' and
-'uninstall' are other options for make_dox.
+Run 'make' to compile the configured application.  Run 'make install' as
+root/sudo to install the configured application.  Run 'make dist', etc. to create
+gzip and other archives.  To build the PDF documentation, make sure Doxygen,
+Graphviz, and TexLive are installed, change to the doc/dox directory, and run
+'./make_dox reference'.  To clean the documentation, run './make_dox clean'.
+'install' and 'uninstall' are other options for make_dox.
 
 E_O_F
 

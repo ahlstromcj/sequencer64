@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-18
+ * \updates       2018-11-24
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -429,6 +429,64 @@ public:
     bool check_channel (int channel) const
     {
         return m_channel == EVENT_NULL_CHANNEL || midibyte(channel) == m_channel;
+    }
+
+    /**
+     *  Static test for the status bit.
+     *
+     * \return
+     *      Returns true if the status bit is set.  Covers 0x80 to 0xFF.
+     */
+
+    static bool is_status (midibyte m)
+    {
+        return (m & 0x80) != 0x00;
+    }
+
+    /**
+     *  Static test for detecting a Voice Category status.  The allowed range is
+     *  0x80 to 0xEF.
+     *
+     * \return
+     *      Returns true if the value is in the range noted above.
+     */
+
+    static bool is_voice (midibyte m)
+    {
+        return m >= EVENT_NOTE_OFF && m < EVENT_MIDI_REALTIME;
+    }
+
+    /**
+     *  Checks for a System Category status, which is supposed to clear any
+     *  running status.  We do not also allow 0xff to clear running status to
+     *  prevent errors in reading a file.  An ISSUE!
+     */
+
+    static bool is_system_common (midibyte m)
+    {
+        return m >= EVENT_MIDI_SYSEX && m <= EVENT_MIDI_SYSEX_END;
+    }
+
+    /**
+     *  Checks for a Realtime Category status, which ignores running status.
+     *  Ranges from 0xF8 to 0xFF.
+     */
+
+    static bool is_realtime (midibyte m)
+    {
+        return m >= EVENT_MIDI_CLOCK;   // && m <= EVENT_MIDI_RESET always true
+    }
+
+    /**
+     *  Static test for the status bit.
+     *
+     * \return
+     *      Returns true if the status bit is not set.
+     */
+
+    static bool is_data (midibyte m)
+    {
+        return (m & EVENT_STATUS_BIT) == 0x00;
     }
 
     /**

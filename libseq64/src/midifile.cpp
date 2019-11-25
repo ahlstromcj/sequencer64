@@ -788,7 +788,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
             bool timesig_set = false;               /* seq24 style wins     */
             midishort seqnum = 0;
             midibyte status = 0;
-            midibyte laststatus;
+            midibyte runningstatus = 0;
             midilong seqspec = 0;                   /* sequencer-specific   */
             bool done = false;                      /* done for each track  */
             sequence * s = new sequence(ppqn());    /* create new sequence  */
@@ -804,15 +804,28 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
             RunningTime = 0;                    /* reset time               */
             while (! done)                      /* get each event in track  */
             {
-                event e;                        /* safer here, if "slower"  */
+                event e;
                 Delta = read_varinum();         /* get time delta           */
-                laststatus = status;
                 status = m_data[m_pos];         /* get next status byte     */
-                if ((status & 0x80) == 0x00)    /* is it a status bit ?     */
-                    status = laststatus;        /* no, it's running status  */
+                if (event::is_status(status))               /* 0x80 bit?    */
+                {
+                    ++m_pos;                                /* get to d0    */
+                    if (event::is_system_common(status))    /* 0xF0 to 0xF7 */
+                        runningstatus = 0;                  /* clear it     */
+                    else if (! event::is_realtime(status))  /* 0xF8 to 0xFF */
+                        runningstatus = status;             /* log status   */
+                }
                 else
-                    ++m_pos;                    /* it's a status, increment */
+                {
+                    /*
+                     * Handle data values. If in running status, set that as
+                     * status; the next value to be read is the d0 value.
+                     * If not running status, is this an ERROR?
+                     */
 
+                    if (runningstatus > 0)      /* running status in force? */
+                        status = runningstatus; /* yes, use running status  */
+                }
                 e.set_status(status);           /* set the members in event */
 
                 /*

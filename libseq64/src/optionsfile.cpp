@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-09-20
+ * \updates       2019-11-25
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1072,7 +1072,9 @@ optionsfile::parse_midi_control_section (const std::string & fname, perform & p)
     {
         warnprint("[midi-controls] specifies a count of 0, so skipped");
     }
-    ok = parse_midi_control_out(fname, p);
+    if (ok)
+        ok = parse_midi_control_out(fname, p);
+
     return ok;
 }
 

@@ -198,10 +198,9 @@ namespace seq64
  *  The ALSA code polls for events, and that model is also available here.
  *  We're still working exactly how it will work best.
  *
- *  This function used to be static, but now we make if available to
+ *  This function used to be static, but now we make it available to
  *  midi_jack_info.  Also note the s_null_detected flag.  It is used only to
- *  have the apiprint() debug messages appear only once, for better
- *  trouble-shooting.  THIS CODE SHOULD BE A COMPILE-TIME OPTION.
+ *  have the apiprint() debug messages appear only once, for trouble-shooting.
  *
  * \param nframes
  *    The frame number to be processed.

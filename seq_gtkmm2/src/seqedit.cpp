@@ -503,18 +503,38 @@ seqedit::seqedit
         m_toggle_play,
         "If active, sequence is unmuted, and dumps data to MIDI bus."
     );
+    if (m_seq.is_new_pattern())
+    {
+        m_seq.set_playing(usr().new_pattern_armed());
+        update_midi_buttons();
+    }
+
     m_toggle_record->add(*manage(new PIXBUF_IMAGE(rec_xpm)));
     m_toggle_record->signal_clicked().connect
     (
         mem_fun(*this, &seqedit::record_change_callback)
     );
     add_tooltip(m_toggle_record, "If active, records incoming MIDI data.");
+    if (m_seq.is_new_pattern())
+    {
+        bool thru_active = usr().new_pattern_thru();
+        bool record_active = usr().new_pattern_record();
+        perf().set_recording(record_active, thru_active, &m_seq);
+        update_midi_buttons();
+    }
+
     m_toggle_q_rec->add(*manage(new PIXBUF_IMAGE(q_rec_xpm)));
     m_toggle_q_rec->signal_clicked().connect
     (
         mem_fun(*this, &seqedit::q_rec_change_callback)
     );
     add_tooltip(m_toggle_q_rec, "If active, quantized record.");
+    if (m_seq.is_new_pattern())
+    {
+        perf().set_quantized_recording(usr().new_pattern_qrecord(), &m_seq);
+        m_toggle_record->activate();
+        update_midi_buttons();
+    }
 
     /*
      * Provides a button to set the recording style to "legacy/merge" (when
@@ -534,6 +554,11 @@ seqedit::seqedit
         "Select recording type for patterns: merge events; overwrite events; "
         "or expand the pattern size while recording."
     );
+    if (m_seq.is_new_pattern())
+    {
+        set_rec_type(loop_record_t(usr().new_pattern_recordcode()));
+        update_midi_buttons();
+    }
 
 #define SET_POPUP   mem_fun(*this, &seqedit::popup_menu)
 
@@ -2546,7 +2571,8 @@ seqedit::set_mousemode_image (bool isfruity)
 void
 seqedit::play_change_callback ()
 {
-     m_seq.set_playing(m_toggle_play->get_active());
+    m_seq.set_playing(m_toggle_play->get_active());
+    update_midi_buttons();
 }
 
 /**
@@ -2566,6 +2592,7 @@ seqedit::record_change_callback ()
     bool thru_active = m_toggle_thru->get_active();
     bool record_active = m_toggle_record->get_active();
     perf().set_recording(record_active, thru_active, &m_seq);
+    update_midi_buttons();
 }
 
 /**
@@ -2586,6 +2613,8 @@ seqedit::q_rec_change_callback ()
     perf().set_quantized_recording(m_toggle_q_rec->get_active(), &m_seq);
     if (m_toggle_q_rec->get_active() && ! m_toggle_record->get_active())
         m_toggle_record->activate();
+
+    update_midi_buttons();
 }
 
 /**

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-08-11
+ * \updates       2019-12-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -223,6 +223,7 @@ private:
 
 private:
 
+    virtual void update_midi_buttons ();
     virtual void set_dirty ();
 
     void set_beats_per_measure (int bpm);

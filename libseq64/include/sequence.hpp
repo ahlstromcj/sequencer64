@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2019-02-06
+ * \updates       2019-12-16
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1089,6 +1089,11 @@ public:
     bool is_default_name () const
     {
         return m_name == sm_default_name;
+    }
+
+    bool is_new_pattern () const
+    {
+        return is_default_name();       /* any better way?  */
     }
 
     /**

@@ -570,6 +570,30 @@ userfile::parse (perform & /* p */)
         }
     }
 
+
+    /*
+     * [new-pattern-editor]
+     */
+
+    if (line_after(file, "[user-ui-tweaks]"))
+    {
+        int armed = 0;
+        int thru = 0;
+        int record = 0;
+        int qrecord = 0;
+        int recordstyle = 0;
+        sscanf
+        (
+            m_line, "%d %d %d %d %d",
+            &armed, &thru, &record, &qrecord, &recordstyle
+        );
+        usr().new_pattern_armed(armed != 0);
+        usr().new_pattern_thru(thru != 0);
+        usr().new_pattern_record(record != 0);
+        usr().new_pattern_qrecord(qrecord != 0);
+        usr().new_pattern_recordstyle(recordstyle);
+    }
+
     /*
      * We have all of the data.  Close the file.
      */
@@ -1294,6 +1318,44 @@ userfile::write (const perform & /* a_perf */ )
         uscratch = usr().use_new_seqedit();
         file << uscratch << "       # (user_ui_) use_new_seqedit\n";
     }
+
+    /*
+     * [new-pattern-editor]
+     *
+     * armed thru record qrecord recordstyle
+     */
+
+    file <<
+        "\n[new-pattern-editor]\n"
+        "\n"
+        "# This section contains the setup values for recording when a new\n"
+        "# pattern is opened. For flexibility, a new pattern means only that\n"
+        "# the loop has the default name, 'Unititled'. These values save time\n"
+        "# during a live recording session. The values are simple integers in\n"
+        "# this order: armed thru record qrecord recordstyle. The values for\n"
+        "# recordstyle are 0 = merge, 1 = overwrite/replace, and 2 = expand.\n"
+        "\n"
+        ;
+
+    bool v = usr().new_pattern_armed();
+    file << (v ? "1" : "0") << " ";
+
+    v = usr().new_pattern_thru();
+    file << (v ? "1" : "0") << " ";
+
+    v = usr().new_pattern_record();
+    file << (v ? "1" : "0") << " ";
+
+    v = usr().new_pattern_qrecord();
+    file << (v ? "1" : "0") << " ";
+
+    int rs = 0;
+    if (usr().new_pattern_recordstyle() == overwrite)
+        rs = 1;
+    else if (usr().new_pattern_recordstyle() == expand)
+        rs = 2;
+
+    file << rs << "\n";
 
     /*
      * End of file.

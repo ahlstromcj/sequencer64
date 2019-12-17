@@ -635,6 +635,16 @@ seqedit::~seqedit()
 }
 
 /**
+ *  TODO
+ */
+
+void
+seqedit::update_midi_buttons ()
+{
+    // TODO
+}
+
+/**
  *  Creates the various menus by pushing menu elements into the menus.  The
  *  first menu is the Zoom menu, represented in the pattern/sequence editor by
  *  a button with a magnifying glass.  The values are "pixels to ticks", where

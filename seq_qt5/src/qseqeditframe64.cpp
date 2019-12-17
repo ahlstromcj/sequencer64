@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2019-10-14
+ * \updates       2019-12-16
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -961,6 +961,8 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
         ui->m_toggle_play, SIGNAL(toggled(bool)),
         this, SLOT(play_change(bool))
     );
+    if (seq().is_new_pattern())
+        play_change(usr().new_pattern_armed());
 
     /*
      * MIDI Thru Button.
@@ -973,6 +975,8 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
         ui->m_toggle_thru, SIGNAL(toggled(bool)),
         this, SLOT(thru_change(bool))
     );
+    if (seq().is_new_pattern())
+        thru_change(usr().new_pattern_thru());
 
     /*
      * MIDI Record Button.
@@ -985,6 +989,8 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
         ui->m_toggle_record, SIGNAL(toggled(bool)),
         this, SLOT(record_change(bool))
     );
+    if (seq().is_new_pattern())
+        record_change(usr().new_pattern_record());
 
     /*
      * MIDI Quantized Record Button.
@@ -997,6 +1003,8 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
         ui->m_toggle_qrecord, SIGNAL(toggled(bool)),
         this, SLOT(q_record_change(bool))
     );
+    if (seq().is_new_pattern())
+        q_record_change(usr().new_pattern_qrecord());
 
     /*
      * Recording Merge, Replace, Extend Button.  Provides a button to set the
@@ -2814,6 +2822,36 @@ qseqeditframe64::show_lfo_frame ()
 }
 
 /**
+ *  Duplicative code.  See record_change(), thru_change(), q_record_change().
+ */
+
+void
+qseqeditframe64::update_midi_buttons ()
+{
+    bool thru_active = seq().get_thru();
+    bool record_active = seq().get_recording();
+    bool qrecord_active = seq().get_quantized_rec();
+    bool playing = seq().get_playing();
+    ui->m_toggle_thru->setChecked(thru_active);
+    ui->m_toggle_thru->setToolTip
+    (
+        thru_active ? "MIDI Thru Active" : "MIDI Thru Inactive"
+    );
+    ui->m_toggle_record->setChecked(record_active);
+    ui->m_toggle_record->setToolTip
+    (
+        record_active ? "MIDI Record Active" : "MIDI Record Inactive"
+    );
+    ui->m_toggle_qrecord->setChecked(qrecord_active);
+    ui->m_toggle_qrecord->setToolTip
+    (
+        qrecord_active ? "Quantized Record Active" : "Quantized Record Inactive"
+    );
+    ui->m_toggle_play->setChecked(playing);
+    ui->m_toggle_play->setToolTip(playing ? "Armed" : "Muted");
+}
+
+/**
  *  Passes the play status to the sequence object.
  */
 
@@ -2821,6 +2859,7 @@ void
 qseqeditframe64::play_change (bool ischecked)
 {
     seq().set_playing(ischecked);
+    update_midi_buttons();
 }
 
 /**
@@ -2848,6 +2887,7 @@ qseqeditframe64::thru_change (bool ischecked)
     bool record_active = seq().get_recording();
 #endif
     perf().set_thru(record_active, thru_active, &seq());
+    update_midi_buttons();
 }
 
 /**
@@ -2875,6 +2915,7 @@ qseqeditframe64::record_change (bool ischecked)
     bool record_active = ischecked;
 #endif
     perf().set_recording(record_active, thru_active, &seq());
+    update_midi_buttons();
 }
 
 /**
@@ -2902,6 +2943,7 @@ qseqeditframe64::q_record_change (bool ischecked)
     if (qrecord_active && ! ui->m_toggle_record->isChecked())
         ui->m_toggle_record->setChecked(true);
 #endif
+    update_midi_buttons();
 }
 
 /**

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-10-01
+ * \updates       2019-12-16
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -87,6 +87,19 @@
 
 namespace seq64
 {
+
+/**
+ *  Provides the supported looping recording modes.  These values are used
+ *  by the seqedit class, which provides a button with a popup menu to
+ *  select one of these recording modes.
+ */
+
+enum recordstyle
+{
+    merge,          /**< Incoming events are merged into the loop.  */
+    overwrite,      /**< Incoming events overwrite the loop.        */
+    expand          /**< Incoming events increase size of loop.     */
+};
 
 /**
  *  Holds the current values of sequence settings and settings that can
@@ -871,6 +884,18 @@ private:
      */
 
     bool m_user_ui_seqedit_in_tab;
+
+    /**
+     *  [new-pattern-editor]
+     *
+     *  A new feature, in progress.
+     */
+
+    bool m_new_pattern_armed;
+    bool m_new_pattern_thru;
+    bool m_new_pattern_record;
+    bool m_new_pattern_qrecord;
+    recordstyle m_new_pattern_recordstyle;
 
 public:
 
@@ -1834,6 +1859,36 @@ public:
         return m_user_ui_seqedit_in_tab;
     }
 
+    bool new_pattern_armed () const
+    {
+        return m_new_pattern_armed;
+    }
+
+    bool new_pattern_thru () const
+    {
+        return m_new_pattern_thru;
+    }
+
+    bool new_pattern_record () const
+    {
+        return m_new_pattern_record;
+    }
+
+    bool new_pattern_qrecord () const
+    {
+        return m_new_pattern_qrecord;
+    }
+
+    recordstyle new_pattern_recordstyle () const
+    {
+        return m_new_pattern_recordstyle;
+    }
+
+    int new_pattern_recordcode () const
+    {
+        return static_cast<int>(m_new_pattern_recordstyle);
+    }
+
 public:         // used in main application module and the userfile class
 
     /**
@@ -1978,6 +2033,31 @@ public:         // used in main application module and the userfile class
     void use_new_seqedit (bool f)
     {
         m_user_ui_seqedit_in_tab = f;
+    }
+
+    void new_pattern_armed (bool flag)
+    {
+        m_new_pattern_armed = flag;
+    }
+
+    void new_pattern_thru (bool flag)
+    {
+        m_new_pattern_thru = flag;
+    }
+
+    void new_pattern_record (bool flag)
+    {
+        m_new_pattern_record = flag;
+    }
+
+    void new_pattern_qrecord (bool flag)
+    {
+        m_new_pattern_qrecord = flag;
+    }
+
+    void new_pattern_recordstyle (int style)
+    {
+        m_new_pattern_recordstyle = static_cast<recordstyle>(style);
     }
 
     void midi_ppqn (int ppqn);

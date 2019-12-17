@@ -388,6 +388,7 @@ public:
 
 private:
 
+    void update_midi_buttons ();
     void redraw (bool drawevents = false);
     void set_zoom (int zoom);
     void set_snap (int snap);

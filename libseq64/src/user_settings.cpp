@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2019-10-31
+ * \updates       2019-12-16
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -226,7 +226,12 @@ user_settings::user_settings ()
      */
 
     m_user_ui_key_height        (10),
-    m_user_ui_seqedit_in_tab    (true)
+    m_user_ui_seqedit_in_tab    (true),
+    m_new_pattern_armed         (false),
+    m_new_pattern_thru          (false),
+    m_new_pattern_record        (false),
+    m_new_pattern_qrecord       (false),
+    m_new_pattern_recordstyle   (merge)                 // recordstyle
 
 {
     // Empty body; it's no use to call normalize() here, see set_defaults().
@@ -335,7 +340,12 @@ user_settings::user_settings (const user_settings & rhs)
      */
 
     m_user_ui_key_height        (rhs.m_user_ui_key_height),
-    m_user_ui_seqedit_in_tab    (rhs.m_user_ui_seqedit_in_tab)
+    m_user_ui_seqedit_in_tab    (rhs.m_user_ui_seqedit_in_tab),
+    m_new_pattern_armed         (rhs.m_new_pattern_armed),
+    m_new_pattern_thru          (rhs.m_new_pattern_thru),
+    m_new_pattern_record        (rhs.m_new_pattern_record),
+    m_new_pattern_qrecord       (rhs.m_new_pattern_qrecord),
+    m_new_pattern_recordstyle   (rhs.m_new_pattern_recordstyle)
 {
     // Empty body; no need to call normalize() here.
 }
@@ -445,6 +455,11 @@ user_settings::operator = (const user_settings & rhs)
 
         m_user_ui_key_height = rhs.m_user_ui_key_height;
         m_user_ui_seqedit_in_tab = rhs.m_user_ui_seqedit_in_tab;
+        m_new_pattern_armed = rhs.m_new_pattern_armed;
+        m_new_pattern_thru = rhs.m_new_pattern_thru;
+        m_new_pattern_record = rhs.m_new_pattern_record;
+        m_new_pattern_qrecord = rhs.m_new_pattern_qrecord;
+        m_new_pattern_recordstyle = rhs.m_new_pattern_recordstyle;
     }
     return *this;
 }
@@ -523,6 +538,11 @@ user_settings::set_defaults ()
     m_work_around_transpose_image = false;
     m_user_ui_key_height = 10;
     m_user_ui_seqedit_in_tab = true;
+    m_new_pattern_armed = false;
+    m_new_pattern_thru = false;
+    m_new_pattern_record = false;
+    m_new_pattern_qrecord = false;
+    m_new_pattern_recordstyle = merge;      // recordstyle
     normalize();                            // recalculate derived values
 }
 

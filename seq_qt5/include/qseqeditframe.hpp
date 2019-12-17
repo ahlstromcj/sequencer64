@@ -148,6 +148,7 @@ private:
 
 private:
 
+    virtual void update_midi_buttons ();
     virtual void set_dirty ();
     void initialize_panels ();
 

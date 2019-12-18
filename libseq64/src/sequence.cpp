@@ -4989,7 +4989,7 @@ void
 sequence::set_playing (bool p)
 {
     automutex locker(m_mutex);
-    bool send_play = p ^ get_playing();
+    bool send_play = p != get_playing();
     if (p != get_playing())
     {
         m_playing = p;

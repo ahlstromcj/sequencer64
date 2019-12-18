@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-17
+ * \updates       2019-12-17
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -570,12 +570,11 @@ userfile::parse (perform & /* p */)
         }
     }
 
-
     /*
      * [new-pattern-editor]
      */
 
-    if (line_after(file, "[user-ui-tweaks]"))
+    if (line_after(file, "[new-pattern-editor]"))
     {
         int armed = 0;
         int thru = 0;
@@ -1331,9 +1330,8 @@ userfile::write (const perform & /* a_perf */ )
         "# This section contains the setup values for recording when a new\n"
         "# pattern is opened. For flexibility, a new pattern means only that\n"
         "# the loop has the default name, 'Unititled'. These values save time\n"
-        "# during a live recording session. The values are simple integers in\n"
-        "# this order: armed thru record qrecord recordstyle. The values for\n"
-        "# recordstyle are 0 = merge, 1 = overwrite/replace, and 2 = expand.\n"
+        "# during a live recording session. The values are simple bits (0/1).\n"
+        "# Values for recordstyle are 0=merge, 1=overwrite/replace, and 2=expand.\n"
         "\n"
         ;
 
@@ -1355,7 +1353,7 @@ userfile::write (const perform & /* a_perf */ )
     else if (usr().new_pattern_recordstyle() == expand)
         rs = 2;
 
-    file << rs << "\n";
+    file << rs << "    # armed thru record qrecord recordstyle\n";
 
     /*
      * End of file.

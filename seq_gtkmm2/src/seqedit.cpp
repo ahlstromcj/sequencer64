@@ -500,8 +500,7 @@ seqedit::seqedit
     );
     add_tooltip
     (
-        m_toggle_play,
-        "If active, sequence is unmuted, and dumps data to MIDI bus."
+        m_toggle_play, "If active, sequence is armed and plays to a MIDI bus."
     );
     if (m_seq.is_new_pattern())
     {
@@ -666,7 +665,15 @@ seqedit::~seqedit()
 void
 seqedit::update_midi_buttons ()
 {
-    // TODO
+    bool thru_active = m_seq.get_thru();
+    bool record_active = m_seq.get_recording();
+    bool qrecord_active = m_seq.get_quantized_rec();
+    bool playing = m_seq.get_playing();
+    m_toggle_play->set_active(playing);
+//  m_toggle_play->set_sensitive(! perf().song_start_mode());
+    m_toggle_record->set_active(record_active);
+    m_toggle_q_rec->set_active(qrecord_active);
+    m_toggle_thru->set_active(thru_active);
 }
 
 /**

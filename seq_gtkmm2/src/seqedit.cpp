@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-10-31
+ * \updates       2019-12-18
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -503,10 +503,7 @@ seqedit::seqedit
         m_toggle_play, "If active, sequence is armed and plays to a MIDI bus."
     );
     if (m_seq.is_new_pattern())
-    {
         m_seq.set_playing(usr().new_pattern_armed());
-        update_midi_buttons();
-    }
 
     m_toggle_record->add(*manage(new PIXBUF_IMAGE(rec_xpm)));
     m_toggle_record->signal_clicked().connect
@@ -514,13 +511,6 @@ seqedit::seqedit
         mem_fun(*this, &seqedit::record_change_callback)
     );
     add_tooltip(m_toggle_record, "If active, records incoming MIDI data.");
-    if (m_seq.is_new_pattern())
-    {
-        bool thru_active = usr().new_pattern_thru();
-        bool record_active = usr().new_pattern_record();
-        perf().set_recording(record_active, thru_active, &m_seq);
-        update_midi_buttons();
-    }
 
     m_toggle_q_rec->add(*manage(new PIXBUF_IMAGE(q_rec_xpm)));
     m_toggle_q_rec->signal_clicked().connect
@@ -530,9 +520,11 @@ seqedit::seqedit
     add_tooltip(m_toggle_q_rec, "If active, quantized record.");
     if (m_seq.is_new_pattern())
     {
-        perf().set_quantized_recording(usr().new_pattern_qrecord(), &m_seq);
-        m_toggle_record->activate();
-        update_midi_buttons();
+        bool thru_active = usr().new_pattern_thru();
+        bool record_active = usr().new_pattern_record();
+        bool qrecord_active = usr().new_pattern_qrecord();
+        perf().set_recording(record_active, thru_active, &m_seq);
+        perf().set_quantized_recording(qrecord_active, &m_seq);
     }
 
     /*
@@ -665,15 +657,31 @@ seqedit::~seqedit()
 void
 seqedit::update_midi_buttons ()
 {
+    bool playing = m_seq.get_playing();
     bool thru_active = m_seq.get_thru();
     bool record_active = m_seq.get_recording();
     bool qrecord_active = m_seq.get_quantized_rec();
-    bool playing = m_seq.get_playing();
     m_toggle_play->set_active(playing);
+    add_tooltip(m_toggle_play, playing ? "Armed" : "Muted");
 //  m_toggle_play->set_sensitive(! perf().song_start_mode());
     m_toggle_record->set_active(record_active);
+    add_tooltip
+    (
+        m_toggle_record,
+        record_active ? "MIDI Record Active" : "MIDI Record Inactive"
+    );
     m_toggle_q_rec->set_active(qrecord_active);
+    add_tooltip
+    (
+        m_toggle_q_rec,
+        qrecord_active ? "Quantized Record Active" : "Quantized Record Inactive"
+    );
     m_toggle_thru->set_active(thru_active);
+    add_tooltip
+    (
+        m_toggle_thru,
+        thru_active ? "MIDI Thru Active" : "MIDI Thru Inactive"
+    );
 }
 
 /**

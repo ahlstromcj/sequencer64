@@ -5038,6 +5038,8 @@ sequence::set_recording (bool r)
     {
         m_notes_on = 0;         // is there a more robust way to do this?
         m_recording = r;
+        if (! r)
+            m_quantized_rec = r;
     }
 }
 
@@ -5059,6 +5061,8 @@ sequence::set_quantized_recording (bool qr)
     {
         m_notes_on = 0;         // is there a more robust way to do this?
         m_quantized_rec = qr;
+        if (qr)
+            m_recording = qr;   // also need recording
     }
 }
 

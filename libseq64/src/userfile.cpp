@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-12-17
+ * \updates       2019-12-19
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -590,6 +590,11 @@ userfile::parse (perform & /* p */)
         usr().new_pattern_thru(thru != 0);
         usr().new_pattern_record(record != 0);
         usr().new_pattern_qrecord(qrecord != 0);
+        if (recordstyle < 0 || recordstyle > 2)
+        {
+            recordstyle = 0;
+            fprintf(stderr, "? 'usr': new pattern record-style out of range\n");
+        }
         usr().new_pattern_recordstyle(recordstyle);
     }
 

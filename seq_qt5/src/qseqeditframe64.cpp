@@ -1021,7 +1021,14 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
         ui->m_combo_rec_type, SIGNAL(currentIndexChanged(int)),
         this, SLOT(update_record_type(int))
     );
-    ui->m_combo_rec_type->setCurrentIndex(int(LOOP_RECORD_LEGACY));
+
+    int recordstyle = LOOP_RECORD_LEGACY;       /* i.e. merge mode */
+    if (seq().is_new_pattern())
+        recordstyle = usr().new_pattern_recordcode();
+
+    ui->m_combo_rec_type->setCurrentIndex(recordstyle);
+
+    update_midi_buttons();
 
     /*
      * Recording Volume Button and Combo Box

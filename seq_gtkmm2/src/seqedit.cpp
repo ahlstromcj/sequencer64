@@ -546,10 +546,11 @@ seqedit::seqedit
         "or expand the pattern size while recording."
     );
     if (m_seq.is_new_pattern())
-    {
         set_rec_type(loop_record_t(usr().new_pattern_recordcode()));
-        update_midi_buttons();
-    }
+    else
+        set_rec_type(LOOP_RECORD_LEGACY);
+
+    update_midi_buttons();
 
 #define SET_POPUP   mem_fun(*this, &seqedit::popup_menu)
 

@@ -805,7 +805,7 @@ optionsfile::parse (perform & p)
                 size_t len = strlen(m_line);
                 if (len > 0)
                 {
-                    if (strcmp(m_line, "\"\"") == 0)
+                    if (strncmp(m_line, "\"\"", 2) == 0)
                     {
                         rc().playlist_active(false);
                         rc().playlist_filename("");     // ).clear();

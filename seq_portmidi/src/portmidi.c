@@ -100,7 +100,6 @@
 #include "portmidi.h"
 #include "porttime.h"
 #include "pmutil.h"
-// #include "pminternal.h"  // already included
 
 /*
  * Permanently activated!

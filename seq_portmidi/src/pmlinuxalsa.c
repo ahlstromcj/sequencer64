@@ -287,10 +287,6 @@ alsa_out_open (PmInternal * midi, void * UNUSED(driverinfo))
     /* fill in fields of desc, which is passed to pm_write routines */
 
     midi->descriptor = desc;
-
-//                 ((((int) (intptr_t) (x)) >> 8) & 0xff)
-//  desc->client = ((((int) (intptr_t) (client_port)) >> 8) & 0xff);
-
     desc->client = MASK_DESCRIPTOR_CLIENT(client_port);
     desc->port = MASK_DESCRIPTOR_PORT(client_port);
     desc->this_port = midi->device_id;

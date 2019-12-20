@@ -142,7 +142,6 @@ private:
     midipulse m_drop_tick;
     midipulse m_drop_tick_offset;           // ticks clicked from trigger
     midipulse mLastTick;                    // tick using at last mouse event
-//  bool m_sequence_active[c_max_sequence]; // WHY NEEDED???
     bool mBoxSelect;
     bool m_grow_direction;
     bool m_adding_pressed;

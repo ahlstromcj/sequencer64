@@ -325,7 +325,6 @@ font::render_string_on_drawable
     else
         m_pixmap = &m_black_pixmap;     /* user lied, provide legal pointer */
 
-//  if (gui_palette_gtk2::is_inverse() && invert)
     if (invert)
         gc->set_function(Gdk::COPY_INVERT);  /* XOR or INVERT?              */
 

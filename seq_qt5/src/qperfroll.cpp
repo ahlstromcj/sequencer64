@@ -89,16 +89,12 @@ qperfroll::qperfroll
     m_drop_tick         (0),
     m_drop_tick_offset  (0),
     mLastTick           (0),
-//  m_sequence_active   (),         // array    // WHY NEEDED???
     mBoxSelect          (false),
     m_grow_direction    (false),
     m_adding_pressed    (false)
 {
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setFocusPolicy(Qt::StrongFocus);
-//  for (int i = 0; i < c_max_sequence; ++i)
-//      m_sequence_active[i] = false;   // WHY NEEDED???
-
     m_roll_length_ticks  = perf().get_max_trigger();
     m_roll_length_ticks -= (m_roll_length_ticks % (ppqn() * 16));
     m_roll_length_ticks += ppqn() * 64;                     // ?????
@@ -225,8 +221,6 @@ qperfroll::paintEvent (QPaintEvent *)
         {
             if (perf().is_active(seqid))
             {
-//              m_sequence_active[seqid] = true;    // WHY NEEDED???
-
                 sequence * seq = perf().get_sequence(seqid);
                 midipulse seq_length = seq->get_length();
                 int length_w = seq_length / scale_zoom();
@@ -427,7 +421,6 @@ qperfroll::draw_grid (QPainter & painter, const QRect &r)
     QBrush brush(Qt::NoBrush);
     QPen pen(Qt::black);
     pen.setStyle(Qt::SolidLine);
-//  m_font.setPointSize(6);
     painter.setPen(pen);
     painter.setBrush(brush);
     painter.setFont(m_font);
@@ -508,12 +501,10 @@ qperfroll::draw_sequences (QPainter & painter)
                         brush.setColor(backcolor);
                         brush.setStyle(Qt::SolidPattern);
                         painter.setBrush(brush);
-//                      painter.setPen(pen);
                         painter.drawRect(x, y, w, h);
                         brush.setStyle(Qt::NoBrush);  // seq grab handle left
                         painter.setBrush(brush);
                         pen.setColor(Qt::black);
-//                      painter.setPen(pen);
                         painter.drawRect
                         (
                             x, y, c_perfroll_size_box_w, c_perfroll_size_box_w
@@ -525,14 +516,12 @@ qperfroll::draw_sequences (QPainter & painter)
                             c_perfroll_size_box_w, c_perfroll_size_box_w
                         );
                         pen.setColor(Qt::black);
-//                      painter.setPen(pen);
 
                         midipulse length_marker_first_tick =
                         (
                             tick_on - (tick_on % seq_length) +
                             (offset % seq_length) - seq_length
                         );
-
                         midipulse tick_marker = length_marker_first_tick;
                         while (tick_marker < tick_off)
                         {
@@ -556,8 +545,6 @@ qperfroll::draw_sequences (QPainter & painter)
                             draw_type_t dt;
                             seq->reset_draw_marker();
                             if (! seq->get_transposable())
-//                              pen.setColor(Qt::black);
-//                          else
                                 pen.setColor(Qt::red);
 
                             painter.setPen(pen);

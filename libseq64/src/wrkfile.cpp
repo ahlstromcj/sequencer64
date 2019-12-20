@@ -126,7 +126,6 @@ wrkfile::wrkfile_private::wrkfile_private ()
     m_PunchOutTime  (0),
     m_EndAllTime    (0),
     m_division      (120),
-//  m_codec         (0),
     m_tempos        ()
 {
    // no code

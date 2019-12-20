@@ -57,9 +57,6 @@ static const int sc_key_y =  8;
  */
 
 static const int sc_keyarea_x = sc_key_x + 15;
-// static const int sc_keyarea_y = sc_key_y * c_num_keys + 1;
-// static const int sc_drawarea_x = sc_keyarea_x + 1;
-// static const int sc_drawarea_y = sc_keyarea_y - 2;
 static const int sc_keyoffset_x = sc_keyarea_x - sc_key_x;
 
 /**

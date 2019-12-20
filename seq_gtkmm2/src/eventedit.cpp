@@ -308,7 +308,6 @@ eventedit::eventedit (perform & p, sequence & seq)
     snprintf
     (
         temptext, sizeof temptext, "%s: \"%s\"",
-//      seq.seq_number().c_str(), seq.name().c_str()
         m_seq.seq_number().c_str(), m_seq.name().c_str()
     );
     m_label_seq_name->set_width_chars(32);

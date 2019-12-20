@@ -110,8 +110,6 @@ static const std::string s_help_paragraph_3 =
 
 static const std::string s_help_paragraph_4 =
 "Midiclocker runs until it receives a HUP or INT signal, or jackd terminates.\n"
-// "\n"
-// "See also: jack_transport(1), jack_mclk_dump(1)\n"
 "\n"
 ;
 

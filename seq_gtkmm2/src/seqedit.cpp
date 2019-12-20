@@ -664,7 +664,6 @@ seqedit::update_midi_buttons ()
     bool qrecord_active = m_seq.get_quantized_rec();
     m_toggle_play->set_active(playing);
     add_tooltip(m_toggle_play, playing ? "Armed" : "Muted");
-//  m_toggle_play->set_sensitive(! perf().song_start_mode());
     m_toggle_record->set_active(record_active);
     add_tooltip
     (

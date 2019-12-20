@@ -37,12 +37,6 @@ const int c_maxBuses = 32;
 const int qc_thread_trigger_width_ms = 4;
 const int qc_thread_trigger_lookahead_ms = 2;
 
-/* keyboard */
-
-// padding to the left of the note roll
-// to allow 1st tick drum hits
-/* events bar */
-
 /* time scale window on top */
 const int qc_timearea_y = 18;
 

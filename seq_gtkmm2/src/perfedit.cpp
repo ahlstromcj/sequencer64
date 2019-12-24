@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-29
+ * \updates       2019-12-24
  * \license       GNU GPLv2 or above
  *
  *  When the Song/Performance editor has focus, Sequencer64 is automatically
@@ -253,7 +253,8 @@ perfedit::perfedit (perform & p, bool second_perfedit)
 
         if (use_separator)
         {
-            m_menu_snap->items().push_back(SeparatorElem());
+            if (! usr().hide_menu_separator_fudge())
+                m_menu_snap->items().push_back(SeparatorElem());
         }
         else
         {

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-21
- * \updates       2018-11-22
+ * \updates       2019-12-21
  * \license       GNU GPLv2 or above
  *
  *  This module defines a number of constants relating to control of the 32
@@ -74,7 +74,7 @@ namespace seq64
  *  supplemented with a new, higher limit, c_midi_controls_extended.
  *  We also add a number of placeholders so we don't have to adjust the new
  *  limit again later.  To aid the transition, g_midi_control_limit replaces
- *  c_midi_controls, though, for now, it has the same value.
+ *  c_midi_controls.
  */
 
 const int c_midi_track_ctrl             = c_seqs_in_set * 2;      /* 64       */
@@ -105,13 +105,30 @@ const int c_midi_control_rewind         = c_midi_track_ctrl + 22;
 const int c_midi_control_top            = c_midi_track_ctrl + 23; /* beginning */
 const int c_midi_control_playlist       = c_midi_track_ctrl + 24;
 const int c_midi_control_playlist_song  = c_midi_track_ctrl + 25;
-const int c_midi_control_slot_shift     = c_midi_track_ctrl + 26; // TODO
-const int c_midi_control_start          = c_midi_track_ctrl + 27; // TODO
-const int c_midi_control_stop           = c_midi_track_ctrl + 28; // TODO
+const int c_midi_control_slot_shift     = c_midi_track_ctrl + 26;
+const int c_midi_control_start          = c_midi_track_ctrl + 27;
+const int c_midi_control_stop           = c_midi_track_ctrl + 28;
 const int c_midi_control_mod_snapshot_2 = c_midi_track_ctrl + 29; // TODO
 const int c_midi_control_toggle_mutes   = c_midi_track_ctrl + 30; // TODO
 const int c_midi_control_song_pointer   = c_midi_track_ctrl + 31; // TODO
-const int c_midi_controls_extended      = c_midi_track_ctrl + 32; /* new = 96  */
+const int c_midi_controls_extended      = c_midi_track_ctrl + 32; /*  96    */
+const int c_midi_control_keep_queue     = c_midi_track_ctrl + 32; // TODO
+const int c_midi_control_slot_shift_2   = c_midi_track_ctrl + 33; // TODO
+const int c_midi_control_mutes_clear    = c_midi_track_ctrl + 34; // TODO
+const int c_midi_control_reserved_35    = c_midi_track_ctrl + 35; // TODO
+const int c_midi_control_pattern_edit   = c_midi_track_ctrl + 36; // TODO
+const int c_midi_control_event_edit     = c_midi_track_ctrl + 37; // TODO
+const int c_midi_control_song_mode      = c_midi_track_ctrl + 38; // TODO
+const int c_midi_control_toggle_jack    = c_midi_track_ctrl + 39; // TODO
+const int c_midi_control_menu_mode      = c_midi_track_ctrl + 40; // TODO
+const int c_midi_control_follow         = c_midi_track_ctrl + 41; // TODO
+const int c_midi_controls_reserved_42   = c_midi_track_ctrl + 42;
+const int c_midi_controls_reserved_43   = c_midi_track_ctrl + 43;
+const int c_midi_controls_reserved_44   = c_midi_track_ctrl + 44;
+const int c_midi_controls_reserved_45   = c_midi_track_ctrl + 45;
+const int c_midi_controls_reserved_46   = c_midi_track_ctrl + 46;
+const int c_midi_controls_reserved_47   = c_midi_track_ctrl + 47;
+const int c_midi_controls_extended_2    = c_midi_track_ctrl + 48; /* 108    */
 
 extern int g_midi_control_limit;
 

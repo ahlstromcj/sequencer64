@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-09-03
+ * \updates       2019-12-24
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -76,12 +76,8 @@
  *  enabled, just to preserve expected "legacy" behavior under "legacy" usage.
  */
 
-#include <csignal>
-#include <cerrno>
-#include <cstring>                      /* strerror()                       */
-#include <memory>                       /* std::unique_ptr                  */
+#include <cstring>                      /* std::strerror()                  */
 #include <stdio.h>                      /* snprintf()                       */
-#include <gtk/gtkversion.h>
 #include <gtkmm/aboutdialog.h>
 #include <gtkmm/adjustment.h>
 #include <gtkmm/entry.h>
@@ -371,15 +367,14 @@ mainwnd::mainwnd
     m_current_beats         (0),
     m_base_time_ms          (0),
     m_last_time_ms          (0),
-    m_menu_mode             (true),
-    m_call_seq_edit         (false),
-    m_call_seq_shift        (0),
-    m_call_seq_eventedit    (false)
+    m_menu_mode             (true)
 {
 #if defined SEQ64_MULTI_MAINWID
     if (! multi_wid())
         m_mainwid_independent = true;
 #endif
+
+    usr().hide_menu_separator_fudge(true);  // TEST TEST TEST
 
 #ifdef PLATFORM_DEBUG
 
@@ -1342,6 +1337,19 @@ mainwnd::timer_callback ()
             std::string t = pulses_to_timestring(tick, bpm, ppqn, false);
             m_tick_time->set_text(t);
         }
+        if (m_button_mode->get_sensitive())
+            m_button_mode->set_sensitive(false);
+
+        if (m_button_jack->get_sensitive())
+            m_button_jack->set_sensitive(false);
+    }
+    else
+    {
+        if (! m_button_mode->get_sensitive())
+            m_button_mode->set_sensitive(true);
+
+        if (! m_button_jack->get_sensitive())
+            m_button_jack->set_sensitive(true);
     }
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT_TMI
@@ -1375,6 +1383,7 @@ mainwnd::timer_callback ()
     if (m_button_mode->get_active() != perf().song_start_mode())
         m_button_mode->set_active(perf().song_start_mode());
 
+#if 0
     if (perf().is_pattern_playing())
     {
         if (m_button_mode->get_sensitive())
@@ -1385,6 +1394,8 @@ mainwnd::timer_callback ()
         if (! m_button_mode->get_sensitive())
             m_button_mode->set_sensitive(true);
     }
+#endif
+
     m_menubar->set_sensitive(m_menu_mode);
 
 #ifdef SEQ64_SHOW_JACK_STATUS
@@ -1418,6 +1429,7 @@ mainwnd::timer_callback ()
     if (not_nullptr(lblptr))
         lblptr->set_text(label);
 
+#if 0
     if (perf().is_pattern_playing())
     {
         if (m_button_jack->get_sensitive())
@@ -1428,6 +1440,7 @@ mainwnd::timer_callback ()
         if (! m_button_jack->get_sensitive())
             m_button_jack->set_sensitive(true);
     }
+#endif
 
 #endif  // SEQ64_SHOW_JACK_STATUS
 
@@ -1444,6 +1457,36 @@ mainwnd::timer_callback ()
         m_is_running = perf().is_running();
         if (! usr().work_around_play_image())
             set_play_image(m_is_running);
+    }
+
+    /*
+     * Handle any pending editor call-ups.
+     */
+
+    int seqnum = perf().call_seq_number();
+    if (perf().check_seqno(seqnum))
+    {
+        if (perf().call_seq_edit())
+        {
+            m_main_wid->seq_set_and_edit(seqnum);
+        }
+        else if (perf().call_seq_eventedit())
+        {
+            m_main_wid->seq_set_and_eventedit(seqnum);
+        }
+        else if (perf().call_seq_shift() > 0)       /* variset shift        */
+        {
+            /*
+             * c_seqs_in_set is always 32; a seq64 universal constant!
+             */
+
+            int key = seqnum + perf().call_seq_shift() * c_seqs_in_set;
+            sequence_key(key);
+        }
+        else
+        {
+            sequence_key(seqnum);                   /* toggle loop          */
+        }
     }
     if (m_current_beats > 0 && m_last_time_ms > 0)
     {
@@ -3321,28 +3364,36 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 
                 if (ok)
                 {
-                    int seqnum = perf().lookup_keyevent_seq(k.key());
-                    if (m_call_seq_edit)
+                    (void) perf().lookup_keyevent_seq(k.key());
+
+                    /*
+                     * Now handled on the next timer tick, so that performer can
+                     * also cause the edit windows to pop up.
+                     */
+
+#if defined USE_DIRECT_KEYSTROKE
+                    int seqnum = (void) perf().lookup_keyevent_seq(k.key());
+                    if (perf().call_seq_edit())
                     {
-                        m_call_seq_edit = false;
                         m_main_wid->seq_set_and_edit(seqnum);
-                        result = true;
+                        result = true;  // perf().call_seq_number(-1);
                     }
-                    else if (m_call_seq_eventedit)
+                    else if (perf().call_seq_eventedit())
                     {
-                        m_call_seq_eventedit = false;
                         m_main_wid->seq_set_and_eventedit(seqnum);
-                        result = true;
+                        result = true;  // perf().call_seq_number(-1);
                     }
-                    else if (m_call_seq_shift > 0)      /* variset support  */
+                    else if (perf().call_seq_shift() > 0)   /* variset shift */
                     {
                         /*
                          * Here, c_seqs_in_set is a constant value set to
                          * SEQ64_DEFAULT_SEQS_IN_SET = 32.
                          */
 
-                        int keynum = seqnum + m_call_seq_shift * c_seqs_in_set;
-                        sequence_key(keynum);
+                        int key =
+                            seqnum + perf().call_seq_shift() * c_seqs_in_set;
+
+                        sequence_key(key);
                         result = true;
                     }
                     else
@@ -3350,33 +3401,31 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                         sequence_key(seqnum);           /* toggle sequence  */
                         result = true;
                     }
+#endif  // defined USE_DIRECT_KEYSTROKE
                 }
             }
             else
             {
                 if (k.is(PREFKEY(pattern_edit)))
                 {
-                    m_call_seq_edit = ! m_call_seq_edit;
+                    perf().toggle_call_seq_edit();
                 }
                 else if (k.is(PREFKEY(pattern_shift)))
                 {
-                    ++m_call_seq_shift;
-                    if (m_call_seq_shift > 2)
-                        m_call_seq_shift = 0;
-
+                    int shiftcount = perf().increment_call_seq_shift();
                     std::string temp = "";
-                    for (int i = 0; i < m_call_seq_shift; ++i)
+                    for (int i = 0; i < shiftcount; ++i)
                         temp += '/';
 
                     set_status_text(temp);
                 }
                 else if (k.is(PREFKEY(event_edit)))
                 {
-                    m_call_seq_eventedit = ! m_call_seq_eventedit;
+                    perf().toggle_call_seq_eventedit();
                 }
                 else
                 {
-                    m_call_seq_edit = m_call_seq_eventedit = false;
+                    perf().clear_seq_edits();
 
                     /*
                      * Ctrl-L to toggle the group-learn mode.  Similar to
@@ -3708,9 +3757,14 @@ mainwnd::populate_menu_file ()
             mem_fun(*this, &mainwnd::file_open_playlist)
         )
     );
-    m_menu_file->items().push_back(SeparatorElem());
+    if (! usr().hide_menu_separator_fudge())
+        m_menu_file->items().push_back(SeparatorElem());
+
     update_recent_files_menu();                     /* copped from Kepler34 */
-    m_menu_file->items().push_back(SeparatorElem());
+
+    if (! usr().hide_menu_separator_fudge())
+        m_menu_file->items().push_back(SeparatorElem());
+
     m_menu_file->items().push_back
     (
         MenuElem
@@ -3731,7 +3785,9 @@ mainwnd::populate_menu_file ()
             )
         )
     );
-    m_menu_file->items().push_back(SeparatorElem());
+    if (! usr().hide_menu_separator_fudge())
+        m_menu_file->items().push_back(SeparatorElem());
+
     m_menu_file->items().push_back
     (
         MenuElem
@@ -3776,7 +3832,9 @@ mainwnd::populate_menu_file ()
             )
         )
     );
-    m_menu_file->items().push_back(SeparatorElem());
+    if (! usr().hide_menu_separator_fudge())
+        m_menu_file->items().push_back(SeparatorElem());
+
     m_menu_file->items().push_back
     (
         MenuElem
@@ -3785,7 +3843,9 @@ mainwnd::populate_menu_file ()
             mem_fun(*this, &mainwnd::options_dialog)
         )
     );
-    m_menu_file->items().push_back(SeparatorElem());
+    if (! usr().hide_menu_separator_fudge())
+        m_menu_file->items().push_back(SeparatorElem());
+
     m_menu_file->items().push_back
     (
         MenuElem
@@ -3840,7 +3900,8 @@ mainwnd::populate_menu_edit ()
         )
     );
 
-    m_menu_edit->items().push_back(SeparatorElem());
+    if (! usr().hide_menu_separator_fudge())
+        m_menu_edit->items().push_back(SeparatorElem());
 
     m_menu_edit->items().push_back
     (
@@ -3929,7 +3990,7 @@ mainwnd::populate_menu_help ()
 void
 mainwnd::sequence_key (int seq)
 {
-    m_call_seq_shift = 0;               /* flag now done, if in force   */
+    perf().call_seq_shift();                 /* flag now done, if in force   */
     set_status_text(std::string(""));
     perf().sequence_key(seq);
 }

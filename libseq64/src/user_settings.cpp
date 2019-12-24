@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2019-12-16
+ * \updates       2019-12-24
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -97,6 +97,16 @@
  *
  *  Changing the beat-width of the seqroll from the default 4 to 8 halves the
  *  pixel-width of reach measure.
+ *
+ * Theme issues:  See github issues #126, #154, and #185.
+ *
+ *  Certain GTK themes (listed below) cause crashes when the horizontal menu
+ *  separator is displayed.  Therefore, for now, we disable the creation of
+ *  horizontal separators.  Eventually we will add theme detection and restored
+ *  the menu bars via the user_settings::hide_menu_separator_fudge() function.
+ *
+ *      -   breeze
+ *      -   breeze-gtk-git
  */
 
 #include "settings.hpp"                 /* seq64::rc()                  */
@@ -202,6 +212,7 @@ user_settings::user_settings ()
     m_mainwnd_x                 (780),          // constant
     m_mainwnd_y                 (412),          // constant
     m_save_user_config          (false),
+    m_hide_menu_separator_fudge (false),
 
     /*
      * Constant values.
@@ -316,6 +327,7 @@ user_settings::user_settings (const user_settings & rhs)
     m_mainwnd_x                 (rhs.m_mainwnd_x),
     m_mainwnd_y                 (rhs.m_mainwnd_y),
     m_save_user_config          (rhs.m_save_user_config),
+    m_hide_menu_separator_fudge (rhs.m_hide_menu_separator_fudge),
 
     /*
      * Constant values.
@@ -433,6 +445,7 @@ user_settings::operator = (const user_settings & rhs)
          */
 
         m_save_user_config = rhs.m_save_user_config;
+        m_hide_menu_separator_fudge = rhs.m_hide_menu_separator_fudge;
         normalize();
 
         /*

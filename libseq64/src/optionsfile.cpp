@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-11-25
+ * \updates       2019-12-21
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1119,7 +1119,7 @@ optionsfile::write (const perform & p)
          */
 
         file
-            << "# Sequencer64 0.96.5 (and above) rc configuration file\n"
+            << "# Sequencer64 0.96.7 (and above) rc configuration file\n"
             << "#\n"
             << "# " << name() << "\n"
             << "# Written on " << current_date_time() << "\n"
@@ -1149,7 +1149,7 @@ optionsfile::write (const perform & p)
         std::string fspec = rc().midi_control_filespec();
         std::ofstream ctlfile(fspec, std::ios::out | std::ios::trunc);
         ctlfile
-            << "# Sequencer64 0.96.5 (and above) midi-control "
+            << "# Sequencer64 0.96.7 (and above) midi-control "
                    "configuration file\n"
             << "#\n"
             << "# " << fspec << "\n"
@@ -1848,7 +1848,7 @@ optionsfile::write_midi_control
         "#   [0 0 0 0 0 0]   [0 0 0 0 0 0]   [0 0 0 0 0 0]\n"
         "#    Toggle          On              Off\n"
         "\n"
-        <<  g_midi_control_limit << "      # MIDI controls count (74/84/96)\n"
+        <<  g_midi_control_limit << "      # MIDI controls count (74/84/96/108)\n"
         "\n"
         << "# Pattern-group section:\n"
         ;
@@ -1993,11 +1993,11 @@ optionsfile::write_midi_control
             break;
 
         case c_midi_control_start:
-            file << "# A second control for starting playback. TODO.\n";
+            file << "# A second control for starting playback (Live).\n";
             break;
 
         case c_midi_control_stop:
-            file << "# A second control for stopping playback. TODO.\n";
+            file << "# A second control for stopping playback.\n";
             break;
 
         case c_midi_control_mod_snapshot_2:
@@ -2013,11 +2013,81 @@ optionsfile::write_midi_control
             break;
 
         /*
-         * case c_midi_controls_extended:
+         * case c_midi_controls_extended:                   // 96
          *     file << "# Reserved for expansion 9\n";
          *     break;
+         */
+
+        case c_midi_control_keep_queue:
+            file << "# Keep queue. TODO.\n";
+            break;
+
+        case c_midi_control_slot_shift_2:
+            file << "# Alternate slot-shift. TODO.\n";
+            break;
+
+        case c_midi_control_mutes_clear:
+            file << "# Mutes clear. TODO.\n";
+            break;
+
+        case c_midi_control_reserved_35:
+            file << "# Reserved 35.\n";
+            break;
+
+        case c_midi_control_pattern_edit:
+            file << "# Pattern edit. TODO.\n";
+            break;
+
+        case c_midi_control_event_edit:
+            file << "# Event edit. TODO.\n";
+            break;
+
+        case c_midi_control_song_mode:
+            file << "# Song mode. TODO.\n";
+            break;
+
+        case c_midi_control_toggle_jack:
+            file << "# Toggle JACK. TODO.\n";
+            break;
+
+        case c_midi_control_menu_mode:
+            file << "# Menu mode. TODO.\n";
+            break;
+
+        case c_midi_control_follow:
+            file << "# Follow JACK transport. TODO.\n";
+            break;
+
+        case c_midi_controls_reserved_42:
+            file << "# Reserver 42.\n";
+            break;
+
+        case c_midi_controls_reserved_43:
+            file << "# Reserver 43.\n";
+            break;
+
+        case c_midi_controls_reserved_44:
+            file << "# Reserver 44.\n";
+            break;
+
+        case c_midi_controls_reserved_45:
+            file << "# Reserver 45.\n";
+            break;
+
+        case c_midi_controls_reserved_46:
+            file << "# Reserver 46.\n";
+            break;
+
+        case c_midi_controls_reserved_47:
+            file << "# Reserver 47.\n";
+            break;
+
+        /*
+         * case c_midi_controls_extended_2:                 // 108
+         *     file << "# Reserved for expansion ...\n";
+         *     break;
          *
-         * case g_midi_control_limit:  74/84/96, last value, not written.
+         * case g_midi_control_limit:  74/84/96/108, last value, not written.
          */
 
         default:

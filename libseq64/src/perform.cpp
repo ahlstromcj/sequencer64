@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2019-11-04
+ * \updates       2019-12-22
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -313,7 +313,10 @@ midi_control perform::sm_mc_dummy;
 
 perform::perform (gui_assistant & mygui, int ppqn)
  :
-    m_seq_shift                 (0),        // sets multiple for loop control
+    m_call_seq_edit             (false),
+    m_call_seq_eventedit        (false),
+    m_call_seq_number           (-1),
+    m_call_seq_shift            (0),
     m_play_list                 (),         // optional, not owned by perform
     m_song_start_mode           (false),    // set later during options read
     m_start_from_perfedit       (false),
@@ -4953,25 +4956,29 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 
     case c_midi_control_start:
 
-        result = false;
+        result = true;
+        start_playing(false);           /* use Live mode, not Song mode     */
         break;
 
     case c_midi_control_stop:
 
-        result = false;
+        result = true;
+        stop_playing();
         break;
 
     case c_midi_control_mod_snapshot_2:
-
-        result = false;
-        break;
-
     case c_midi_control_toggle_mutes:
+    case c_midi_control_song_pointer:
 
         result = false;
         break;
 
-    case c_midi_control_song_pointer:
+    /*
+     * A large number of other controls are not yet supported, and we won't add
+     * them here.
+     */
+
+    case c_midi_control_pattern_edit:
 
         result = false;
         break;
@@ -5306,10 +5313,10 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
                  * operations.
                  */
 
-                if (m_seq_shift > 0)
+                if (m_call_seq_shift > 0)
                 {
-                    offset += m_seq_shift * c_seqs_in_set;
-                    m_seq_shift = 0;
+                    offset += m_call_seq_shift * c_seqs_in_set;
+                    m_call_seq_shift = 0;
                 }
                 sequence_playing_toggle(offset);
                 result = true;
@@ -6747,9 +6754,8 @@ perform::keyboard_control_press (unsigned key)
     bool result = true;
     if (get_key_count(key) != 0)
     {
-        // sequence_key(lookup_keyevent_key(kevent));      // kevent == seq???
         int seqnum = lookup_keyevent_seq(key);
-        int keynum = seqnum;            // + m_call_seq_shift * c_seqs_in_set;
+        int keynum = seqnum;
         sequence_key(keynum);
     }
     else

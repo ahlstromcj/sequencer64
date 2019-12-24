@@ -82,7 +82,8 @@ enum draw_type_t
 
 /**
  *  Provides two editing modes for a sequence.  A feature adapted from
- *  Kepler34.  Not yet ready for prime time.
+ *  Kepler34.  In drum note, notes are displayed as small diamonds, having no
+ *  note length.
  */
 
 enum edit_mode_t
@@ -520,7 +521,8 @@ private:
     colorbyte m_seq_color;
 
     /**
-     * A feature adapted from Kepler34.
+     * A feature adapted from Kepler34.  It indicates the editing mode of notes,
+     * either normal or drum.
      */
 
     edit_mode_t m_seq_edit_mode;

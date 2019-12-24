@@ -220,34 +220,6 @@ private:
     bool m_button_down;
     bool m_moving;                      // are we moving between slots
     bool m_adding_new;                  // new seq here, wait for double click
-
-    /**
-     *  Indicates that this object is in a mode where the usual mute/unmute
-     *  keystroke will instead bring up the pattern slot for editing.
-     *  Currently, the hard-wired key for this function is the equals key.
-     */
-
-    bool m_call_seq_edit;
-
-    /**
-     *  Indicates that this object is in a mode where the usual mute/unmute
-     *  keystroke will instead bring up the pattern slot for event-editing.
-     *  Currently, the hard-wired key for this function is the minus key.
-     */
-
-    bool m_call_seq_eventedit;
-
-    /**
-     *  A new flag to indicate if the next pattern hot-key will reach into the
-     *  extended part of the set.  It causes 32 (c_seqs_in_set) to be added to
-     *  the hot key.  Actually, let's make it an integer that can range from 0
-     *  (off) to 1 to 2 (m_seqs_in_set / c_seqs_in_set).
-     *
-     *  NOT YET ENABLED.
-     */
-
-    int m_call_seq_shift;
-
     midipulse m_last_tick_x[c_max_sequence];
     bool m_last_playing[c_max_sequence];
     bool m_can_paste;
@@ -279,7 +251,6 @@ private slots:
     void paste_seq ();
     void delete_seq ();
     void new_live_frame ();
-
     void color_by_number (int i);
 
 #if ! defined SEQ64_USE_BUILTIN_PALETTE

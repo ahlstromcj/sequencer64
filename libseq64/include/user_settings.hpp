@@ -782,6 +782,12 @@ private:
 
     bool m_save_user_config;
 
+    /**
+     *  A kludge for broken themes.  Defaults to false.
+     */
+
+    bool m_hide_menu_separator_fudge;
+
     /*
      *  All constant (unchanging) values go here.  They are not saved or read.
      */
@@ -2090,6 +2096,16 @@ public:         // used in main application module and the userfile class
     int mainwid_height_fudge () const
     {
         return MAINWID_HEIGHT_FUDGE / 2;
+    }
+
+    bool hide_menu_separator_fudge () const
+    {
+        return m_hide_menu_separator_fudge;
+    }
+
+    void hide_menu_separator_fudge (bool f)
+    {
+        m_hide_menu_separator_fudge = f;
     }
 
 protected:

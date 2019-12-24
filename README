@@ -1,6 +1,6 @@
 README for Sequencer64 0.96.7 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2019-12-19
+2015-09-10 to 2019-12-24
 
 Sequencer64 is a reboot of seq24, extending it greatly over the last four years.
 The heart of seq24 remains intact.  It is an old friend with a whole lot of
@@ -48,10 +48,18 @@ Recent changes:
             typed in.
         -   In Seq66, found an issue handling running status in the 2rock.mid
             file.  Backported the fix here.
-        -   Addded a feature to the "usr" file to hold the desired state of
+        -   Feature request #188: in the "usr" file, hold the desired state of
             muting, MIDI thru, record, quantized record, and recording style,
             for new patterns when opened.  An assist for live recording.
             Run with the --user-save option to save with the new feature.
+            Currently, the criterion for "new pattern" is a name of "Untitled".
+        -   Along with #188, made it possible for MIDI control to bring up the
+            pattern editor.
+        -   Added a work-around for crashing when opening menus with horizontal
+            separators on certain themes (e.g. Breeze-Gtk and its dark version).
+            See issues #126, #154, and #185.  Currently, all separators are
+            removed by default, until we can detect themes.  A slight
+            degradation in the quality of the user interface.  Not bad, though.
     -   Version 0.96.6:
         -   Fixed issue #180 by enabling the (user_ui_) key_height option.
             Change this value in sequencer64.usr from 8 to a larger value as

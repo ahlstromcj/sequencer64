@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-30
+ * \updates       2019-12-24
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -159,7 +159,8 @@ seqmenu::popup_menu ()
                     "Event Edit...", mem_fun(*this, &seqmenu::seq_event_edit)
                 )
             );
-            m_menu->items().push_back(SeparatorElem());
+            if (! usr().hide_menu_separator_fudge())
+                m_menu->items().push_back(SeparatorElem());
         }
         m_menu->items().push_back
         (
@@ -176,13 +177,17 @@ seqmenu::popup_menu ()
         (
             MenuElem("New", mem_fun(*this, &seqmenu::seq_edit))
         );
-        m_menu->items().push_back(SeparatorElem());
+        if (! usr().hide_menu_separator_fudge())
+            m_menu->items().push_back(SeparatorElem());
+
         m_menu->items().push_back
         (
             MenuElem("Paste", mem_fun(*this, &seqmenu::seq_paste))
         );
     }
-    m_menu->items().push_back(SeparatorElem());
+    if (! usr().hide_menu_separator_fudge())
+        m_menu->items().push_back(SeparatorElem());
+
     Gtk::Menu * menu_song = manage(new Gtk::Menu());
     m_menu->items().push_back(MenuElem("Song", *menu_song));
     if (is_current_seq_active())        /* also checks sequence pointer */
@@ -233,7 +238,8 @@ seqmenu::popup_menu ()
     Gtk::Menu * menu_color = manage(new Gtk::Menu());
     m_menu->items().push_back(MenuElem("Color", *menu_color));
     PUSH_COLOR("None", -1);
-    menu_color->items().push_back(SeparatorElem());
+    if (! usr().hide_menu_separator_fudge())
+        menu_color->items().push_back(SeparatorElem());
 
     /*
      * Not useful, it interferes with the armed/unmuted color:
@@ -261,7 +267,8 @@ seqmenu::popup_menu ()
      * Pink and Gray are not available in the Gtkmm interface.
      */
 
-    menu_color->items().push_back(SeparatorElem());
+    if (! usr().hide_menu_separator_fudge())
+        menu_color->items().push_back(SeparatorElem());
 
     /* Not useful:
      *      PUSH_COLOR("Dk Black", SEQ64_COLOR_INT(DK_BLACK));
@@ -309,7 +316,8 @@ seqmenu::popup_menu ()
 
     if (is_current_seq_active())        /* also checks sequence pointer */
     {
-        m_menu->items().push_back(SeparatorElem());
+        if (! usr().hide_menu_separator_fudge())
+            m_menu->items().push_back(SeparatorElem());
 
 #define SET_TRANS   mem_fun(*this, &seqmenu::set_transposable)
 

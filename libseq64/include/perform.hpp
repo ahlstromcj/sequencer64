@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-11-04
+ * \updates       2019-12-23
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -396,13 +396,35 @@ private:
     static midi_control sm_mc_dummy;
 
     /**
-     *  Indicates what level of shifting we are at, via MIDI control.  See
-     *  mainwnd::m_call_seq-shift, which handles this concept for keystroke
+     *  Indicates that this object is in a mode where the usual mute/unmute
+     *  keystroke will instead bring up the pattern slot for editing.
+     *  Currently, the hard-wired key for this function is the equals key.
+     */
+
+    mutable bool m_call_seq_edit;
+
+    /**
+     *  Indicates that this object is in a mode where the usual mute/unmute
+     *  keystroke will instead bring up the pattern slot for event-editing.
+     *  Currently, the hard-wired key for this function is the minus key.
+     */
+
+    mutable bool m_call_seq_eventedit;
+
+    /**
+     *
+     */
+
+    mutable int m_call_seq_number;
+
+    /**
+     *  Indicates what level of shifting we are at, via MIDI control.  Used to
+     *  be mainwnd::m_call_seq_shift, which handles this concept for keystroke
      *  control of the mute statuses of sequences.  The default value of this
      *  counter is 0, and it can range upward to 2, to support 96 sequences.
      */
 
-    int m_seq_shift;
+    mutable int m_call_seq_shift;
 
     /**
      *  Provides an optional play-list, loosely patterned after Stazed's Seq32
@@ -1144,6 +1166,66 @@ public:
 
     perform (gui_assistant & mygui, int ppqn = SEQ64_USE_DEFAULT_PPQN);
     ~perform ();
+
+    bool call_seq_edit ()  const
+    {
+        bool result = m_call_seq_edit && m_call_seq_number != (-1);
+        m_call_seq_edit = false;
+        m_call_seq_number = (-1);
+        return result;
+    }
+
+    void toggle_call_seq_edit ()
+    {
+        m_call_seq_edit = ! m_call_seq_edit;
+    }
+
+    void clear_seq_edits ()
+    {
+        m_call_seq_edit = m_call_seq_eventedit = false;
+    }
+
+    bool call_seq_eventedit () const
+    {
+        bool result = m_call_seq_eventedit && m_call_seq_number != (-1);
+        m_call_seq_eventedit = false;
+        m_call_seq_number = (-1);
+        return result;
+    }
+
+    void toggle_call_seq_eventedit ()
+    {
+        m_call_seq_eventedit = !  m_call_seq_eventedit;
+    }
+
+    int call_seq_number ()
+    {
+        return m_call_seq_number;
+    }
+
+    void call_seq_number (int seqno)
+    {
+        m_call_seq_number = seqno;
+    }
+
+    int call_seq_shift () const
+    {
+        return m_call_seq_shift;
+    }
+
+    int increment_call_seq_shift () const
+    {
+        ++m_call_seq_shift;
+        if (m_call_seq_shift > 2)
+            m_call_seq_shift = 0;
+
+        return m_call_seq_shift;
+    }
+
+    void clear_call_seq_shift ()
+    {
+        m_call_seq_shift = 0;
+    }
 
     /*
      * Start of playlist accessors.
@@ -2027,9 +2109,9 @@ public:
 
     void increment_seq_shift ()
     {
-        ++m_seq_shift;
-        if (m_seq_shift > 2)
-            m_seq_shift = 0;
+        ++m_call_seq_shift;
+        if (m_call_seq_shift > 2)
+            m_call_seq_shift = 0;
     }
 
     /**
@@ -2210,6 +2292,15 @@ public:
     bool is_active (int seq) const
     {
         return is_mseq_valid(seq) ? m_seqs_active[seq] : false ;
+    }
+
+    /*
+     * This is just a very fast check meant for use in some GUI timers.
+     */
+
+    bool check_seqno (int seq) const
+    {
+        return seq > (-1);
     }
 
     bool is_seq_valid (int seq) const;
@@ -2473,7 +2564,8 @@ public:
 
     int lookup_keyevent_seq (unsigned keycode)
     {
-        return keys().lookup_keyevent_seq(keycode);
+        m_call_seq_number = keys().lookup_keyevent_seq(keycode);
+        return m_call_seq_number;
     }
 
     /**
@@ -2829,7 +2921,7 @@ public:
 public:         // GUI-support functions
 
     /*
-     * Deals with the editing mode of the specific sequence.
+     * Deals with the editing mode (note versus drum) of the specific sequence.
      */
 
     edit_mode_t seq_edit_mode (int seq) const
@@ -2842,8 +2934,9 @@ public:         // GUI-support functions
     }
 
     /*
-     * This overload deals with the editing mode of the specific sequence,
-     * but the seqeuence ID is replaced with a reference to the sequence
+     * This overload deals with the editing mode (note versus drum) of the
+     * specific sequence, but the seqeuence ID is replaced with a reference to
+     * the sequence
      * itself.
      */
 

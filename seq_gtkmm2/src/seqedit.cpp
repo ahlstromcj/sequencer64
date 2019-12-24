@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-12-18
+ * \updates       2019-12-24
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -740,8 +740,11 @@ seqedit::create_menus ()
 
         if (item == 0)
         {
-            m_menu_snap->items().push_back(SeparatorElem());
-            m_menu_note_length->items().push_back(SeparatorElem());
+            if (! usr().hide_menu_separator_fudge())
+            {
+                m_menu_snap->items().push_back(SeparatorElem());
+                m_menu_note_length->items().push_back(SeparatorElem());
+            }
             continue;
         }
         else
@@ -995,7 +998,9 @@ seqedit::popup_tool_menu ()
 
     if (! event::is_note_msg(m_editing_status))
     {
-        holder->items().push_back(SeparatorElem());
+        if (! usr().hide_menu_separator_fudge())
+            holder->items().push_back(SeparatorElem());
+
         holder->items().push_back
         (
             MenuElem("All events", sigc::bind(DO_ACTION, c_select_all_events, 0))
@@ -1025,7 +1030,9 @@ seqedit::popup_tool_menu ()
          *  The action code here is c_quantize_events, not c_quantize_notes.
          */
 
-        holder->items().push_back(SeparatorElem());
+        if (! usr().hide_menu_separator_fudge())
+            holder->items().push_back(SeparatorElem());
+
         holder->items().push_back
         (
             MenuElem("Quantize selected events",
@@ -1040,7 +1047,9 @@ seqedit::popup_tool_menu ()
 
 #ifdef USE_STAZED_COMPANDING
 
-    holder->items().push_back(SeparatorElem());
+    if (! usr().hide_menu_separator_fudge())
+        holder->items().push_back(SeparatorElem());
+
     holder->items().push_back
     (
         MenuElem("Expand pattern (double)",
@@ -1641,7 +1650,9 @@ seqedit::popup_sequence_menu ()
     (
         MenuElem("Off", sigc::bind(SET_BG_SEQ, SEQ64_SEQUENCE_LIMIT))
     );
-    m_menu_sequences->items().push_back(SeparatorElem());
+    if (! usr().hide_menu_separator_fudge())
+        m_menu_sequences->items().push_back(SeparatorElem());
+
     int seqsinset = usr().seqs_in_set();
     for (int sset = 0; sset < c_max_sets; ++sset)
     {
@@ -1858,7 +1869,9 @@ seqedit::repopulate_event_menu (int buss, int channel)
 
     m_menu_data = manage(new Gtk::Menu());
     set_event_entry(m_menu_data, "Note On Velocity", note_on, EVENT_NOTE_ON);
-    m_menu_data->items().push_back(SeparatorElem());
+    if (! usr().hide_menu_separator_fudge())
+        m_menu_data->items().push_back(SeparatorElem());
+
     set_event_entry(m_menu_data, "Note Off Velocity", note_off, EVENT_NOTE_OFF);
     set_event_entry(m_menu_data, "Aftertouch", aftertouch, EVENT_AFTERTOUCH);
     set_event_entry
@@ -1870,7 +1883,8 @@ seqedit::repopulate_event_menu (int buss, int channel)
         m_menu_data, "Channel Pressure", channel_pressure, EVENT_CHANNEL_PRESSURE
     );
     set_event_entry(m_menu_data, "Pitch Wheel", pitch_wheel, EVENT_PITCH_WHEEL);
-    m_menu_data->items().push_back(SeparatorElem());
+    if (! usr().hide_menu_separator_fudge())
+        m_menu_data->items().push_back(SeparatorElem());
 
     /**
      *  Create the 8 sub-menus for the various ranges of controller
@@ -2040,7 +2054,10 @@ seqedit::repopulate_mini_event_menu (int buss, int channel)
     }
 
     if (any_events)
-        m_menu_minidata->items().push_back(SeparatorElem());
+    {
+        if (! usr().hide_menu_separator_fudge())
+            m_menu_minidata->items().push_back(SeparatorElem());
+    }
 
     /**
      *  Create the one menu for the controller changes that actually exist in

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-03-14
- * \updates       2017-09-01
+ * \updates       2019-12-21
  * \license       GNU GPLv2 or above
  *
  */
@@ -46,7 +46,11 @@ namespace seq64
  *  values.
  */
 
+#ifdef USE_OLD__CONTROL_LIMIT
 int g_midi_control_limit = c_midi_controls_extended;    /* c_midi_controls */
+#else
+int g_midi_control_limit = c_midi_controls_extended_2;
+#endif
 
 }           // namespace seq64
 

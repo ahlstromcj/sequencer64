@@ -128,9 +128,6 @@ qsliveframe::qsliveframe (perform & p, qsmainwnd * window, QWidget * parent)
     m_button_down       (false),
     m_moving            (false),
     m_adding_new        (false),
-    m_call_seq_edit     (false),
-    m_call_seq_eventedit(false),
-    m_call_seq_shift    (0),            // for future usage
     m_last_tick_x       (),             // array
     m_last_playing      (),             // array
     m_can_paste         (false),
@@ -1360,25 +1357,26 @@ qsliveframe::handle_key_press (unsigned gdkkey)
         if (! done)
         {
             int seqnum = perf().lookup_keyevent_seq(gdkkey);
-            if (m_call_seq_edit)
+            if (perf().call_seq_edit())
             {
-                m_call_seq_edit = false;
                 callEditorEx(seqnum);
                 done = true;
             }
-            else if (m_call_seq_eventedit)
+            else if (perf.call_seq_eventedit())
             {
-                m_call_seq_eventedit = false;
+                perf().clear_call_seq_eventedit();
                 callEditorEvents(seqnum);
                 done = true;
             }
-            else if (m_call_seq_shift > 0)      /* variset support  */
+            else if (perf().call_seq_shift > 0)         /* variset support  */
             {
                 /*
                  * NOT READY HERE
-                int keynum = seqnum + m_call_seq_shift * c_seqs_in_set;
-                sequence_key(keynum);
+                 *
+                int key = seqnum + perf().call_seq_shift() * c_seqs_in_set;
+                sequence_key(key);
                  */
+
                 done = true;
             }
         }
@@ -1395,12 +1393,12 @@ qsliveframe::handle_key_press (unsigned gdkkey)
             keystroke k(gdkkey, SEQ64_KEYSTROKE_PRESS);
             if (k.is(PREFKEY(pattern_edit)))                // equals sign
             {
-                m_call_seq_edit = ! m_call_seq_edit;
+                perf().toggle_call_seq_edit();
                 done = true;
             }
             else if (k.is(PREFKEY(event_edit)))             // minus sign
             {
-                m_call_seq_eventedit = ! m_call_seq_eventedit;
+                perf().toggle_call_seq_eventedit();
                 done = true;
             }
             if (! done)

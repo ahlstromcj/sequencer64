@@ -1006,7 +1006,11 @@ qsmainwnd::refresh ()
 }
 
 /**
+ *  Queries the caller to check for allowing modifications, then performs the
+ *  Save, Discard, or Cancel actions.
  *
+ * \return
+ *      Returns true if the Save worked or if the caller chooses Discard.
  */
 
 bool

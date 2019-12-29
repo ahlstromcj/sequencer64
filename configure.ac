@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2019-12-17
+dnl \update        2019-12-29
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -157,6 +157,9 @@ AC_SUBST(PACKAGE)
 
 AC_DEFINE(APP_NAME, ["seq64"], "The default name of the Sequencer64 executable")
 AC_SUBST(APP_NAME)
+
+AC_DEFINE(APP_TYPE, ["gtk"], "The type of the Sequencer64 executable, gtk/qt/cli")
+AC_SUBST(APP_TYPE)
 
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
@@ -508,6 +511,7 @@ if test "$rtmidi" != "no"; then
     need_gtkmm="yes"
     need_qt="no"
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
+    AC_DEFINE(APP_TYPE, ["gtk"], [Names the UI of the application])
     AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
     AM_PATH_ALSA(0.9.0)
@@ -542,6 +546,7 @@ if test "$qtmidi" != "no"; then
     need_qt="yes"
     need_gtkmm="no"
     AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/rtmidi version of application])
+    AC_DEFINE(APP_TYPE, ["qt"], [Names the UI of the application])
     AC_DEFINE(CONFIG_NAME, ["qseq64"], [Configuration file name for Qt/rtmidi])
     AM_PATH_ALSA(0.9.0)
     AX_HAVE_QT
@@ -558,6 +563,7 @@ AC_ARG_ENABLE(cli,
 if test "$cli" != "no"; then
     AC_MSG_RESULT([rtmidi command-line build enabled.]);
     AC_DEFINE(APP_NAME, ["seq64cli"], [Names the CLI version of application])
+    AC_DEFINE(APP_TYPE, ["cli"], [Names the UI of the application])
     AC_DEFINE(CONFIG_NAME, ["seq64cli"], [Configuration file name])
     if test "x$mingw" != "xyes" ; then
         build_rtcli="yes"
@@ -719,7 +725,7 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2019-12-17"
+#define VERSION_DATE_SHORT "2019-12-29"
 #define VERSION "0.96.7"
 
 )

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2019-12-22
+ * \updates       2019-12-28
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -5440,6 +5440,94 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
 }
 
 /**
+ *  Simply toggles the call-seq-edit flag, usually operated via the equals ("=")
+ *  key.
+ */
+
+void
+perform::toggle_call_seq_edit ()
+{
+    m_call_seq_edit = ! m_call_seq_edit;
+#ifdef PLATFORM_DEBUG_TMI
+    printf("seq edit %s\n", m_call_seq_edit ? "pending" : "not pending");
+#endif
+}
+
+/**
+ *  Checks the call-seq-edit key, and then clears the call-seq member variables
+ *  if seq-edit is pending.  Generally, the call_seq_number() function must be
+ *  called before this function to retrieve the pattern number in force for the
+ *  pending seq-edit call.
+ *
+ * \return
+ *      Returns the value of m_call_seq_edit.
+ */
+
+bool
+perform::call_seq_edit () const
+{
+    bool result = m_call_seq_edit;
+    if (result)
+    {
+        result = m_call_seq_number != (-1);
+        m_call_seq_edit = false;
+        m_call_seq_number = (-1);
+    }
+    return result;
+}
+
+/**
+ *  Simply toggles the call-seq-edit flag, usually operated via the minus ("-")
+ *  key.
+ */
+
+void
+perform::toggle_call_seq_eventedit ()
+{
+    m_call_seq_eventedit = ! m_call_seq_eventedit;
+#ifdef PLATFORM_DEBUG_TMI
+    printf("event edit %s\n", m_call_seq_eventedit ? "pending" : "not pending");
+#endif
+}
+
+/**
+ *  Checks the call-seq-event-edit key, and then clears the call-seq member
+ *  variables if seq-event-edit is pending.  Generally, the call_seq_number()
+ *  function must be called before this function to retrieve the pattern number
+ *  in force for the pending seq-edit call.
+ *
+ * \return
+ *      Returns the value of m_call_seq_eventedit.
+ */
+
+bool
+perform::call_seq_eventedit () const
+{
+    bool result = m_call_seq_eventedit;
+    if (result)
+    {
+        result = m_call_seq_number != (-1);
+        m_call_seq_eventedit = false;
+        m_call_seq_number = (-1);
+    }
+    return result;
+}
+
+/**
+ *
+ */
+
+void
+perform::clear_seq_edits ()
+{
+    m_call_seq_edit = m_call_seq_eventedit = false;
+    m_call_seq_number = (-1);
+#ifdef PLATFORM_DEBUG_TMI
+    printf("seq edit statuses cleared\n");
+#endif
+}
+
+/**
  *  Provides operation of the new playlist and playlist-song MIDI controls.
  *
  * \param ctl
@@ -6324,9 +6412,19 @@ perform::is_keep_queue () const
 void
 perform::sequence_key (int seq)
 {
-    seq += screenset_offset(m_screenset);   /* m_playscreen_offset !!!  */
-    if (is_active(seq))
+    seq += screenset_offset(m_screenset);       /* m_playscreen_offset !!!  */
+    if (check_seqno(seq) && is_active(seq))
+    {
+        if (call_seq_shift() > 0)
+            seq += call_seq_shift() * c_seqs_in_set;
+
+#ifdef PLATFORM_DEBUG_TMI
+        infoprintf("Toggled pattern #%d\n", seq);
+#endif
+
         sequence_playing_toggle(seq);
+        clear_seq_edits();                      /* save the caller trouble  */
+    }
 }
 
 /**
@@ -6744,23 +6842,25 @@ perform::mainwnd_key_event (const keystroke & k)
 }
 
 /**
- *  Still need to work on this one.
- *  See mainwnd.cpp line 3312 or thereabouts.
+ *  Gets the pattern number from the assigned key (if any), checks if the key is
+ *  actionable as a pattern toggle, and then toggles the pattern.  A pattern key
+ *  is actionable if the pattern-edit and event-edit keys are not pending.  If
+ *  they are pending, we let the caller (mainwnd or qsliveframe) deal with it in
+ *  their timer functions.
  */
 
 bool
 perform::keyboard_control_press (unsigned key)
 {
-    bool result = true;
-    if (get_key_count(key) != 0)
+    bool result = get_key_count(key) != 0;          /* pattern toggle key?  */
+    if (result)
     {
-        int seqnum = lookup_keyevent_seq(key);
-        int keynum = seqnum;
-        sequence_key(keynum);
+        int seqnum = lookup_keyevent_seq(key);      /* get pattern number   */
+        if (check_seq_edits())                      /* edits pending?       */
+            call_seq_number(seqnum);                /* log the pending seq  */
+        else
+            sequence_key(seqnum);                   /* handle the sequence  */
     }
-    else
-        result = false;
-
     return result;
 }
 

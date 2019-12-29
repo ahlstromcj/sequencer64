@@ -649,6 +649,7 @@ private:
     void open_performance_edit_2 ();
     void enregister_perfedits ();
     void sequence_key (int seq);
+    void sequence_key_check ();
 
     /**
      *  Returns the maximum value we can allow for a spinner.  Remember that
@@ -757,6 +758,7 @@ private:
 
 private:
 
+    bool is_bad_theme () const;
     void populate_menu_file ();
     void populate_menu_edit ();
     void populate_menu_help ();

@@ -104,6 +104,9 @@ protected:                          // overrides of event handlers
 
 private:
 
+    void sequence_key (int seq);
+    void sequence_key_check ();
+
     const seq64::perform & perf () const
     {
         return m_perform;

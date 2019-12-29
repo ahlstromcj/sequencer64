@@ -731,6 +731,7 @@ SEQ64_API_MINOR
 SEQ64_API_MAJOR
 SEQ64_SUITE_NAME
 CLIENT_NAME
+APP_TYPE
 APP_NAME
 LN_S
 CXXCPP
@@ -4963,6 +4964,11 @@ _ACEOF
 
 
 $as_echo "#define APP_NAME \"seq64\"" >>confdefs.h
+
+
+
+
+$as_echo "#define APP_TYPE \"gtk\"" >>confdefs.h
 
 
 
@@ -17448,6 +17454,9 @@ if test "$rtmidi" != "no"; then
 $as_echo "#define APP_NAME \"seq64\"" >>confdefs.h
 
 
+$as_echo "#define APP_TYPE \"gtk\"" >>confdefs.h
+
+
 $as_echo "#define CONFIG_NAME \"sequencer64\"" >>confdefs.h
 
 
@@ -17678,6 +17687,9 @@ if test "$qtmidi" != "no"; then
     need_gtkmm="no"
 
 $as_echo "#define APP_NAME \"qseq64\"" >>confdefs.h
+
+
+$as_echo "#define APP_TYPE \"qt\"" >>confdefs.h
 
 
 $as_echo "#define CONFIG_NAME \"qseq64\"" >>confdefs.h
@@ -18790,6 +18802,9 @@ if test "$cli" != "no"; then
 $as_echo "rtmidi command-line build enabled." >&6; };
 
 $as_echo "#define APP_NAME \"seq64cli\"" >>confdefs.h
+
+
+$as_echo "#define APP_TYPE \"cli\"" >>confdefs.h
 
 
 $as_echo "#define CONFIG_NAME \"seq64cli\"" >>confdefs.h

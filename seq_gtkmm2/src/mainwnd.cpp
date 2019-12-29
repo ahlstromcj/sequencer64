@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-12-24
+ * \updates       2019-12-29
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -91,6 +91,7 @@
 
 #include "calculations.hpp"             /* pulse_to_measurestring(), etc.   */
 #include "cmdlineopts.hpp"              /* for build info function          */
+#include "easy_macros.hpp"              /* seq64::info_message()            */
 #include "file_functions.hpp"           /* seq64::file_extension_match()    */
 #include "globals.h"
 #include "gtk_helpers.h"
@@ -373,6 +374,8 @@ mainwnd::mainwnd
     if (! multi_wid())
         m_mainwid_independent = true;
 #endif
+
+    (void) is_bad_theme();
 
     usr().hide_menu_separator_fudge(true);  // TEST TEST TEST
 
@@ -1383,19 +1386,6 @@ mainwnd::timer_callback ()
     if (m_button_mode->get_active() != perf().song_start_mode())
         m_button_mode->set_active(perf().song_start_mode());
 
-#if 0
-    if (perf().is_pattern_playing())
-    {
-        if (m_button_mode->get_sensitive())
-            m_button_mode->set_sensitive(false);
-    }
-    else
-    {
-        if (! m_button_mode->get_sensitive())
-            m_button_mode->set_sensitive(true);
-    }
-#endif
-
     m_menubar->set_sensitive(m_menu_mode);
 
 #ifdef SEQ64_SHOW_JACK_STATUS
@@ -1429,19 +1419,6 @@ mainwnd::timer_callback ()
     if (not_nullptr(lblptr))
         lblptr->set_text(label);
 
-#if 0
-    if (perf().is_pattern_playing())
-    {
-        if (m_button_jack->get_sensitive())
-            m_button_jack->set_sensitive(false);
-    }
-    else
-    {
-        if (! m_button_jack->get_sensitive())
-            m_button_jack->set_sensitive(true);
-    }
-#endif
-
 #endif  // SEQ64_SHOW_JACK_STATUS
 
     /*
@@ -1460,34 +1437,10 @@ mainwnd::timer_callback ()
     }
 
     /*
-     * Handle any pending editor call-ups.
+     * Handle any pending editor call-ups.  Before anything, get the pending
+     * sequence number. It gets cleared if a seq-edit check succeeds.
      */
 
-    int seqnum = perf().call_seq_number();
-    if (perf().check_seqno(seqnum))
-    {
-        if (perf().call_seq_edit())
-        {
-            m_main_wid->seq_set_and_edit(seqnum);
-        }
-        else if (perf().call_seq_eventedit())
-        {
-            m_main_wid->seq_set_and_eventedit(seqnum);
-        }
-        else if (perf().call_seq_shift() > 0)       /* variset shift        */
-        {
-            /*
-             * c_seqs_in_set is always 32; a seq64 universal constant!
-             */
-
-            int key = seqnum + perf().call_seq_shift() * c_seqs_in_set;
-            sequence_key(key);
-        }
-        else
-        {
-            sequence_key(seqnum);                   /* toggle loop          */
-        }
-    }
     if (m_current_beats > 0 && m_last_time_ms > 0)
     {
         struct timespec spec;
@@ -1501,6 +1454,7 @@ mainwnd::timer_callback ()
             set_tap_button(0);
         }
     }
+    sequence_key_check();
     return true;
 }
 
@@ -3228,6 +3182,10 @@ mainwnd::on_delete_event (GdkEventAny * /*ev*/)
  *
  *  Also, we now effectively press the CAPS LOCK key for the user if in
  *  group-learn mode, via the keystroke::shift_lock() function.
+ *
+ * \return
+ *      Returns a false right now, now that we commented out the pattern-edit
+ *      code.
  */
 
 bool
@@ -3364,15 +3322,17 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 
                 if (ok)
                 {
-                    (void) perf().lookup_keyevent_seq(k.key());
+                    (void) perf().lookup_keyevent_seq(k.key()); /* side effect */
+#if defined USE_DIRECT_KEYSTROKE
+                    int seqnum = perf().lookup_keyevent_seq(k.key());
+                    if (seqnum != (-1))
+                        sequence_key(seqnum);           /* toggle sequence  */
 
                     /*
                      * Now handled on the next timer tick, so that performer can
                      * also cause the edit windows to pop up.
                      */
 
-#if defined USE_DIRECT_KEYSTROKE
-                    int seqnum = (void) perf().lookup_keyevent_seq(k.key());
                     if (perf().call_seq_edit())
                     {
                         m_main_wid->seq_set_and_edit(seqnum);
@@ -3425,8 +3385,6 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 }
                 else
                 {
-                    perf().clear_seq_edits();
-
                     /*
                      * Ctrl-L to toggle the group-learn mode.  Similar to
                      * Ctrl-E to bring up the Song Editor.  Ctrl-J to bring up
@@ -3990,9 +3948,34 @@ mainwnd::populate_menu_help ()
 void
 mainwnd::sequence_key (int seq)
 {
-    perf().call_seq_shift();                 /* flag now done, if in force   */
+    // Now done by perform
+    // if (perf().call_seq_shift() > 0)    /* flag now done, if in force   */
+    //     seq += perf().call_seq_shift() * c_seqs_in_set;
+
     set_status_text(std::string(""));
     perf().sequence_key(seq);
+}
+
+/**
+ *  Handles any existing pattern-key statuses.  Used in the timer callback.
+ */
+
+void
+mainwnd::sequence_key_check ()
+{
+    int seqnum = perf().call_seq_number();
+    if (perf().check_seqno(seqnum))
+    {
+#ifdef PLATFORM_DEBUG_TMI
+        printf("key for seq %d\n", seqnum);
+#endif
+        if (perf().call_seq_edit())
+            m_main_wid->seq_set_and_edit(seqnum);
+        else if (perf().call_seq_eventedit())
+            m_main_wid->seq_set_and_eventedit(seqnum);
+        else
+            sequence_key(seqnum);                   /* toggle loop          */
+    }
 }
 
 /**
@@ -4032,6 +4015,28 @@ mainwnd::show_message_box
         dialog.set_secondary_text(secondarymsg, false);
 
     dialog.run();
+}
+
+/**
+ *  Hmmmm, this gets the name of the official theme (Raleigh on Ubunut), not the
+ *  theme selected via alternate theme setters.
+ *
+ *  We can search for "gtkrc" in .gtkrc-2.0 and extract the theme there, but
+ *  that seems krufty, and is created by gtk-theme-switch2.
+ */
+
+bool
+mainwnd::is_bad_theme () const
+{
+	gchar * theme_name;
+	GtkSettings * settings = gtk_settings_get_default();
+	g_object_get(settings, "gtk-theme-name", &theme_name, NULL);
+
+    std::string tname = std::string(theme_name);
+    char tmp[48];
+	(void) snprintf(tmp, sizeof tmp, "Official GTK theme: %s", theme_name);
+	(void) info_message(tmp);
+	return tname == "Breeze" || tname == "Breeze-Dark";
 }
 
 }           /* namespace seq64 */

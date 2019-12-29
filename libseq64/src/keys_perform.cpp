@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2019-02-05
+ * \updates       2019-12-27
  * \license       GNU GPLv2 or above
  *
  *  Added pattern-edit and event-edit keys which change the pattern slot
@@ -397,14 +397,14 @@ keys_perform::lookup_keyevent_key (int seqnum)
  * \param keycode
  *      Provides the keycode to look up in the (forward) key map for
  *      patterns/sequences.  If the count for this value is 0, then a
- *      0 is returned.
+ *      -1 (not 0) is returned.
  */
 
 int
 keys_perform::lookup_keyevent_seq (unsigned keycode)
 {
     return (m_key_events.count(keycode) > 0) ?
-        m_key_events[keycode] : 0 ;
+        m_key_events[keycode] : (-1) ;          /* ca 2019-12-27: not 0 ;   */
 }
 
 /**

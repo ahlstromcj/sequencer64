@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2019-04-15
+ * \updates       2019-12-29
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -195,11 +195,15 @@ qsliveframe::set_playlist_name (const std::string & plname)
  *  In an effort to reduce CPU usage when simply idling, this function calls
  *  update() only if necessary.  See qseqbase::needs_update(). All
  *  sequences are potentially checked.
+ *
+ *  Also handles any pending editor call-ups.  Before anything, get the pending
+ *  sequence number. It gets cleared if a seq-edit check succeeds.
  */
 
 void
 qsliveframe::conditional_update ()
 {
+    sequence_key_check();
     if (perf().needs_update())
         update();
 }
@@ -886,22 +890,17 @@ qsliveframe::mousePressEvent (QMouseEvent * event)
 }
 
 /**
+ *  First, get the sequence number clicked on.  If we're on a valid sequence,
+ *  hit the left mouse button, and are not dragging a sequence, then toggle
+ *  playing.
  *
  */
 
 void
 qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 {
-    /* get the sequence number we clicked on */
-
     m_curr_seq = seq_id_from_xy(event->x(), event->y());
     m_button_down = false;
-
-    /*
-     * if we're on a valid sequence, hit the left mouse button, and are not
-     * dragging a sequence - toggle playing.
-     */
-
     if (m_curr_seq != -1 && event->button() == Qt::LeftButton && ! m_moving)
     {
         if (perf().is_active(m_curr_seq))
@@ -1356,32 +1355,6 @@ qsliveframe::handle_key_press (unsigned gdkkey)
         done = perf().keyboard_group_c_status_press(gdkkey);
         if (! done)
         {
-            int seqnum = perf().lookup_keyevent_seq(gdkkey);
-            if (perf().call_seq_edit())
-            {
-                callEditorEx(seqnum);
-                done = true;
-            }
-            else if (perf.call_seq_eventedit())
-            {
-                perf().clear_call_seq_eventedit();
-                callEditorEvents(seqnum);
-                done = true;
-            }
-            else if (perf().call_seq_shift > 0)         /* variset support  */
-            {
-                /*
-                 * NOT READY HERE
-                 *
-                int key = seqnum + perf().call_seq_shift() * c_seqs_in_set;
-                sequence_key(key);
-                 */
-
-                done = true;
-            }
-        }
-        if (! done)
-        {
             /*
              * Replaces a call to Kepler34's sequence_key() function.
              */
@@ -1395,6 +1368,19 @@ qsliveframe::handle_key_press (unsigned gdkkey)
             {
                 perf().toggle_call_seq_edit();
                 done = true;
+            }
+            else if (k.is(PREFKEY(pattern_shift)))
+            {
+                (void) perf().increment_call_seq_shift();
+#if 0
+                TODO TODO TODO
+                int shiftcount = perf().increment_call_seq_shift();
+                std::string temp = "";
+                for (int i = 0; i < shiftcount; ++i)
+                    temp += '/';
+
+                set_status_text(temp);
+#endif
             }
             else if (k.is(PREFKEY(event_edit)))             // minus sign
             {
@@ -1719,6 +1705,48 @@ qsliveframe::paste_seq ()
 }
 
 /**
+ *  Use the sequence key to toggle the playing of an active pattern in
+ *  the current screen-set.
+ *
+ * \param seq
+ *      This is actually the key-number.
+ */
+
+void
+qsliveframe::sequence_key (int seq)
+{
+    /*
+     * From mainwnd!
+     *
+     * set_status_text(std::string(""));
+     */
+
+    perf().sequence_key(seq);
+}
+
+/**
+ *  Handles any existing pattern-key statuses.  Used in the timer callback.
+ */
+
+void
+qsliveframe::sequence_key_check ()
+{
+    int seqnum = perf().call_seq_number();
+    if (perf().check_seqno(seqnum))
+    {
+#ifdef PLATFORM_DEBUG_TMI
+        printf("key for seq %d\n", seqnum);
+#endif
+        if (perf().call_seq_edit())
+            callEditorEx(seqnum);
+        else if (perf().call_seq_eventedit())
+            callEditorEvents(seqnum);
+        else
+            sequence_key(seqnum);                   /* toggle loop          */
+    }
+}
+
+/**
  *  This is not called when focus changes.  Instead, we have to call this from
  *  qliveframeex::changeEvent().
  */
@@ -1731,12 +1759,12 @@ qsliveframe::changeEvent (QEvent * event)
     {
         if (isActiveWindow())
         {
-            m_has_focus = true;             // widget is now active
+            m_has_focus = true;                     /* widget now active    */
             perf().set_screenset(m_bank_id);
         }
         else
         {
-            m_has_focus = false;            // widget is now inactive
+            m_has_focus = false;                    /* widget now inactive  */
         }
     }
 }

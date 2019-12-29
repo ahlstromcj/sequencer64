@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-12-23
+ * \updates       2019-12-26
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -412,7 +412,8 @@ private:
     mutable bool m_call_seq_eventedit;
 
     /**
-     *
+     *  Indicates the current sequence number in force for calling up an pattern
+     *  or event editor. If set to -1, there is no sequence number in force.
      */
 
     mutable int m_call_seq_number;
@@ -1167,35 +1168,16 @@ public:
     perform (gui_assistant & mygui, int ppqn = SEQ64_USE_DEFAULT_PPQN);
     ~perform ();
 
-    bool call_seq_edit ()  const
-    {
-        bool result = m_call_seq_edit && m_call_seq_number != (-1);
-        m_call_seq_edit = false;
-        m_call_seq_number = (-1);
-        return result;
-    }
+    bool call_seq_edit () const;
+    void toggle_call_seq_edit ();
+    void clear_seq_edits ();
 
-    void toggle_call_seq_edit ()
-    {
-        m_call_seq_edit = ! m_call_seq_edit;
-    }
+    bool call_seq_eventedit () const;
+    void toggle_call_seq_eventedit ();
 
-    void clear_seq_edits ()
+    bool check_seq_edits () const
     {
-        m_call_seq_edit = m_call_seq_eventedit = false;
-    }
-
-    bool call_seq_eventedit () const
-    {
-        bool result = m_call_seq_eventedit && m_call_seq_number != (-1);
-        m_call_seq_eventedit = false;
-        m_call_seq_number = (-1);
-        return result;
-    }
-
-    void toggle_call_seq_eventedit ()
-    {
-        m_call_seq_eventedit = !  m_call_seq_eventedit;
+        return m_call_seq_edit || m_call_seq_eventedit;
     }
 
     int call_seq_number ()
@@ -2300,7 +2282,7 @@ public:
 
     bool check_seqno (int seq) const
     {
-        return seq > (-1);
+        return seq != (-1);
     }
 
     bool is_seq_valid (int seq) const;
@@ -2559,13 +2541,16 @@ public:
      *
      * \return
      *      Returns the desired sequence.  If there is no such value, then
-     *      a sequence number of 0 is returned.
+     *      a sequence number of -1 (not 0) is returned.
      */
 
     int lookup_keyevent_seq (unsigned keycode)
     {
-        m_call_seq_number = keys().lookup_keyevent_seq(keycode);
-        return m_call_seq_number;
+        int result = keys().lookup_keyevent_seq(keycode);
+        if (result != (-1))
+            m_call_seq_number = result;
+
+        return result;
     }
 
     /**

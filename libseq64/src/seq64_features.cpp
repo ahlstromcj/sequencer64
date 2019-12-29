@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-03-12
- * \updates       2019-09-01
+ * \updates       2019-12-24
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -166,6 +166,7 @@ seq_build_details ()
     result
         << "Build features:" << std::endl
         << "  C++ version " << std::to_string(__cplusplus) << std::endl
+        << "  App type " << SEQ64_APP_TYPE << std::endl
 #ifdef SEQ64_RTMIDI_SUPPORT
         << "  Native JACK/ALSA (rtmidi) on" << std::endl
 #endif

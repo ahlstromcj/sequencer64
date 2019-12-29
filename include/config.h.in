@@ -1,6 +1,6 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-#define VERSION_DATE_SHORT "2019-12-17"
+#define VERSION_DATE_SHORT "2019-12-29"
 #define VERSION "0.96.7"
 
 
@@ -10,6 +10,9 @@
 
 /* Names this version of application */
 #undef APP_NAME
+
+/* Names the UI of the application */
+#undef APP_TYPE
 
 /* "The name to display as client/port" */
 #undef CLIENT_NAME

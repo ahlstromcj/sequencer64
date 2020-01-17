@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-12-21
+ * \updates       2020-01-17
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -336,8 +336,10 @@ optionsfile::parse (perform & p)
         rc().midi_control_filename(ok ? filename : ""); /* base file-name   */
     }
     else
+    {
+        ok = true;
         rc().use_midi_control_file(false);
-
+    }
     if (! rc().use_midi_control_file())
     {
         /*
@@ -1015,7 +1017,7 @@ optionsfile::parse_midi_control_section (const std::string & fname, perform & p)
      * file every time.  A lot a rescanning!  But it goes fast these days.
      */
 
-    unsigned sequences = 0;                                 /* seq & ctrl #s */
+    unsigned sequences = 0;                     /* sequence & ctrl numbers  */
     line_after(file, "[midi-control]");
     sscanf(m_line, "%u", &sequences);
 
@@ -1031,6 +1033,7 @@ optionsfile::parse_midi_control_section (const std::string & fname, perform & p)
     if (rc().legacy_format())                   /* init "non-legacy" fields */
         g_midi_control_limit = c_midi_controls; /* use the original value   */
 
+    infoprintf("[%d MIDI controls]\n", g_midi_control_limit);
     if (int(sequences) > g_midi_control_limit)
     {
         return make_error_message("midi-control", "too many control entries");
@@ -1202,14 +1205,14 @@ optionsfile::write (const perform & p)
      *      -   There are no MIDI mute-group settings to save.
      *      -   The user said to save them.
      *      -   The configuration said to save them if ...
-
-    bool mutegroup_write_zeroes = false;
-    bool mutegroup_write_mutes = true;
-    bool midimutegroup = p.midi_mute_group_present();
-    if ()
-    {
-        // TODO
-    }
+     *
+     *  bool mutegroup_write_zeroes = false;
+     *  bool mutegroup_write_mutes = true;
+     *  bool midimutegroup = p.midi_mute_group_present();
+     *  if ()
+     *  {
+     *      // TODO
+     *  }
      */
 
     char outs[SEQ64_LINE_MAX];
@@ -1848,30 +1851,29 @@ optionsfile::write_midi_control
         "#   [0 0 0 0 0 0]   [0 0 0 0 0 0]   [0 0 0 0 0 0]\n"
         "#    Toggle          On              Off\n"
         "\n"
-        <<  g_midi_control_limit << "      # MIDI controls count (74/84/96/108)\n"
+        <<  g_midi_control_limit << "      # MIDI controls count (74/84/96/112)\n"
         "\n"
         << "# Pattern-group section:\n"
         ;
 
+    /*
+     * \tricky
+     *      32 mutes for channel, 32 group mutes, 10 odds-and-ends, and many
+     *      extended values.  This first output item merely writes a <i> comment
+     *      </i> to the "rc" file to indicate what the next section describes.
+     *      The first section of [midi-control] specifies 74 items.  The first
+     *      32 are unlabelled by a comment, and run from 0 to 31.  The next 32
+     *      are labelled "mute in group", and run from 32 to 63.  The next 10
+     *      are each labelled, starting with "bpm up" and ending with "screen
+     *      set play", and are each one line long.  Then we've added 10 more,
+     *      for playback, record (of performance), solo, thru, and 6 reserved
+     *      for expansion.  Finally, if play-list support is enabled, there are
+     *      another bunch of controls to handle.
+     */
+
     char outs[SEQ64_LINE_MAX];
     for (int mcontrol = 0; mcontrol < g_midi_control_limit; ++mcontrol)
     {
-        /*
-         * \tricky
-         *      32 mutes for channel, 32 group mutes, 10 odds-and-ends, and 10
-         *      extended values.  This first output item merely write a <i>
-         *      comment </i> to the "rc" file to indicate what the next
-         *      section describes.  The first section of [midi-control]
-         *      specifies 74 items.  The first 32 are unlabelled by a comment,
-         *      and run from 0 to 31.  The next 32 are labelled "mute in
-         *      group", and run from 32 to 63.  The next 10 are each labelled,
-         *      starting with "bpm up" and ending with "screen set play", and
-         *      are each one line long.  Then we've added 10 more, for
-         *      playback, record (of performance), solo, thru, and 6 reserved
-         *      for expansion.  Finally, if play-list support is enabled,
-         *      there are another 12 more controls to handle.
-         */
-
         switch (mcontrol)
         {
         case c_max_groups:                  // 32
@@ -1993,101 +1995,97 @@ optionsfile::write_midi_control
             break;
 
         case c_midi_control_start:
-            file << "# A second control for starting playback (Live).\n";
+            file << "# A second control for starting playback (Live)\n";
             break;
 
         case c_midi_control_stop:
-            file << "# A second control for stopping playback.\n";
+            file << "# A second control for stopping playback\n";
             break;
 
         case c_midi_control_mod_snapshot_2:
-            file << "# A second snapshot control.  TODO.\n";
+            file << "# A second snapshot control\n";
             break;
 
         case c_midi_control_toggle_mutes:
-            file << "# For toggling, muting, and unmuting.  TODO.\n";
+            file << "# For toggling, muting, and unmuting\n";
             break;
 
         case c_midi_control_song_pointer:
-            file << "# For setting the position in the song.  TODO.\n";
+            file << "# For setting the position in the song\n";
             break;
 
         /*
          * case c_midi_controls_extended:                   // 96
-         *     file << "# Reserved for expansion 9\n";
          *     break;
          */
 
         case c_midi_control_keep_queue:
-            file << "# Keep queue. TODO.\n";
+            file << "# Keep queue\n";
             break;
 
         case c_midi_control_slot_shift_2:
-            file << "# Alternate slot-shift. TODO.\n";
+            file << "# Alternate slot-shift\n";
             break;
 
         case c_midi_control_mutes_clear:
-            file << "# Mutes clear. TODO.\n";
+            file << "# Mutes clear\n";
             break;
 
         case c_midi_control_reserved_35:
-            file << "# Reserved 35.\n";
+            file << "# Reserved 35\n";
             break;
 
         case c_midi_control_pattern_edit:
-            file << "# Pattern edit. TODO.\n";
+            file << "# Pattern edit\n";
             break;
 
         case c_midi_control_event_edit:
-            file << "# Event edit. TODO.\n";
+            file << "# Event edit\n";
             break;
 
         case c_midi_control_song_mode:
-            file << "# Song mode. TODO.\n";
+            file << "# Song mode\n";
             break;
 
         case c_midi_control_toggle_jack:
-            file << "# Toggle JACK. TODO.\n";
+            file << "# Toggle JACK\n";
             break;
 
         case c_midi_control_menu_mode:
-            file << "# Menu mode. TODO.\n";
+            file << "# Menu mode\n";
             break;
 
         case c_midi_control_follow:
-            file << "# Follow JACK transport. TODO.\n";
+            file << "# Follow JACK transport\n";
             break;
 
         case c_midi_controls_reserved_42:
-            file << "# Reserver 42.\n";
+            file << "# Reserved 42\n";
             break;
 
         case c_midi_controls_reserved_43:
-            file << "# Reserver 43.\n";
+            file << "# Reserved 43\n";
             break;
 
         case c_midi_controls_reserved_44:
-            file << "# Reserver 44.\n";
+            file << "# Reserved 44\n";
             break;
 
         case c_midi_controls_reserved_45:
-            file << "# Reserver 45.\n";
+            file << "# Reserved 45\n";
             break;
 
         case c_midi_controls_reserved_46:
-            file << "# Reserver 46.\n";
+            file << "# Reserved 46\n";
             break;
 
         case c_midi_controls_reserved_47:
-            file << "# Reserver 47.\n";
+            file << "# Reserved 47\n";
             break;
 
         /*
-         * case c_midi_controls_extended_2:                 // 108
-         *     file << "# Reserved for expansion ...\n";
+         * case c_midi_controls_extended_2:                 // 112
          *     break;
-         *
-         * case g_midi_control_limit:  74/84/96/108, last value, not written.
          */
 
         default:
@@ -2344,18 +2342,17 @@ optionsfile::write_midi_control_out
     std::ofstream & file
 )
 {
-    bool result = false;
+    bool result = true;
     midi_control_out * mco = p.get_midi_control_out();
-    if (is_nullptr(mco))
-        return true;
+    if (not_nullptr(mco))
+    {
+        int setsize = mco->screenset_size();
+        int buss = int(mco->buss());
+        bool disabled = p.midi_control_out_disabled();
+        if (! disabled && mco->is_blank())
+            disabled = true;
 
-    int setsize = mco->screenset_size();
-    int buss = int(mco->buss());
-    bool disabled = p.midi_control_out_disabled();
-    if (! disabled && mco->is_blank())
-        disabled = true;
-
-    file <<
+        file <<
         "\n"
         "[midi-control-out]\n"
         "\n"
@@ -2370,76 +2367,77 @@ optionsfile::write_midi_control_out
         "#       Arm         Mute       Queue      Delete\n"
         "\n"
         << setsize << " " << buss << " " << (disabled ? "0" : "1")
-        << "     # screenset size, output buss, enabled (1) /disabled (0)\n\n";
+        << "     # screenset size, output buss, enabled (1) /disabled (0)\n\n"
+        ;
 
-    for (int seq = 0; seq < setsize; ++seq)
-    {
-        file << seq;
-        for (int a = 0; a < midi_control_out::seq_action_max; ++a)
+        for (int seq = 0; seq < setsize; ++seq)
         {
-            event ev = mco->get_seq_event(seq, midi_control_out::seq_action(a));
-            bool active = mco->seq_event_is_active
-            (
-                seq, midi_control_out::seq_action(a)
-            );
-            midibyte d0, d1;
+            file << seq;
+            for (int a = 0; a < midi_control_out::seq_action_max; ++a)
+            {
+                event ev = mco->get_seq_event(seq, midi_control_out::seq_action(a));
+                bool active = mco->seq_event_is_active
+                (
+                    seq, midi_control_out::seq_action(a)
+                );
+                midibyte d0, d1;
 
-            /*
-             * bool eia = mco->seq_event_is_active
-             * (
-             *     seq, (midi_control_out::seq_action) a
-             * );
-             */
+                /*
+                 * bool eia = mco->seq_event_is_active
+                 * (
+                 *     seq, (midi_control_out::seq_action) a
+                 * );
+                 */
 
-            ev.get_data(d0, d1);
-            file
-                << " ["
-                << (active ? "1" : "0") << " "
-                << unsigned(ev.get_channel()) << " "
-                << unsigned(ev.get_status()) << " "
-                << unsigned(d0) << " "
-                << unsigned(d1)
-                << "]"
-                ;
+                ev.get_data(d0, d1);
+                file
+                    << " ["
+                    << (active ? "1" : "0") << " "
+                    << unsigned(ev.get_channel()) << " "
+                    << unsigned(ev.get_status()) << " "
+                    << unsigned(d0) << " "
+                    << unsigned(d1)
+                    << "]"
+                    ;
+            }
+            file << "\n";
         }
         file << "\n";
+
+        write_ctrl_event(file, mco, midi_control_out::action_play);
+        write_ctrl_event(file, mco, midi_control_out::action_stop);
+        write_ctrl_event(file, mco, midi_control_out::action_pause);
+        write_ctrl_pair
+        (
+            file, mco, midi_control_out::action_queue_on,
+            midi_control_out::action_queue_off
+        );
+        write_ctrl_pair
+        (
+            file, mco, midi_control_out::action_oneshot_on,
+            midi_control_out::action_oneshot_off
+        );
+        write_ctrl_pair
+        (
+            file, mco, midi_control_out::action_replace_on,
+            midi_control_out::action_replace_off
+        );
+        write_ctrl_pair
+        (
+            file, mco, midi_control_out::action_snap1_store,
+            midi_control_out::action_snap1_restore
+        );
+        write_ctrl_pair
+        (
+            file, mco, midi_control_out::action_snap2_store,
+            midi_control_out::action_snap2_restore
+        );
+        write_ctrl_pair
+        (
+            file, mco, midi_control_out::action_learn_on,
+            midi_control_out::action_learn_off
+        );
     }
-
-    file << "\n";
-
-    write_ctrl_event(file, mco, midi_control_out::action_play);
-    write_ctrl_event(file, mco, midi_control_out::action_stop);
-    write_ctrl_event(file, mco, midi_control_out::action_pause);
-    write_ctrl_pair
-    (
-        file, mco, midi_control_out::action_queue_on,
-        midi_control_out::action_queue_off
-    );
-    write_ctrl_pair
-    (
-        file, mco, midi_control_out::action_oneshot_on,
-        midi_control_out::action_oneshot_off
-    );
-    write_ctrl_pair
-    (
-        file, mco, midi_control_out::action_replace_on,
-        midi_control_out::action_replace_off
-    );
-    write_ctrl_pair
-    (
-        file, mco, midi_control_out::action_snap1_store,
-        midi_control_out::action_snap1_restore
-    );
-    write_ctrl_pair
-    (
-        file, mco, midi_control_out::action_snap2_store,
-        midi_control_out::action_snap2_restore
-    );
-    write_ctrl_pair
-    (
-        file, mco, midi_control_out::action_learn_on,
-        midi_control_out::action_learn_off
-    );
     return result;
 }
 

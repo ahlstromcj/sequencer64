@@ -529,7 +529,9 @@ jack_assistant::jack_assistant
     m_beat_width                (beatwidth),
     m_beats_per_minute          (bpminute)
 {
-    // No other code needed
+#ifdef PLATFORM_DEBUG_TMI
+    printf("jack_assistant this = %p\n", this);
+#endif
 }
 
 /**
@@ -543,6 +545,10 @@ jack_assistant::~jack_assistant ()
     /*
      * Anything to do?  Call deinit()?
      */
+
+#ifdef PLATFORM_DEBUG_TMI
+    printf("~jack_assistant this = %p\n", this);
+#endif
 }
 
 /**

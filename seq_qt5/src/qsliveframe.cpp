@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2019-12-29
+ * \updates       2020-01-01
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -1394,20 +1394,9 @@ qsliveframe::handle_key_press (unsigned gdkkey)
                     perf().toggle_playing_tracks();
                     done = true;
                 }
-
-                /* **********************************
-                 * ACTION handled in the switch below.
-                 *
-                else if (k.is(PREFKEY(tap_bpm)))
-                {
-                    m_parent->tap();
-                    done = true;
-                }
-                 */
-
                 else if (k.is(PREFKEY(song_record)))
                 {
-                    bool record = true;             // TODO
+                    bool record = true;                     // TODO
                     perf().song_recording(record);
                 }
             }
@@ -1626,7 +1615,6 @@ qsliveframe::color_orange ()
 void
 qsliveframe::color_more (int colorcode)
 {
-    // perf().set_sequence_color(m_curr_seq, int(SEQ64_COLOR(ORANGE)));
     perf().set_sequence_color(m_curr_seq, colorcode);
 }
 
@@ -1653,8 +1641,7 @@ qsliveframe::copy_seq ()
 void
 qsliveframe::cut_seq ()
 {
-    // TODO: dialog warning that the editor is the reason
-    // this seq cant be cut
+    // TODO: dialog warning that the editor is the reason this seq can't be cut
 
     if (perf().is_active(m_curr_seq) && !perf().is_sequence_in_edit(m_curr_seq))
     {

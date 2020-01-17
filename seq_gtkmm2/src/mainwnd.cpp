@@ -375,7 +375,14 @@ mainwnd::mainwnd
         m_mainwid_independent = true;
 #endif
 
-    (void) is_bad_theme();
+    /*
+     * This function would be useful if we could truly determine a bad them.
+     * Valgrind complains about lost memory in this call.
+     *
+     * Commented out on 2020-01-23.
+     *
+     * (void) is_bad_theme();
+     */
 
     usr().hide_menu_separator_fudge(true);  // TEST TEST TEST
 

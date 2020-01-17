@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-12-26
+ * \updates       2020-01-16
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -959,19 +959,19 @@ private:
      *  Provides the settings of MIDI Toggle, as read from the "rc" file.
      */
 
-    midi_control m_midi_cc_toggle[c_midi_controls_extended];
+    midi_control m_midi_cc_toggle[c_midi_controls_extended_2];
 
     /**
      *  Provides the settings of MIDI On, as read from the "rc" file.
      */
 
-    midi_control m_midi_cc_on[c_midi_controls_extended];
+    midi_control m_midi_cc_on[c_midi_controls_extended_2];
 
     /**
      *  Provides the settings of MIDI Off, as read from the "rc" file.
      */
 
-    midi_control m_midi_cc_off[c_midi_controls_extended];
+    midi_control m_midi_cc_off[c_midi_controls_extended_2];
 
     /**
      *  Provides the class encapsulating MIDI control output.
@@ -1168,10 +1168,9 @@ public:
     perform (gui_assistant & mygui, int ppqn = SEQ64_USE_DEFAULT_PPQN);
     ~perform ();
 
-    bool call_seq_edit () const;
-    void toggle_call_seq_edit ();
     void clear_seq_edits ();
-
+    void toggle_call_seq_edit ();
+    bool call_seq_edit () const;
     bool call_seq_eventedit () const;
     void toggle_call_seq_eventedit ();
 
@@ -3191,32 +3190,7 @@ private:
         m_is_modified = flag;
     }
 
-    /**
-     *  Checks the parameter against c_midi_controls_extended.  We were
-     *  checking against c_midi_track_ctrl as well, but that was a bug.  This
-     *  function is meant to check that the supplied sequence number does not
-     *  exceed the value of c_midi_controls_extended (32 * 2 + 10 + 10 = 84).
-     *  The track (sequence or pattern) controls rangoe from 0 to 64.  Next
-     *  come the "c_midi_control" values:  bpm_up, bpm_dn, ..., play_ss, plus
-     *  some extended controls that are relatively new, and, lastly,
-     *  c_midi_controls_extended itself.
-     *
-     * \param seq
-     *      The sequence number value that should be inside the
-     *      c_midi_controls_extended range.  This value can specify not only a
-     *      sequence number, but larger control values as well, so the
-     *      function and parameter are mildly mis-named.
-     *
-     * \return
-     *      Returns true if the sequence number is valid for accessing the
-     *      MIDI control values.  For this function, no error print-out is
-     *      generated.
-     */
-
-    bool valid_midi_control_seq (int seq) const
-    {
-        return seq < c_midi_controls_extended;
-    }
+    bool valid_midi_control_seq (int seq) const;
 
     /**
      * \getter m_max_sets

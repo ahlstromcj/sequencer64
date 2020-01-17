@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2019-12-28
+ * \updates       2020-01-17
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -317,7 +317,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_call_seq_eventedit        (false),
     m_call_seq_number           (-1),
     m_call_seq_shift            (0),
-    m_play_list                 (),         // optional, not owned by perform
+    m_play_list                 (),         // optional
     m_song_start_mode           (false),    // set later during options read
     m_start_from_perfedit       (false),
     m_reposition                (false),
@@ -340,7 +340,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_was_active_edit           (),         // boolean array [c_max_sequence]
     m_was_active_perf           (),         // boolean array [c_max_sequence]
     m_was_active_names          (),         // boolean array [c_max_sequence]
-    m_sequence_state            (),         // boolean array [c_max_sequence]
+    m_sequence_state            (),         // boolean vector
     m_screenset_state           (m_seqs_in_set, false),    // boolean vector
     m_queued_replace_slot       (SEQ64_NO_QUEUED_SOLO),
     m_transpose                 (0),
@@ -438,7 +438,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
         m_screenset_notepad[i].clear();
 
     midi_control zero;                          /* all members false or 0   */
-    for (int i = 0; i < c_midi_controls_extended; ++i)
+    for (int i = 0; i < c_midi_controls_extended_2; ++i)
         m_midi_cc_toggle[i] = m_midi_cc_on[i] = m_midi_cc_off[i] = zero;
 }
 
@@ -455,9 +455,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
 perform::~perform ()
 {
     m_inputing = m_outputing = m_is_running = false;
+    announce_exit();                                /* turn off lights      */
     m_condition_var.signal();                       /* signal end of play   */
 
-    announce_exit();                                /* turn off lights      */
     if (m_out_thread_launched)
         pthread_join(m_out_thread, NULL);
 
@@ -2528,10 +2528,16 @@ perform::is_seq_valid (int seq) const
         {
             errprint("is_seq_valid(): unassigned sequence number");
         }
-        else if (! SEQ64_IS_DISABLED_SEQUENCE(seq))
-        {
-            errprintf("is_seq_valid(): seq = %d\n", seq);
-        }
+
+        /*
+         * TMI:
+         *
+         *  else if (! SEQ64_IS_DISABLED_SEQUENCE(seq))
+         *  {
+         *      errprintf("is_seq_valid(): seq = %d\n", seq);
+         *  }
+         */
+
         return false;
     }
 }
@@ -2633,6 +2639,37 @@ perform::is_sequence_in_edit (int seq) const
         return m_seqs[seq]->get_editing();
     else
         return false;
+}
+
+/**
+ *  Checks the parameter against c_midi_controls_extended_2.  We were
+ *  checking against c_midi_track_ctrl as well, but that was a bug.  This
+ *  function is meant to check that the supplied sequence number does not
+ *  exceed the value of c_midi_controls_extended (32 * 2 + 10 + 10 = 84).
+ *  The track (sequence or pattern) controls rangoe from 0 to 64.  Next
+ *  come the "c_midi_control" values:  bpm_up, bpm_dn, ..., play_ss, plus
+ *  some extended controls that are relatively new, and, lastly,
+ *  c_midi_controls_extended_2 itself.
+ *
+ *  Note that we now use the value g_midi_control_limit, which can be changed in
+ *  legacy mode.
+ *
+ * \param seq
+ *      The sequence number value that should be inside the
+ *      c_midi_controls_extended_2 range.  This value can specify not only a
+ *      sequence number, but larger control values as well, so the function and
+ *      parameter are mildly mis-named.
+ *
+ * \return
+ *      Returns true if the sequence number is valid for accessing the
+ *      MIDI control values.  For this function, no error print-out is
+ *      generated.
+ */
+
+bool
+perform::valid_midi_control_seq (int seq) const
+{
+    return seq < g_midi_control_limit;      /* c_midi_controls_extended */
 }
 
 /**
@@ -4973,15 +5010,22 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         result = false;
         break;
 
+    case c_midi_control_pattern_edit:
+
+        result = true;
+        toggle_call_seq_edit();
+        break;
+
+    case c_midi_control_event_edit:
+
+        result = true;
+        toggle_call_seq_eventedit();
+        break;
+
     /*
      * A large number of other controls are not yet supported, and we won't add
      * them here.
      */
-
-    case c_midi_control_pattern_edit:
-
-        result = false;
-        break;
 
     default:
 
@@ -5286,7 +5330,7 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
 {
     bool result = false;
     bool is_a_sequence = ctl < m_seqs_in_set;
-    bool is_ext = ctl >= c_midi_controls && ctl < c_midi_controls_extended;
+    bool is_ext = ctl >= c_midi_controls && ctl < c_midi_controls_extended_2;
     midibyte status = ev.get_status();
     midibyte d0 = 0, d1 = 0;                    /* do we need to zero them? */
     ev.get_data(d0, d1);
@@ -5448,7 +5492,7 @@ void
 perform::toggle_call_seq_edit ()
 {
     m_call_seq_edit = ! m_call_seq_edit;
-#ifdef PLATFORM_DEBUG_TMI
+#ifdef PLATFORM_DEBUG
     printf("seq edit %s\n", m_call_seq_edit ? "pending" : "not pending");
 #endif
 }
@@ -5485,7 +5529,7 @@ void
 perform::toggle_call_seq_eventedit ()
 {
     m_call_seq_eventedit = ! m_call_seq_eventedit;
-#ifdef PLATFORM_DEBUG_TMI
+#ifdef PLATFORM_DEBUG
     printf("event edit %s\n", m_call_seq_eventedit ? "pending" : "not pending");
 #endif
 }
@@ -6412,18 +6456,21 @@ perform::is_keep_queue () const
 void
 perform::sequence_key (int seq)
 {
-    seq += screenset_offset(m_screenset);       /* m_playscreen_offset !!!  */
-    if (check_seqno(seq) && is_active(seq))
+    if (check_seqno(seq))
     {
-        if (call_seq_shift() > 0)
-            seq += call_seq_shift() * c_seqs_in_set;
+        seq += screenset_offset(m_screenset);   /* m_playscreen_offset !!!  */
+        if (is_active(seq))
+        {
+            if (call_seq_shift() > 0)
+                seq += call_seq_shift() * c_seqs_in_set;
 
 #ifdef PLATFORM_DEBUG_TMI
-        infoprintf("Toggled pattern #%d\n", seq);
+            infoprintf("Toggled pattern #%d\n", seq);
 #endif
 
-        sequence_playing_toggle(seq);
-        clear_seq_edits();                      /* save the caller trouble  */
+            sequence_playing_toggle(seq);
+            clear_seq_edits();                  /* save the caller trouble  */
+        }
     }
 }
 

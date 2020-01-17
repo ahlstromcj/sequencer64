@@ -258,7 +258,8 @@ main (int argc, char * argv [])
                 printf("[auto-option-save off, not saving config files]\n");
 
 #ifdef PLATFORM_LINUX
-            seq64::delete_lash_driver();            /* deleted only exists  */
+            if (seq64::rc().lash_support())
+                seq64::delete_lash_driver();        /* deleted only exists  */
 #endif
         }
         else

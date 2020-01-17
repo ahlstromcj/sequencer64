@@ -128,7 +128,7 @@ const int c_midi_controls_reserved_44   = c_midi_track_ctrl + 44;
 const int c_midi_controls_reserved_45   = c_midi_track_ctrl + 45;
 const int c_midi_controls_reserved_46   = c_midi_track_ctrl + 46;
 const int c_midi_controls_reserved_47   = c_midi_track_ctrl + 47;
-const int c_midi_controls_extended_2    = c_midi_track_ctrl + 48; /* 108    */
+const int c_midi_controls_extended_2    = c_midi_track_ctrl + 48; /* 112    */
 
 extern int g_midi_control_limit;
 

@@ -5492,7 +5492,7 @@ void
 perform::toggle_call_seq_edit ()
 {
     m_call_seq_edit = ! m_call_seq_edit;
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
     printf("seq edit %s\n", m_call_seq_edit ? "pending" : "not pending");
 #endif
 }
@@ -5529,7 +5529,7 @@ void
 perform::toggle_call_seq_eventedit ()
 {
     m_call_seq_eventedit = ! m_call_seq_eventedit;
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
     printf("event edit %s\n", m_call_seq_eventedit ? "pending" : "not pending");
 #endif
 }

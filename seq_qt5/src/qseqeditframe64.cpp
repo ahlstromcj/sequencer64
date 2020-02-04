@@ -2444,7 +2444,7 @@ qseqeditframe64::events ()
 QIcon *
 qseqeditframe64::create_menu_image (bool state)
 {
-    QPixmap p(state? menu_full_xpm : menu_empty_xpm);
+    QPixmap p(state ? menu_full_xpm : menu_empty_xpm);
     return new QIcon(p);
 }
 
@@ -2456,7 +2456,8 @@ qseqeditframe64::create_menu_image (bool state)
     std::bind(&qseqeditframe64::set_data_type, this, status, cc)
 
 /**
- *  Function to create event menu entries.  Too damn big!
+ *  Function to create event menu entries.  Valgrind indicates a leak caused by
+ *  the "new QAction()" call!
  */
 
 void
@@ -2476,8 +2477,8 @@ qseqeditframe64::set_event_entry
 #else
     QAction * item = new QAction(*create_menu_image(present), text.c_str());
 #endif
-    menu->addAction(item);
     connect(item, &QAction::triggered, SET_DATA_TYPE(status, control));
+    menu->addAction(item);
     if (present && m_first_event == 0x00)
     {
         m_first_event = status;

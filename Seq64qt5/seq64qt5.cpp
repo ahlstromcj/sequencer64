@@ -53,6 +53,28 @@
 #include "qsmainwnd.hpp"                /* the main window of seq64qt5      */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
 
+#ifdef PLATFORM_LINUX
+#include <signal.h>
+
+bool g_needs_close = false;
+bool g_needs_save = false;
+
+static void sighandler(int s)
+{
+    switch (s)
+    {
+    case SIGINT:
+    case SIGTERM:
+        g_needs_close = true;
+        break;
+
+    case SIGUSR1:
+        g_needs_save = true;
+        break;
+    }
+}
+#endif
+
 /**
  *  The standard C/C++ entry point to this application.  The first thing is to
  *  set the various settings defaults, and then try to read the "user" and
@@ -250,6 +272,13 @@ main (int argc, char * argv [])
 #ifdef PLATFORM_LINUX
             if (seq64::rc().lash_support())
                 seq64::create_lash_driver(p, argc, argv);
+
+            struct sigaction action;
+            memset(&action, 0, sizeof(action));
+            action.sa_handler = sighandler;
+            sigaction(SIGINT, &action, NULL);
+            sigaction(SIGTERM, &action, NULL);
+            sigaction(SIGUSR1, &action, NULL);
 #endif
 
         exit_status = app.exec();               /* run main window loop */

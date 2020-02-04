@@ -66,6 +66,11 @@
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
 #include "wrkfile.hpp"                  /* seq64::wrkfile class             */
 
+/* defined in seq64qt5.cpp, used for quick&dirty signal handling */
+#ifdef PLATFORM_LINUX
+extern bool g_needs_close, g_needs_save;
+#endif
+
 /*
  *  Qt's uic application allows a different output file-name, but not sure
  *  if qmake can change the file-name.
@@ -927,6 +932,20 @@ qsmainwnd::toggle_time_format (bool /*on*/)
 void
 qsmainwnd::refresh ()
 {
+#ifdef PLATFORM_LINUX
+    if (g_needs_close)
+    {
+        m_timer->stop();
+        close();
+        return;
+    }
+    if (g_needs_save)
+    {
+        g_needs_save = false;
+        save_file();
+    }
+#endif
+
     if (not_nullptr(m_beat_ind))
         m_beat_ind->update();
 
@@ -1012,6 +1031,10 @@ qsmainwnd::refresh ()
 bool
 qsmainwnd::check ()
 {
+#ifdef PLATFORM_LINUX
+    if (g_needs_close)
+        return true;
+#endif
     bool result = false;
     if (perf().is_modified())
     {

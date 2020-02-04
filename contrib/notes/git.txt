@@ -70,7 +70,12 @@ master branch.
 When you do a pull request on a branch, you can continue to work on another
 branch and make another pull request on this other branch.
 
-Create the branch on your local machine and switch to it:
+To determine what changes were made in a pull request, use the following
+command.  If you just want the files listed, leave off the -p.
+
+    $ git request-pull -p master https://github.com/xxxxx/sequencer64.git
+
+Create the pull-request branch on your local machine and switch to it:
 
     $ git checkout -b [name_of_your_branch]
 

@@ -5417,6 +5417,94 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
 }
 
 /**
+ *  Simply toggles the call-seq-edit flag, usually operated via the equals ("=")
+ *  key.
+ */
+
+void
+perform::toggle_call_seq_edit ()
+{
+    m_call_seq_edit = ! m_call_seq_edit;
+#ifdef PLATFORM_DEBUG_TMI
+    printf("seq edit %s\n", m_call_seq_edit ? "pending" : "not pending");
+#endif
+}
+
+/**
+ *  Checks the call-seq-edit key, and then clears the call-seq member variables
+ *  if seq-edit is pending.  Generally, the call_seq_number() function must be
+ *  called before this function to retrieve the pattern number in force for the
+ *  pending seq-edit call.
+ *
+ * \return
+ *      Returns the value of m_call_seq_edit.
+ */
+
+bool
+perform::call_seq_edit () const
+{
+    bool result = m_call_seq_edit;
+    if (result)
+    {
+        result = m_call_seq_number != (-1);
+        m_call_seq_edit = false;
+        m_call_seq_number = (-1);
+    }
+    return result;
+}
+
+/**
+ *  Simply toggles the call-seq-edit flag, usually operated via the minus ("-")
+ *  key.
+ */
+
+void
+perform::toggle_call_seq_eventedit ()
+{
+    m_call_seq_eventedit = ! m_call_seq_eventedit;
+#ifdef PLATFORM_DEBUG_TMI
+    printf("event edit %s\n", m_call_seq_eventedit ? "pending" : "not pending");
+#endif
+}
+
+/**
+ *  Checks the call-seq-event-edit key, and then clears the call-seq member
+ *  variables if seq-event-edit is pending.  Generally, the call_seq_number()
+ *  function must be called before this function to retrieve the pattern number
+ *  in force for the pending seq-edit call.
+ *
+ * \return
+ *      Returns the value of m_call_seq_eventedit.
+ */
+
+bool
+perform::call_seq_eventedit () const
+{
+    bool result = m_call_seq_eventedit;
+    if (result)
+    {
+        result = m_call_seq_number != (-1);
+        m_call_seq_eventedit = false;
+        m_call_seq_number = (-1);
+    }
+    return result;
+}
+
+/**
+ *
+ */
+
+void
+perform::clear_seq_edits ()
+{
+    m_call_seq_edit = m_call_seq_eventedit = false;
+    m_call_seq_number = (-1);
+#ifdef PLATFORM_DEBUG_TMI
+    printf("seq edit statuses cleared\n");
+#endif
+}
+
+/**
  *  Provides operation of the new playlist and playlist-song MIDI controls.
  *
  * \param ctl

@@ -248,6 +248,8 @@ main (int argc, char * argv [])
 #ifdef PLATFORM_LINUX
             if (seq64::rc().lash_support())
                 seq64::create_lash_driver(p, argc, argv);
+
+            seq64::session_setup();
 #endif
 
             kit.run(seq24_window);                  /* run until user quit  */

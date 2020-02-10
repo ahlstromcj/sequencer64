@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2019-12-29
+dnl \update        2020-02-09
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -725,7 +725,7 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2019-12-29"
+#define VERSION_DATE_SHORT "2020-02-09"
 #define VERSION "0.96.7"
 
 )
@@ -751,7 +751,7 @@ dnl
 dnl gcc 8 uncovers a warnings issue in libsigc++, so remove -Wextra for now,
 dnl and add -Wno-parentheses.
 
-WARNFLAGS="-Wall -pedantic -Wno-parentheses $WARNINGS"
+WARNFLAGS="-Wall -Wextra -pedantic -Wno-parentheses $WARNINGS"
 APIDEF="-DAPI_VERSION=\"$SEQ64_API_VERSION\""
 SPEEDFLAGS="-ffast-math"
 COMMONFLAGS="$WARNFLAGS -D_REENTRANT $APIDEF $DBGFLAGS $STACKCHK $NOERRLOG $NOTHISPTR"

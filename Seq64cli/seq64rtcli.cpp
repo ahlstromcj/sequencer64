@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2019-01-19
+ * \updates       2020-02-09
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -52,28 +52,35 @@
 #include "perform.hpp"                  /* seq64::perform, the main object  */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
 
-#if defined PLATFORM_LINUX
-
 /**
- *  Provides a static variable that is true while the program is running.
+ *  Saves the current state in a MIDI file.  We let midifile tell the perform
+ *  that saving worked, so that the "is modified" flag can be cleared.  The
+ *  midifile class is already a friend of perform.
+ *
+ *  Note that we do not support saving files in the Cakewalk WRK format.
+ *  Also note that we do not support saving an unnamed tune; there's no good way
+ *  to prompt the user for a filename, especially when running as a daemon.
+ *  Same for any error message [could log it to an error log at some point]. And
+ *  no update to the recent-files settings.
+ *
+ * \return
+ *      Returns true if the save succeeded or if there was no need to save.
  */
 
-static bool s_seq64cli_running = false;
-
-/**
- *  Provides a signal handler for exiting the application gracefully.
- */
-
-static void
-seq64_signal_handler (int signalnumber)
+static bool
+save_file (seq64::perform & p)
 {
-    if (signalnumber == SIGINT)
-        s_seq64cli_running = false;
-    else if (signalnumber == SIGTERM)
-        s_seq64cli_running = false;
-}
+    bool result = ! p.is_modified();
+    if (! result)
+        result = seq64::rc().filename().empty();
 
-#endif  // PLATFORM_LINUX
+    if (! result)
+    {
+        std::string errmsg;
+        result = seq64::save_midi_file(p, seq64::rc().filename(), errmsg);
+    }
+    return result;
+}
 
 /**
  *  The standard C/C++ entry point to this application.  This first thing
@@ -211,31 +218,19 @@ main (int argc, char * argv [])
             }
             if (ok)
             {
+#if defined PLATFORM_LINUX
                 if (seq64::rc().lash_support())
                     seq64::create_lash_driver(p, argc, argv);
 
-#if defined PLATFORM_LINUX
-
-                /*
-                 * signal() is deprecated, but sigaction() is too
-                 * complicated.
-                 */
-
-                if (signal(SIGINT, seq64_signal_handler) != SIG_ERR)
-                {
-                    if (signal(SIGTERM, seq64_signal_handler) != SIG_ERR)
-                    {
-                        s_seq64cli_running = true;
-                        while (s_seq64cli_running)
-                            usleep(1000000);
-                    }
-                    else
-                        printf("? Cannot set SIGTERM handler\n");
-                }
-                else
-                    printf("? Cannot set SIGINT handler\n");
+                seq64::session_setup();
 #endif
+                while (! seq64::session_close())
+                {
+                    if (seq64::session_save())
+                        save_file(p);
 
+                    usleep(1000000);
+                }
                 p.finish();                         /* tear down performer  */
                 if (seq64::rc().auto_option_save())
                 {
@@ -246,7 +241,8 @@ main (int argc, char * argv [])
                     printf("[auto-option-save off, not saving config files]\n");
 
 #ifdef PLATFORM_LINUX
-                seq64::delete_lash_driver();        /* deleted only exists  */
+                if (seq64::rc().lash_support())
+                    seq64::delete_lash_driver();    /* deleted only exists  */
 #endif
             }
         }

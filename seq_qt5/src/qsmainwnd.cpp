@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2019-02-06
+ * \updates       2020-02-04
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -40,7 +40,6 @@
 #include <QMessageBox>
 #include <QResizeEvent>
 #include <QTimer>
-
 #include <utility>                      /* std::make_pair()                 */
 
 #include "calculations.hpp"             /* pulse_to_measurestring(), etc.   */
@@ -66,10 +65,12 @@
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
 #include "wrkfile.hpp"                  /* seq64::wrkfile class             */
 
-/* defined in seq64qt5.cpp, used for quick&dirty signal handling */
-#ifdef PLATFORM_LINUX
-extern bool g_needs_close, g_needs_save;
-#endif
+/*
+ *  A signal handler is defined in daemonize.cpp, used for quick & dirty
+ *  signal handling.  Thanks due to user falkTX!
+ */
+
+#include "daemonize.hpp"
 
 /*
  *  Qt's uic application allows a different output file-name, but not sure
@@ -932,20 +933,16 @@ qsmainwnd::toggle_time_format (bool /*on*/)
 void
 qsmainwnd::refresh ()
 {
-#ifdef PLATFORM_LINUX
-    if (g_needs_close)
+    if (session_close())
     {
         m_timer->stop();
         close();
         return;
     }
-    if (g_needs_save)
+    if (session_save())
     {
-        g_needs_save = false;
         save_file();
     }
-#endif
-
     if (not_nullptr(m_beat_ind))
         m_beat_ind->update();
 
@@ -1035,10 +1032,9 @@ qsmainwnd::refresh ()
 bool
 qsmainwnd::check ()
 {
-#ifdef PLATFORM_LINUX
-    if (g_needs_close)
+    if (session_close())
         return true;
-#endif
+
     bool result = false;
     if (perf().is_modified())
     {

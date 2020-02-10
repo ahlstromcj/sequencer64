@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2019-02-05
+ * \updates       2019-02-06
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -52,28 +52,6 @@
 
 #include "qsmainwnd.hpp"                /* the main window of seq64qt5      */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
-
-#ifdef PLATFORM_LINUX
-#include <signal.h>
-
-bool g_needs_close = false;
-bool g_needs_save = false;
-
-static void sighandler(int s)
-{
-    switch (s)
-    {
-    case SIGINT:
-    case SIGTERM:
-        g_needs_close = true;
-        break;
-
-    case SIGUSR1:
-        g_needs_save = true;
-        break;
-    }
-}
-#endif
 
 /**
  *  The standard C/C++ entry point to this application.  The first thing is to
@@ -273,12 +251,7 @@ main (int argc, char * argv [])
             if (seq64::rc().lash_support())
                 seq64::create_lash_driver(p, argc, argv);
 
-            struct sigaction action;
-            memset(&action, 0, sizeof(action));
-            action.sa_handler = sighandler;
-            sigaction(SIGINT, &action, NULL);
-            sigaction(SIGTERM, &action, NULL);
-            sigaction(SIGUSR1, &action, NULL);
+            seq64::session_setup();
 #endif
 
         exit_status = app.exec();               /* run main window loop */
@@ -289,7 +262,8 @@ main (int argc, char * argv [])
             printf("[auto-option-save off, not saving config files]\n");
 
 #ifdef PLATFORM_LINUX
-        seq64::delete_lash_driver();            /* deleted only exists  */
+        if (seq64::rc().lash_support())
+            seq64::delete_lash_driver();        /* deleted only exists  */
 #endif
         }
         else

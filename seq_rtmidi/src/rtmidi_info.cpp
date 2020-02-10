@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2019-01-05
+ * \updates       2020-02-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.  This class
@@ -121,7 +121,8 @@ rtmidi_info::rtmidi_info
                 }
             }
         }
-        errprintfunc("no system support for specified API");
+        else
+            errprintfunc("no system support for specified API");
     }
 
     std::vector<rtmidi_api> apis;

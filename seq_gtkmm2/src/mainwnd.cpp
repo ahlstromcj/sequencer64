@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-12-29
+ * \updates       2020-02-09
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -105,6 +105,13 @@
 #include "options.hpp"
 #include "perfedit.hpp"
 #include "wrkfile.hpp"
+
+/*
+ *  A signal handler is defined in daemonize.cpp, used for quick & dirty
+ *  signal handling.  Thanks due to user falkTX!
+ */
+
+#include "daemonize.hpp"
 
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 #include <gtkmm/layout.h>
@@ -1323,6 +1330,24 @@ mainwnd::timer_callback ()
     midipulse tick = perf().get_tick();         /* use no get_start_tick()! */
     midibpm bpm = perf().get_beats_per_minute();
     update_markers(tick);
+    if (session_close())
+    {
+        /*
+         * Gtk::Main::quit();       // close()
+         * return false;                        // will stop the timer
+         *
+         * close();                 // doesn't exist
+         * destroy();               // doesn't exist
+         * destroy_();              // protected
+         * delete this;             // causes a free() error and core dump
+         */
+
+        file_exit();
+    }
+    if (session_save())
+    {
+        save_file();
+    }
     if (m_button_queue->get_active() != perf().is_keep_queue())
         m_button_queue->set_active(perf().is_keep_queue());
 
@@ -1915,21 +1940,6 @@ void
 mainwnd::on_realize ()
 {
     gui_window_gtk2::on_realize();
-
-    /*
-     * None of these lines fix the Alt-F issue.
-     *
-     *  test_widget_click(m_button_tap->get_child()->gobj());
-     *  m_main_wid->grab_focus();
-     *  grab_focus();
-     *  set_focus(*this);
-     *  present();
-     *  m_timeout_connect = Glib::signal_timeout().connect
-     *  (
-     *      mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
-     *  );
-     * set_screenset(0);           // causes a segfault
-     */
 }
 
 /**
@@ -2380,35 +2390,38 @@ mainwnd::choose_file (bool openplaylist)
  *  Note that we do not support saving files in the Cakewalk WRK format.
  *
  * \return
- *      Returns true if the save succeeded.
+ *      Returns true if the save succeeded or if there was no need to save.
  */
 
 bool
 mainwnd::save_file ()
 {
-    bool result = false;
-    if (rc().filename().empty())
+    bool result = ! perf().is_modified();
+    if (! result)
     {
-        file_save_as();
-        return ! rc().filename().empty();
-    }
-    else
-    {
-        std::string errmsg;
-        result = save_midi_file(perf(), rc().filename(), errmsg);
-        if (result)
+        if (rc().filename().empty())
         {
-            update_recent_files_menu();
+            file_save_as();
+            return ! rc().filename().empty();
         }
         else
         {
-            Gtk::MessageDialog errdialog
-            (
-                *this, errmsg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
-            );
-            rc().filename("");
-            errdialog.set_title("Save");
-            errdialog.run();
+            std::string errmsg;
+            result = save_midi_file(perf(), rc().filename(), errmsg);
+            if (result)
+            {
+                update_recent_files_menu();
+            }
+            else
+            {
+                Gtk::MessageDialog errdialog
+                (
+                    *this, errmsg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
+                );
+                rc().filename("");
+                errdialog.set_title("Save");
+                errdialog.run();
+            }
         }
     }
     return result;
@@ -2891,7 +2904,7 @@ mainwnd::set_songlive_image (bool issong)
         add_tooltip
         (
             m_button_mode,
-            "The Song playback mode is active, and will apply no matter what "
+            "The Song playback mode is active and will apply no matter what "
             "window (song, pattern, and main) is used to start the playback."
         );
     }

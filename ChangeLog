@@ -1,3 +1,145 @@
+2020-02-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure, configure.ac, include/config.h.in,
+	include/qt/portmidi/seq64-config.h,
+	libseq64/include/seq64_features.h, libseq64/src/seq64_features.cpp,
+	seq_qt5/src/qsmainwnd.cpp: Added further version reporting.
+
+2020-02-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure: Added updated configure script.
+	* README, Seq64cli/seq64rtcli.cpp, Seq64qt5/seq64qt5.cpp,
+	Seq64rtmidi/seq64rtmidi.cpp, configure.ac, include/config.h.in,
+	libseq64/include/daemonize.hpp, libseq64/src/daemonize.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_qt5/src/qsmainwnd.cpp,
+	seq_rtmidi/src/rtmidi_info.cpp: Added refactored pull request for
+	SIG handling to the CLI, GTK, and Qt versions.
+
+2020-02-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Merging falkTX master changes to midi_control.
+	* : commit c3ced3a253399b54e0fc9927a0a99e346a4bf938 Author: falkTX
+	<falktx@falktx.com> Date:   Sat Feb 1 13:37:37 2020 +0000
+
+2020-01-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64rtmidi/seq64rtmidi.cpp, libseq64/include/midi_control.hpp,
+	libseq64/include/perform.hpp, libseq64/src/configfile.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/midi_control.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_qt5/src/qsliveframe.cpp: Fixed nasty
+	segfault bug due to expanding number of MIDI controls.
+
+2019-12-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, VERSION, configure, configure.ac, include/config.h.in,
+	libseq64/include/perform.hpp, libseq64/src/keys_perform.cpp,
+	libseq64/src/perform.cpp, libseq64/src/seq64_features.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_qt5/include/qsliveframe.hpp, seq_qt5/src/qsliveframe.cpp,
+	seq_qt5/src/qsmainwnd.cpp: Got pattern/event edit refactored in both
+	UIs.
+
+2019-12-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, contrib/code/niceclass.hpp,
+	libseq64/include/midi_control.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/include/user_settings.hpp,
+	libseq64/src/midi_control.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/user_settings.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_qt5/include/qsliveframe.hpp,
+	seq_qt5/src/qsliveframe.cpp: Upgrade to new-pattern handling,
+	work-arounds for issues #154 and #182 broken Gtk themes.
+
+2019-12-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Midiclocker64/midiclocker64.cpp, contrib/code/mutex_mingw.h,
+	contrib/notes/midi_control.dot, libseq64/include/platform_macros.h,
+	libseq64/src/wrkfile.cpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/font.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_portmidi/src/pmlinuxalsa.c, seq_portmidi/src/portmidi.c,
+	seq_qt5/include/Globals.hpp, seq_qt5/include/qperfroll.hpp,
+	seq_qt5/src/qperfroll.cpp, seq_qt5/src/qseqkeys.cpp: Some clean-up
+	for issue #188.
+
+2019-12-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/optionsfile.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_qt5/src/qseqeditframe64.cpp: Expand new-pattern now working.
+	* README, data/sequencer64.usr, libseq64/src/userfile.cpp: 
+	New-pattern for Qt version now in progress.
+
+2019-12-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/sequence.cpp, seq_gtkmm2/src/seqedit.cpp: Still
+	fixing seqedit new-pattern support.
+	* VERSION, configure.ac, include/config.h.in,
+	libseq64/src/sequence.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Trying to get new-pattern support
+	working.
+
+2019-12-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/seqedit.cpp, seq_rtmidi/src/midi_jack.cpp: Adding
+	new-pattern handling to seqedit in progress.
+	* libseq64/include/sequence.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_qt5/include/qseqeditframe.hpp,
+	seq_qt5/include/qseqeditframe64.hpp, seq_qt5/src/qseqeditframe.cpp,
+	seq_qt5/src/qseqeditframe64.cpp: Adding seqedit button new-pattern
+	handling in progress.
+
+2019-11-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, VERSION, configure, configure.ac, contrib/midi/README,
+	include/config.h.in, libseq64/include/event.hpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp: Fixed a running status bug in midifile
+	reading of 2rock.mid.
+
+2019-11-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : commit 72118bef8d1a8088bc634e163e329ab70bd3afc2 Merge: 7878cdc4
+	6e93bbe7 Author: C. Ahlstrom <ahlstromcj@gmail.com> Date:   Tue Nov
+	19 05:30:28 2019 -0500
+
+2019-11-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* VERSION, aux-files/compile, aux-files/depcomp, aux-files/missing,
+	configure, configure.ac, include/config.h.in,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Adding seq-shift to the perform class.
+
+2019-10-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, aux-files/compile, aux-files/depcomp, aux-files/missing,
+	configure, contrib/code/jack-smf-player.c,
+	contrib/notes/stazed-fixes.txt, include/config.h.in,
+	libseq64/include/app_limits.h, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_qt5/src/qseqeditframe64.cpp: Added
+	beats/bar values up to 20.
+
+2019-10-23  Olivier Humbert <trebmuh@users.noreply.github.com>
+
+	* debian/changelog: removes whitespaces
+
+2019-10-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, NEWS, README, README.jack, README.windows, ROADMAP,
+	bootstrap, configure.ac, data/README, data/license.txt,
+	data/readme.txt, data/readme.windows, nsis/Seq64Constants.nsh,
+	nsis/Seq64Setup.nsi, nsis/build_release_package.bat,
+	seq_qt5/forms/qsabout.ui: Prep for the next version.
+
+2019-10-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, INSTALL, README, configure.ac, include/config.h.in: 
+	Version 0.96.6 pending.
+
 2019-10-19  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* README, TODO, aux-files/compile, aux-files/depcomp,

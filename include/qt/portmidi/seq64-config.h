@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-04-08
- * \updates       2018-11-08
+ * \updates       2020-02-13
  * \license       GNU GPLv2 or above
  *
  *  Qt Portmidi Linux version.
@@ -43,11 +43,11 @@
 #endif
 
 #ifndef SEQ64_VERSION_DATE_SHORT
-#define SEQ64_VERSION_DATE_SHORT "2018-11-08"
+#define SEQ64_VERSION_DATE_SHORT "2020-02-13"
 #endif
 
 #ifndef SEQ64_VERSION
-#define SEQ64_VERSION "0.96.2"
+#define SEQ64_VERSION "0.96.7"
 #endif
 
 #ifndef SEQ64_GIT_VERSION
@@ -82,6 +82,14 @@
 
 #ifndef SEQ64_APP_NAME
 #define SEQ64_APP_NAME "qpseq64"
+#endif
+
+#ifndef SEQ64_APP_ENGINE
+#define SEQ64_APP_ENGINE "portmidi"
+#endif
+
+#ifndef SEQ64_APP_BUILD_OS
+#define SEQ64_APP_BUILD_OS "Windows"
 #endif
 
 /**
@@ -377,7 +385,7 @@
 
 /* Version number of package */
 #ifndef SEQ64_VERSION
-#define SEQ64_VERSION "0.96.2"
+#define SEQ64_VERSION "0.96.7"
 #endif
 
 /* Indicates limited Windows support */

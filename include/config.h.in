@@ -1,12 +1,18 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-#define VERSION_DATE_SHORT "2020-02-09"
+#define VERSION_DATE_SHORT "2020-02-16"
 #define VERSION "0.96.7"
 
 
 
 /* Indicates if ALSA MIDI support is enabled */
 #undef ALSAMIDI_SUPPORT
+
+/* "Distro where build was done" */
+#undef APP_BUILD_OS
+
+/* Names the MIDI engine of the application */
+#undef APP_ENGINE
 
 /* Names this version of application */
 #undef APP_NAME

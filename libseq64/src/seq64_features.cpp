@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-03-12
- * \updates       2019-12-24
+ * \updates       2020-02-14
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -48,6 +48,9 @@ namespace seq64
 {
 
 static std::string s_app_name = SEQ64_APP_NAME;
+static std::string s_app_type = SEQ64_APP_TYPE;
+static std::string s_app_engine = SEQ64_APP_ENGINE;
+static std::string s_app_build_os = SEQ64_APP_BUILD_OS;
 static std::string s_client_name = SEQ64_CLIENT_NAME;
 static std::string s_version = SEQ64_VERSION;
 static std::string s_apptag = SEQ64_APP_NAME " " SEQ64_VERSION;
@@ -62,6 +65,36 @@ void
 set_app_name (const std::string & aname)
 {
     s_app_name = aname;
+}
+
+/**
+ *
+ */
+
+void
+set_app_type (const std::string & atype)
+{
+    s_app_type = atype;
+}
+
+/**
+ *
+ */
+
+void
+set_app_engine (const std::string & aengine)
+{
+    s_app_engine = aengine;
+}
+
+/**
+ *
+ */
+
+void
+set_app_build_os (const std::string & abuild_os)
+{
+    s_app_build_os = abuild_os;
 }
 
 /**
@@ -87,6 +120,36 @@ const std::string &
 seq_app_name ()
 {
     return s_app_name;
+}
+
+/**
+ *
+ */
+
+const std::string &
+seq_app_type ()
+{
+    return s_app_type;
+}
+
+/**
+ *
+ */
+
+const std::string &
+seq_app_engine ()
+{
+    return s_app_engine;
+}
+
+/**
+ *
+ */
+
+const std::string &
+seq_app_build_os ()
+{
+    return s_app_build_os;
 }
 
 /**
@@ -164,73 +227,70 @@ seq_build_details ()
 {
     std::ostringstream result;
     result
-        << "Build features:" << std::endl
-        << "  C++ version " << std::to_string(__cplusplus) << std::endl
-        << "  App type " << SEQ64_APP_TYPE << std::endl
+        << "Built " << __DATE__ << " " << __TIME__ ":\n"
+        << "  C++ version " << std::to_string(__cplusplus) << "\n"
+        << "  App name: " << seq_app_name()
+        << "; type " << seq_app_type()
+        << "; engine " << seq_app_engine() << "\n"
+        << "  App build OS: " << seq_app_build_os() << "\n"
 #ifdef SEQ64_RTMIDI_SUPPORT
-        << "  Native JACK/ALSA (rtmidi) on" << std::endl
+        << "  Native JACK/ALSA (rtmidi) on\n"
 #endif
 #ifdef SEQ64_ALSAMIDI_SUPPORT
-        << "  ALSA-only MIDI support on" << std::endl
+        << "  ALSA-only MIDI support on\n"
 #endif
 #ifdef SEQ64_PORTMIDI_SUPPORT
-        << "  PortMIDI support on" << std::endl
+        << "  PortMIDI support on\n"
 #endif
-        << "  Event editor on" << std::endl
+        << "  Event editor on\n"
 #ifdef SEQ64_USE_EVENT_MAP
-        << "  Event multimap (vs list) on" << std::endl
+        << "  Event multimap (vs list) on\n"
 #endif
-        << "  Follow progress bar on" << std::endl
+        << "  Follow progress bar on\n"
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-        << "  Highlight edit pattern on" << std::endl
+        << "  Highlight edit pattern on\n"
 #endif
 #ifdef SEQ64_HIGHLIGHT_EMPTY_SEQS
-        << "  Highlight empty patterns on" << std::endl
+        << "  Highlight empty patterns on\n"
 #endif
 #ifdef SEQ64_JACK_SESSION
-        << "  JACK session on" << std::endl
+        << "  JACK session on\n"
 #endif
 #ifdef SEQ64_JACK_SUPPORT
-        << "  JACK support on" << std::endl
+        << "  JACK support on\n"
 #endif
 #ifdef SEQ64_LASH_SUPPORT
-        << "  LASH support on" << std::endl
+        << "  LASH support on\n"
 #endif
-        << "  MIDI vector (vs list) on" << std::endl
-        << "  Seq32 chord generator on" << std::endl
-        << "  Seq32 LFO window on" << std::endl
-        << "  Seq32 menu buttons on" << std::endl
-        << "  Seq32 transpose on" << std::endl
-        << "  BPM Tap button on" << std::endl
-        << "  Solid piano-roll grid on" << std::endl
+        << "  Seq32 chord generator, LFO window, menu buttons, transpose on\n"
+        << "  BPM Tap button, solid piano-roll grid on\n"
+        << "  Song performance recording on\n"
 #ifdef SEQ64_JE_PATTERN_PANEL_SCROLLBARS
-        << "  Main window scroll-bars on" << std::endl
+        << "  Main window scroll-bars on\n"
 #endif
 #ifdef SEQ64_SHOW_COLOR_PALETTE
-        << "  Optional pattern coloring on" << std::endl
+        << "  Optional pattern coloring on\n"
 #endif
 #ifdef SEQ64_MULTI_MAINWID
-        << "  Multiple main windows on" << std::endl
+        << "  Multiple main windows on\n"
 #endif
-        << "  Song performance recording on" << std::endl
 #ifdef SEQ64_SONG_BOX_SELECT
-        << "  Box song selection on" << std::endl
+        << "  Box song selection on\n"
 #endif
 #ifdef SEQ64_STATISTICS_SUPPORT
-        << "  Statistics support on" << std::endl
+        << "  Statistics support on\n"
 #endif
 #ifdef PLATFORM_WINDOWS
-        << "  Windows support on" << std::endl
+        << "  Windows support on\n"
 #endif
-        << "  Pause support on" << std::endl
-        << "  Save time-sig/tempo on" << std::endl
+        << "  Pause support on\n"
+        << "  Save time-sig/tempo on\n"
 #ifdef PLATFORM_DEBUG
-        << "  Debug code on" << std::endl
+        << "  Debug code on\n"
 #endif
-        << "  " << s_bitness << " support enabled" << std::endl
-        << std::endl
-    << "Options are enabled/disabled via the configure script," << std::endl
-    << "libseq64/include/seq64_features.h, or the build-specific" << std::endl
+        << "  " << s_bitness << " support enabled\n\n"
+    << "Options are enabled/disabled via the configure script,\n"
+    << "libseq64/include/seq64_features.h, or the build-specific\n"
     << "seq64-config.h file in include or in include/qt/portmidi" << std::endl
     ;
     return result.str();

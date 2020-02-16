@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2020-02-09
+dnl \update        2020-02-16
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -160,6 +160,13 @@ AC_SUBST(APP_NAME)
 
 AC_DEFINE(APP_TYPE, ["gtk"], "The type of the Sequencer64 executable, gtk/qt/cli")
 AC_SUBST(APP_TYPE)
+
+AC_DEFINE(APP_ENGINE, ["rtmidi"], "Sequencer64 MIDI engine, rtmidi/alsa/portmidi")
+AC_SUBST(APP_ENGINE)
+
+build_os="$(uname -a)"
+AC_DEFINE_UNQUOTED(APP_BUILD_OS, ["$build_os"], "Distro where build was done")
+AC_SUBST(APP_BUILD_OS)
 
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
@@ -512,6 +519,7 @@ if test "$rtmidi" != "no"; then
     need_qt="no"
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
     AC_DEFINE(APP_TYPE, ["gtk"], [Names the UI of the application])
+    AC_DEFINE(APP_ENGINE, ["rtmidi"], [Names the MIDI engine of the application])
     AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
     AM_PATH_ALSA(0.9.0)
@@ -542,7 +550,6 @@ AC_ARG_ENABLE(qt,
 
 if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
-    build_rtmidi="no"
     need_qt="yes"
     need_gtkmm="no"
     AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/rtmidi version of application])
@@ -725,7 +732,7 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2020-02-09"
+#define VERSION_DATE_SHORT "2020-02-16"
 #define VERSION "0.96.7"
 
 )

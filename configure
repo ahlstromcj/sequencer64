@@ -731,6 +731,8 @@ SEQ64_API_MINOR
 SEQ64_API_MAJOR
 SEQ64_SUITE_NAME
 CLIENT_NAME
+APP_BUILD_OS
+APP_ENGINE
 APP_TYPE
 APP_NAME
 LN_S
@@ -4969,6 +4971,19 @@ $as_echo "#define APP_NAME \"seq64\"" >>confdefs.h
 
 
 $as_echo "#define APP_TYPE \"gtk\"" >>confdefs.h
+
+
+
+
+$as_echo "#define APP_ENGINE \"rtmidi\"" >>confdefs.h
+
+
+
+build_os="$(uname -a)"
+
+cat >>confdefs.h <<_ACEOF
+#define APP_BUILD_OS "$build_os"
+_ACEOF
 
 
 
@@ -17457,6 +17472,9 @@ $as_echo "#define APP_NAME \"seq64\"" >>confdefs.h
 $as_echo "#define APP_TYPE \"gtk\"" >>confdefs.h
 
 
+$as_echo "#define APP_ENGINE \"rtmidi\"" >>confdefs.h
+
+
 $as_echo "#define CONFIG_NAME \"sequencer64\"" >>confdefs.h
 
 
@@ -17682,7 +17700,6 @@ fi
 
 if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
-    build_rtmidi="no"
     need_qt="yes"
     need_gtkmm="no"
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2019-09-01
+ * \updates       2020-02-13
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -391,8 +391,12 @@ namespace seq64
  */
 
 extern void set_app_name (const std::string & aname);
+extern void set_app_type (const std::string & atype);
+extern void set_app_engine (const std::string & aengine);
+extern void set_app_build_os (const std::string & abuild_os);
 extern void set_client_name (const std::string & cname);
 extern const std::string & seq_app_name ();
+extern const std::string & seq_app_type ();
 extern const std::string & seq_client_name ();
 extern const std::string & seq_version ();
 extern const std::string & seq_version_text ();

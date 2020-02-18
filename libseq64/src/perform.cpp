@@ -5488,35 +5488,8 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
 }
 
 /**
- *  Simply toggles the call-seq-edit flag, usually operated via the equals ("=")
- *  key.
- */
-
-void
-perform::toggle_call_seq_edit ()
-{
-    m_call_seq_edit = ! m_call_seq_edit;
-#ifdef PLATFORM_DEBUG_TMI
-    printf("seq edit %s\n", call_seq_edit() ? "pending" : "not pending");
-#endif
-}
-
-/**
- *  Simply toggles the call-seq-edit flag, usually operated via the minus ("-")
- *  key.
- */
-
-void
-perform::toggle_call_seq_eventedit ()
-{
-    m_call_seq_eventedit = ! m_call_seq_eventedit;
-#ifdef PLATFORM_DEBUG_TMI
-    printf("event edit %s\n", call_seq_eventedit() ? "pending" : "not pending");
-#endif
-}
-
-/**
- *
+ *  Sets the edit-pending flags to false, and disabled the pending sequence
+ *  number.
  */
 
 void
@@ -5524,9 +5497,6 @@ perform::clear_seq_edits ()
 {
     m_call_seq_edit = m_call_seq_eventedit = false;
     m_call_seq_number = (-1);
-#ifdef PLATFORM_DEBUG_TMI
-    printf("seq edit statuses cleared\n");
-#endif
 }
 
 /**
@@ -6420,9 +6390,7 @@ perform::sequence_key (int seq)
     {
         if (call_seq_shift() > 0)
             seq += call_seq_shift() * m_seqs_in_set;
-#ifdef PLATFORM_DEBUG_TMI
-        infoprintf("Toggled pattern #%d\n", seq);
-#endif
+
         sequence_playing_toggle(seq);
     }
     clear_seq_edits();                      /* save the caller trouble  */

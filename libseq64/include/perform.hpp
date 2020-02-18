@@ -1169,8 +1169,16 @@ public:
     ~perform ();
 
     void clear_seq_edits ();
-    void toggle_call_seq_edit ();
-    void toggle_call_seq_eventedit ();
+
+    void toggle_call_seq_edit ()
+    {
+        m_call_seq_edit = ! m_call_seq_edit;
+    }
+
+    void toggle_call_seq_eventedit ()
+    {
+        m_call_seq_eventedit = ! m_call_seq_eventedit;
+    }
 
     bool call_seq_edit () const
     {
@@ -1204,14 +1212,13 @@ public:
 
     int increment_call_seq_shift () const
     {
-        ++m_call_seq_shift;
-        if (m_call_seq_shift > 2)
-            m_call_seq_shift = 0;
+        if (++m_call_seq_shift > 2)
+            clear_call_seq_shift();
 
-        return m_call_seq_shift;
+        return call_seq_shift();
     }
 
-    void clear_call_seq_shift ()
+    void clear_call_seq_shift () const
     {
         m_call_seq_shift = 0;
     }

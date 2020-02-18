@@ -542,7 +542,6 @@ AC_ARG_ENABLE(qt,
 
 if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
-    build_rtmidi="yes"
     build_rtmidi="no"
     need_qt="yes"
     build_gtkmm="no"

@@ -550,6 +550,7 @@ AC_ARG_ENABLE(qt,
 
 if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
+    build_rtmidi="no"
     need_qt="yes"
     need_gtkmm="no"
     AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/rtmidi version of application])

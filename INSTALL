@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.96.7 and above
+INSTALL for Sequencer64 v. 0.96.8 and above
 Chris Ahlstrom
-2015-09-10 to 2019-10-20
+2015-09-10 to 2020-02-16
 
 Getting Sequencer64 requires building the code or going to the
 sequencer64-packages site on GitHub.  The bootstrap setup is primarily

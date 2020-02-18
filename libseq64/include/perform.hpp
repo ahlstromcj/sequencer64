@@ -1170,16 +1170,24 @@ public:
 
     void clear_seq_edits ();
     void toggle_call_seq_edit ();
-    bool call_seq_edit () const;
-    bool call_seq_eventedit () const;
     void toggle_call_seq_eventedit ();
 
-    bool check_seq_edits () const
+    bool call_seq_edit () const
+    {
+        return m_call_seq_edit;
+    }
+
+    bool call_seq_eventedit () const
+    {
+        return m_call_seq_eventedit;
+    }
+
+    bool call_seq_edits () const
     {
         return m_call_seq_edit || m_call_seq_eventedit;
     }
 
-    int call_seq_number ()
+    int call_seq_number () const
     {
         return m_call_seq_number;
     }
@@ -2279,9 +2287,13 @@ public:
      * This is just a very fast check meant for use in some GUI timers.
      */
 
-    bool check_seqno (int seq) const
+    bool got_seqno (int & seq) const
     {
-        return seq != (-1);
+        bool result = call_seq_number() != (-1);
+        if (result)
+            seq = call_seq_number();
+
+        return result;
     }
 
     bool is_seq_valid (int seq) const;

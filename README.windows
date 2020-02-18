@@ -1,6 +1,6 @@
-README.windows for Sequencer64 0.96.7
+README.windows for Sequencer64 0.96.8
 Chris Ahlstrom
-2018-05-13 to 2019-10-20
+2018-05-13 to 2020-02-16
 
 The file "data/README.window" provides what you need to know to run the native
 Windows implementation of Sequencer64 (qpseq64.exe).  That file is installed as

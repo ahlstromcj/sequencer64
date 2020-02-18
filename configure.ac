@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2020-02-16
+dnl \update        2020-02-18
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -26,7 +26,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.96$)
-AC_INIT(Sequencer64, [0.96.7], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.96.8], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -120,9 +120,8 @@ build_alsamidi="no"
 build_qtmidi="no"
 build_rtmidi="no"
 build_portmidi="no"
-build_rtcli="no"
 build_windows="no"
-need_gtkmm="yes"
+build_gtkmm="yes"
 need_qt="no"
 
 dnl Flaky, the AR macro is set well after this test, but the GCC macro
@@ -138,7 +137,7 @@ if test "x$windows_host" = "xyes" ; then
     else
         build_windows="yes"
         need_qt="yes"
-        need_gtkmm="no"
+        build_gtkmm="no"
         AC_DEFINE(WINDOWS_SUPPORT, 1, [Indicates limited Windows support])
         AC_MSG_RESULT([MingW Windows (Qt) build enabled.])
     fi
@@ -156,22 +155,15 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
 AC_DEFINE(APP_NAME, ["seq64"], "The default name of the Sequencer64 executable")
-AC_SUBST(APP_NAME)
-
 AC_DEFINE(APP_TYPE, ["gtk"], "The type of the Sequencer64 executable, gtk/qt/cli")
-AC_SUBST(APP_TYPE)
-
 AC_DEFINE(APP_ENGINE, ["rtmidi"], "Sequencer64 MIDI engine, rtmidi/alsa/portmidi")
-AC_SUBST(APP_ENGINE)
-
-build_os="$(uname -a)"
+build_os="'$(uname -srvm)'"
 AC_DEFINE_UNQUOTED(APP_BUILD_OS, ["$build_os"], "Distro where build was done")
-AC_SUBST(APP_BUILD_OS)
+dnl AC_DEFINE(APP_BUILD_OS, ["$build_os"], "Distro where build was done")
 
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
-AC_SUBST(CLIENT_NAME)
 
-VERSION="0.96.7"
+VERSION="0.96.8"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -515,7 +507,7 @@ AC_ARG_ENABLE(rtmidi,
 if test "$rtmidi" != "no"; then
     build_rtmidi="yes"
     build_portmidi="no"
-    need_gtkmm="yes"
+    build_gtkmm="yes"
     need_qt="no"
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
     AC_DEFINE(APP_TYPE, ["gtk"], [Names the UI of the application])
@@ -550,10 +542,12 @@ AC_ARG_ENABLE(qt,
 
 if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
+    build_rtmidi="yes"
     need_qt="yes"
-    need_gtkmm="no"
+    build_gtkmm="no"
     AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/rtmidi version of application])
     AC_DEFINE(APP_TYPE, ["qt"], [Names the UI of the application])
+    AC_DEFINE(APP_ENGINE, ["rtmidi"], [Names the MIDI engine of the application])
     AC_DEFINE(CONFIG_NAME, ["qseq64"], [Configuration file name for Qt/rtmidi])
     AM_PATH_ALSA(0.9.0)
     AX_HAVE_QT
@@ -571,7 +565,8 @@ if test "$cli" != "no"; then
     AC_MSG_RESULT([rtmidi command-line build enabled.]);
     AC_DEFINE(APP_NAME, ["seq64cli"], [Names the CLI version of application])
     AC_DEFINE(APP_TYPE, ["cli"], [Names the UI of the application])
-    AC_DEFINE(CONFIG_NAME, ["seq64cli"], [Configuration file name])
+    AC_DEFINE(APP_ENGINE, ["rtmidi"], [Names the MIDI engine of the application])
+    AC_DEFINE(CONFIG_NAME, ["seq64cli"], [Configuration file base name])
     if test "x$mingw" != "xyes" ; then
         build_rtcli="yes"
         build_portmidi="no"
@@ -594,6 +589,7 @@ if test "$alsamidi" != "no"; then
     build_alsamidi="yes"
     AC_DEFINE(ALSAMIDI_SUPPORT, 1, [Indicates if ALSA MIDI support is enabled])
     AC_DEFINE(APP_NAME, ["sequencer64"], [Names legacy version of application])
+    AC_DEFINE(APP_ENGINE, ["alsamidi"], [Names the MIDI engine of the application])
     AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
     AM_PATH_ALSA(0.9.0)
     AC_MSG_RESULT([Legacy ALSA build enabled.]);
@@ -620,13 +616,17 @@ else
 fi
 
 AC_SUBST(APP_NAME)
+AC_SUBST(APP_TYPE)
+AC_SUBST(APP_ENGINE)
+AC_SUBST(APP_BUILD_OS)
+AC_SUBST(CLIENT_NAME)
 AC_SUBST(CONFIG_NAME)
 
 dnl libsigc not supported in a Windows build at this time.  Neither is
 dnl gtkmm-2.4, but we can support Qt as well now.  We need to beef up the
 dnl testing here.
 
-if test "x$need_gtkmm" = "xyes" ; then
+if test "x$build_gtkmm" = "xyes" ; then
     AC_CHECK_LIB(gtkmm-2.4, _init,,
         AC_MSG_ERROR([Essential library libgtkmm-2.4 not found]))
 
@@ -725,6 +725,7 @@ AM_CONDITIONAL([BUILD_RTMIDI], [test "$build_rtmidi" = "yes"])
 AM_CONDITIONAL([BUILD_RTCLI], [test "$build_rtcli" = "yes"])
 AM_CONDITIONAL([BUILD_PORTMIDI], [test "$build_portmidi" = "yes"])
 AM_CONDITIONAL([BUILD_WINDOWS], [test "$build_windows" = "yes"])
+AM_CONDITIONAL([BUILD_GTKMM], [test "$build_gtkmm" = "yes"])
 
 dnl 6.0  Top portion of the config.h/seq64-config.h header files.  The
 dnl      seq64-config.h header file has "SEQ64_" prepended to these
@@ -732,8 +733,8 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2020-02-16"
-#define VERSION "0.96.7"
+#define VERSION_DATE_SHORT "2020-02-18"
+#define VERSION "0.96.8"
 
 )
 

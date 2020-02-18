@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2019-10-20
+# \update     	2020-02-16
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -35,9 +35,9 @@ LANG=C
 export LANG
 CYGWIN=binmode
 export CYGWIN
-export SEQ64_SCRIPT_EDIT_DATE="2019-10-20"
+export SEQ64_SCRIPT_EDIT_DATE="2020-02-16"
 export SEQ64_LIBRARY_API_VERSION="0.96"
-export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.96.7"
+export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.96.8"
 
 #******************************************************************************
 #  Version info
@@ -98,19 +98,18 @@ EXTRAFLAGS=""
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.96.7-2019-10-20)
+Usage: ./bootstrap [options]                                 (0.96.8-2020-02-16)
 
- 'bootstrap' sets up GNU automake and libtool support for the Sequencer64
- projects, and creates the 'configure' script.  It can also super-clean the
- project, removing all generated files and directories).  It provides some
- options to save trouble passing long options to the configure script.
+ Sets up GNU automake and libtool support for Sequencer64, and creates the
+ 'configure' script.  It can also full-clean the project, removing all generated
+ files and directories.  It provides some options to save trouble passing long
+ options to the configure script.
 
  --clean             Delete the usual derived files from the project.
  --full-clean        Delete all derived and configure-related files.  The
                      bootstrap script will need to be run again.
- -ed                 Also configure for debugging, which also disables
-   --enable-debug    shared libraries/libtool for easier debugging.
-   --enable-debug=gdb
+ -ed, --enable-debug Also configure for debugging, which also disables
+ --enable-debug=gdb  shared libraries/libtool for easier debugging.
  --release, -er,     Also configure for release, to save a little time.  Sets up
    --enable-release  a 'silent' build, as well.  Note that configuring requires
                      either --debug or --release to be specified.
@@ -120,17 +119,14 @@ Usage: ./bootstrap [options]                                 (0.96.7-2019-10-20)
  -pm                 Configure for seq64portmidi.  Implies --enable-portmidi.
  -rm                 Configure for seq64rtmidi (JACK version, the default).
                      Gtkmm-2.4 is the default user interface (Linux only).
-                     Implies --enable-rtmidi.
- -qt                 Configure for Qt5 user-interface, still in progress.
-                     Implies --enable-qt.
+ -qt                 Configure for Qt5 user-interface.
  -cli, -rc           Configure for seq64cli (command-line rtmidi version).
  --windows, -win     Configure for Windows.  Untested! Use qmake instead!
  --help              Show this help text.
 
- The default bootstraps the projects.  Then one runs 'configure', which
- sets up for a normal release build.  A common option for 'bootstrap' is
- --enable-debug (-ed), which adds --disable-shared and sets up the configure
- script for debugging without needing "libtool --mode=execute gdb seq64".
+ The default bootstraps the projects.  Then one runs 'configure' to
+ set up for a release build.  A common option for 'bootstrap' is
+ --enable-debug (-ed); see the note above.
 E_O_F
 
    exit 1

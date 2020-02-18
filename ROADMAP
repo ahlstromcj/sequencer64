@@ -1,20 +1,9 @@
 Sequencer64 Roadmap
 Chris Ahlstrom
-2015-09-10 to 2019-10-20
+2020-02-17
 
-Latest version: 0.96.7
-
-The starting point for the Sequencer64 project is version 0.9.2 of Seq24 from
-Debian.  The initial work for this Seq24 reboot started in late July of 2015,
-when I was laid up for awhile, and had basically finished documenting the
-Yoshimi software synthesizer.
-
-This roadmap is a bit old.  Lots of good suggestions have come in from users,
-and we have tended to give them what they want.  :-)  See the TODO instead.
-Also see the contrib/notes/bugs-to-investigate.txt file, which is also a bit
-out-of-date.
-
-Also note that there is a major refactoring of Sequencer64, called Seq66. It is
-experimental but it works.
+See the TODO instead.  Also note that there is a major refactoring of
+Sequencer64, called Seq66. It is experimental, refactored for modern C++, but it
+basically works, and will be the main project for new features.
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

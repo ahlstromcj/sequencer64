@@ -1,6 +1,6 @@
-NEWS for Sequencer64 0.96.7
+NEWS for Sequencer64 0.96.8
 Chris Ahlstrom
-2015-07-10 to 2019-10-20
+2015-07-10 to 2020-02-16
 
 This file collects major changes that are older and clutter up
 the README file.  This file should be called "OLD NEWS".
@@ -29,6 +29,26 @@ Pull Request #150 from user jfrey-xx:
         control nor GUI.
     -	Biggest change: the MIDI control "reserved for expansion" is now used
         to set the "replace" flag while recording.
+    -   Version 0.96.6:
+        -   Fixed issue #180 by enabling the (user_ui_) key_height option.
+            Change this value in sequencer64.usr from 8 to a larger value as
+            desired.
+        -   Fixed issue #179 where note lengths recorded were fixed to grid snap
+            (in "slave" mode) instead of length played.
+        -   Fixed the plain qseqeditframe handling of the play / record /
+            qrecord / thru buttons, reported by a Windows user.
+        -   Fixed --priority option to use pthread schedule-setting function.
+        -   Fixed external seqedit window remaining after closure.
+    -   Version 0.96.5:
+        -   Merged in the midi-control code of igorangst and fixed some
+            misfeatures along the way.
+        -   Fixed error in access transpose functionality.
+        -   Many minor issues fixed.
+    -   Version 0.96.4:
+        -   Tweaks back-ported from Sequencer66.
+        -   Added arrow movement of notes in qseqroll, and fixed drawing the
+            selection box.
+        -   Fixed enabling event-editor save button when an event is deleted.
     -   Version 0.96.3:
         A long time in coming, busy with refactoring Seq66 (now available).
         Fixes issue #171 (GitHub), and some minor tweakage.

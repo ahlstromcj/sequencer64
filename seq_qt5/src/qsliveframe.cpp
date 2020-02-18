@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2020-01-01
+ * \updates       2020-02-17
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -1718,19 +1718,26 @@ qsliveframe::sequence_key (int seq)
 void
 qsliveframe::sequence_key_check ()
 {
-    int seqnum = perf().call_seq_number();
-    if (perf().check_seqno(seqnum))
+    int seqnum;
+    bool ok = perf().got_seqno(seqnum);
+    if (perf().call_seq_edit())
     {
-#ifdef PLATFORM_DEBUG_TMI
-        printf("key for seq %d\n", seqnum);
-#endif
-        if (perf().call_seq_edit())
+        if (ok)
+        {
             callEditorEx(seqnum);
-        else if (perf().call_seq_eventedit())
-            callEditorEvents(seqnum);
-        else
-            sequence_key(seqnum);                   /* toggle loop          */
+            perf().clear_seq_edits();
+        }
     }
+    else if (perf().call_seq_eventedit())
+    {
+        if (ok)
+        {
+            callEditorEvents(seqnum);
+            perf().clear_seq_edits();
+        }
+    }
+    else if (ok)
+        sequence_key(seqnum);                       /* toggle loop          */
 }
 
 /**

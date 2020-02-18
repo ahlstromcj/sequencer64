@@ -25,14 +25,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-03-12
- * \updates       2020-02-14
+ * \updates       2020-02-18
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
  *  instances, followed by the global variables that these structures
  *  completely replace.
- *
- *  Well, now it is empty.  We will wait a bit before removing this module.
  */
 
 #include <sstream>                      /* std::ostringstream               */
@@ -98,7 +96,7 @@ set_app_build_os (const std::string & abuild_os)
 }
 
 /**
- *
+ *  Sets the current base name of the client port.
  */
 
 void
@@ -227,12 +225,12 @@ seq_build_details ()
 {
     std::ostringstream result;
     result
-        << "Built " << __DATE__ << " " << __TIME__ ":\n"
+        << "Built " << __DATE__ << " " << __TIME__ "\n"
         << "  C++ version " << std::to_string(__cplusplus) << "\n"
         << "  App name: " << seq_app_name()
         << "; type " << seq_app_type()
         << "; engine " << seq_app_engine() << "\n"
-        << "  App build OS: " << seq_app_build_os() << "\n"
+        << "  Build OS: " << seq_app_build_os() << "\n"
 #ifdef SEQ64_RTMIDI_SUPPORT
         << "  Native JACK/ALSA (rtmidi) on\n"
 #endif
@@ -288,7 +286,7 @@ seq_build_details ()
 #ifdef PLATFORM_DEBUG
         << "  Debug code on\n"
 #endif
-        << "  " << s_bitness << " support enabled\n\n"
+        << "  " << s_bitness << "\n\n"
     << "Options are enabled/disabled via the configure script,\n"
     << "libseq64/include/seq64_features.h, or the build-specific\n"
     << "seq64-config.h file in include or in include/qt/portmidi" << std::endl

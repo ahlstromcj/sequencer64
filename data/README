@@ -1,6 +1,6 @@
-Data Directory for Sequencer64 0.96.7
+Data Directory for Sequencer64 0.96.8
 Chris Ahlstrom
-2018-01-02 to 2019-10-20
+2018-01-02 to 2020-02-16
 
 This directory contains files to be installed in the ${prefix}/share
 directory [e.g. /usr/share or /usr/local/share] on Linux, or in the

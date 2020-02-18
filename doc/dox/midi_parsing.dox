@@ -92,7 +92,7 @@ Next, the parse() function loops through the rest of the track, reading data
 and logging it to the sequence.  Let's go through the loop, which is the meat
 of the processing.
 
-TODO:  An empty event is created before track processing, and re-used for every
+An empty event is created before track processing, and re-used for every
 track and event.  This seems dangerous.  We moved the event constructor two
 levels of nesting deeper, and it seems to work fine.
 

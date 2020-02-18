@@ -3341,48 +3341,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     ok = ! edit_field_has_focus();
 
                 if (ok)
-                {
                     (void) perf().lookup_keyevent_seq(k.key()); /* side effect */
-#if defined USE_DIRECT_KEYSTROKE
-                    int seqnum = perf().lookup_keyevent_seq(k.key());
-                    if (seqnum != (-1))
-                        sequence_key(seqnum);           /* toggle sequence  */
-
-                    /*
-                     * Now handled on the next timer tick, so that performer can
-                     * also cause the edit windows to pop up.
-                     */
-
-                    if (perf().call_seq_edit())
-                    {
-                        m_main_wid->seq_set_and_edit(seqnum);
-                        result = true;  // perf().call_seq_number(-1);
-                    }
-                    else if (perf().call_seq_eventedit())
-                    {
-                        m_main_wid->seq_set_and_eventedit(seqnum);
-                        result = true;  // perf().call_seq_number(-1);
-                    }
-                    else if (perf().call_seq_shift() > 0)   /* variset shift */
-                    {
-                        /*
-                         * Here, c_seqs_in_set is a constant value set to
-                         * SEQ64_DEFAULT_SEQS_IN_SET = 32.
-                         */
-
-                        int key =
-                            seqnum + perf().call_seq_shift() * c_seqs_in_set;
-
-                        sequence_key(key);
-                        result = true;
-                    }
-                    else
-                    {
-                        sequence_key(seqnum);           /* toggle sequence  */
-                        result = true;
-                    }
-#endif  // defined USE_DIRECT_KEYSTROKE
-                }
             }
             else
             {
@@ -3968,10 +3927,6 @@ mainwnd::populate_menu_help ()
 void
 mainwnd::sequence_key (int seq)
 {
-    // Now done by perform
-    // if (perf().call_seq_shift() > 0)    /* flag now done, if in force   */
-    //     seq += perf().call_seq_shift() * c_seqs_in_set;
-
     set_status_text(std::string(""));
     perf().sequence_key(seq);
 }
@@ -3983,19 +3938,26 @@ mainwnd::sequence_key (int seq)
 void
 mainwnd::sequence_key_check ()
 {
-    int seqnum = perf().call_seq_number();
-    if (perf().check_seqno(seqnum))
+    int seqnum;
+    bool ok = perf().got_seqno(seqnum);             /* side-effect          */
+    if (perf().call_seq_edit())
     {
-#ifdef PLATFORM_DEBUG_TMI
-        printf("key for seq %d\n", seqnum);
-#endif
-        if (perf().call_seq_edit())
+        if (ok)
+        {
             m_main_wid->seq_set_and_edit(seqnum);
-        else if (perf().call_seq_eventedit())
-            m_main_wid->seq_set_and_eventedit(seqnum);
-        else
-            sequence_key(seqnum);                   /* toggle loop          */
+            perf().clear_seq_edits();
+        }
     }
+    else if (perf().call_seq_eventedit())
+    {
+        if (ok)
+        {
+            m_main_wid->seq_set_and_eventedit(seqnum);
+            perf().clear_seq_edits();
+        }
+    }
+    else if (ok)
+        sequence_key(seqnum);                       /* toggle loop          */
 }
 
 /**

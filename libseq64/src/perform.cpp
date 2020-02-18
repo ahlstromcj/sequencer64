@@ -5362,7 +5362,11 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
                     offset += m_call_seq_shift * c_seqs_in_set;
                     m_call_seq_shift = 0;
                 }
-                sequence_playing_toggle(offset);
+                if (call_seq_edits())
+                    call_seq_number(offset);    /* GUI should raise editor  */
+                else
+                    sequence_playing_toggle(offset);
+
                 result = true;
             }
             else if (is_ext)
@@ -5493,31 +5497,8 @@ perform::toggle_call_seq_edit ()
 {
     m_call_seq_edit = ! m_call_seq_edit;
 #ifdef PLATFORM_DEBUG_TMI
-    printf("seq edit %s\n", m_call_seq_edit ? "pending" : "not pending");
+    printf("seq edit %s\n", call_seq_edit() ? "pending" : "not pending");
 #endif
-}
-
-/**
- *  Checks the call-seq-edit key, and then clears the call-seq member variables
- *  if seq-edit is pending.  Generally, the call_seq_number() function must be
- *  called before this function to retrieve the pattern number in force for the
- *  pending seq-edit call.
- *
- * \return
- *      Returns the value of m_call_seq_edit.
- */
-
-bool
-perform::call_seq_edit () const
-{
-    bool result = m_call_seq_edit;
-    if (result)
-    {
-        result = m_call_seq_number != (-1);
-        m_call_seq_edit = false;
-        m_call_seq_number = (-1);
-    }
-    return result;
 }
 
 /**
@@ -5530,31 +5511,8 @@ perform::toggle_call_seq_eventedit ()
 {
     m_call_seq_eventedit = ! m_call_seq_eventedit;
 #ifdef PLATFORM_DEBUG_TMI
-    printf("event edit %s\n", m_call_seq_eventedit ? "pending" : "not pending");
+    printf("event edit %s\n", call_seq_eventedit() ? "pending" : "not pending");
 #endif
-}
-
-/**
- *  Checks the call-seq-event-edit key, and then clears the call-seq member
- *  variables if seq-event-edit is pending.  Generally, the call_seq_number()
- *  function must be called before this function to retrieve the pattern number
- *  in force for the pending seq-edit call.
- *
- * \return
- *      Returns the value of m_call_seq_eventedit.
- */
-
-bool
-perform::call_seq_eventedit () const
-{
-    bool result = m_call_seq_eventedit;
-    if (result)
-    {
-        result = m_call_seq_number != (-1);
-        m_call_seq_eventedit = false;
-        m_call_seq_number = (-1);
-    }
-    return result;
 }
 
 /**
@@ -6450,28 +6408,24 @@ perform::is_keep_queue () const
  *
  * \param seq
  *      The sequence's control-key number, which is relative to the current
- *      screen-set.
+ *      screen-set.  It is not checked, but the caller must use
+ *      perform::got_seqno() and check the return value.
  */
 
 void
 perform::sequence_key (int seq)
 {
-    if (check_seqno(seq))
+    seq += screenset_offset(m_screenset);
+    if (is_active(seq))
     {
-        seq += screenset_offset(m_screenset);   /* m_playscreen_offset !!!  */
-        if (is_active(seq))
-        {
-            if (call_seq_shift() > 0)
-                seq += call_seq_shift() * c_seqs_in_set;
-
+        if (call_seq_shift() > 0)
+            seq += call_seq_shift() * m_seqs_in_set;
 #ifdef PLATFORM_DEBUG_TMI
-            infoprintf("Toggled pattern #%d\n", seq);
+        infoprintf("Toggled pattern #%d\n", seq);
 #endif
-
-            sequence_playing_toggle(seq);
-            clear_seq_edits();                  /* save the caller trouble  */
-        }
+        sequence_playing_toggle(seq);
     }
+    clear_seq_edits();                      /* save the caller trouble  */
 }
 
 /**
@@ -6797,7 +6751,7 @@ perform::lookup_slot_key (int slot)
 {
     if (slot >= 0 && slot < (3 * c_max_sequence))
     {
-        slot %= c_max_keys;                         // c_seqs_in_set;
+        slot %= c_max_keys;
         return keys().lookup_keyevent_key(slot);
     }
     else
@@ -6903,7 +6857,7 @@ perform::keyboard_control_press (unsigned key)
     if (result)
     {
         int seqnum = lookup_keyevent_seq(key);      /* get pattern number   */
-        if (check_seq_edits())                      /* edits pending?       */
+        if (call_seq_edits())                       /* edits pending?       */
             call_seq_number(seqnum);                /* log the pending seq  */
         else
             sequence_key(seqnum);                   /* handle the sequence  */

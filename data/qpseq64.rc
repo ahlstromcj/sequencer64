@@ -1,5 +1,8 @@
 # Sequencer64 0.94.0 (and above) rc configuration file
 #
+# /home/me/.config/sequencer64/qseq64.rc
+# Written on 2020-02-19 18:29:41
+#
 # This file holds the main configuration options for Sequencer64.
 # It follows the format of the legacy seq24 'rc' configuration
 # file, but adds some new options, such as LASH, Mod4 interaction
@@ -16,14 +19,17 @@
  a '#' or '[', or that are blank, are ignored.  Start lines that must
  be blank with a space.)
 
-
 [midi-control]
 
 # The leftmost number on each line here is the pattern number, from
-# 0 to 31 (and beyond for the mute-groups). Next, there are three
-# groups of bracketed numbers that follow:
+# 0 to 31; or it is the group number, from 32 to 63, for up to 32 
+# groups; or it is an automation control number, from 64 to 95.
+# This internal MIDI control number is followed by three groups of
+# bracketed numbers, each providing three different type of control:
 #
-#    [toggle]  [on]  [off]
+#    Normal:           [toggle]    [on]      [off]
+#    Playback:         [pause]     [start]   [stop]
+#    Playlist:         [by-value]  [next]    [previous] (if active)
 #
 # In each group, there are six numbers:
 #
@@ -49,7 +55,7 @@
 #   [0 0 0 0 0 0]   [0 0 0 0 0 0]   [0 0 0 0 0 0]
 #    Toggle          On              Off
 
-84      # MIDI controls count (74 or 84)
+112      # MIDI controls count (74/84/96/112)
 
 # Pattern-group section:
 0 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
@@ -162,8 +168,138 @@
 81 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # MIDI Quantized RECORD (toggle, on, off):
 82 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# reserved for expansion:
+# Set Replace versus Merge for loop recording:
 83 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# One-shot queueing and replacing.  TO DO.
+84 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control for fast-forward
+85 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control for rewind
+86 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control for top (song beginning or L marker)
+87 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control to select playlist (value, next, previous)
+88 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control to select song in current playlist (value, next, previous)
+89 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Hot-key slot shift (keystroke)
+90 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# A second control for starting playback (Live)
+91 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# A second control for stopping playback
+92 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# A second snapshot control
+93 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# For toggling, muting, and unmuting
+94 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# For setting the position in the song
+95 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Keep queue
+96 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Alternate slot-shift
+97 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Mutes clear
+98 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 35
+99 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Pattern edit
+100 [0 0   0   0   0   0] [1 0 144   8   1 127] [0 0   0   0   0   0]
+# Event edit
+101 [0 0   0   0   0   0] [1 0 144   6   1 127] [0 0   0   0   0   0]
+# Song mode
+102 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Toggle JACK
+103 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Menu mode
+104 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Follow JACK transport
+105 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 42
+106 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 43
+107 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 44
+108 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 45
+109 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 46
+110 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 47
+111 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+
+[midi-control-out]
+
+#    ------------------- on/off (indicate is the section is enabled)
+#    | ----------------- MIDI channel (0-15)
+#    | | --------------- MIDI status (event) byte (e.g. note on)
+#    | | | ------------- data 1 (e.g. note number)
+#    | | | | ----------- data 2 (e.g. velocity)
+#    | | | | |
+#    v v v v v
+#   [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+#       Arm         Mute       Queue      Delete
+
+32 15 0     # screenset size, output buss, enabled (1) /disabled (0)
+
+0 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+1 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+2 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+3 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+4 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+5 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+6 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+7 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+8 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+9 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+10 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+11 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+12 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+13 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+14 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+15 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+16 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+17 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+18 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+19 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+20 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+21 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+22 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+23 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+24 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+25 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+26 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+27 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+28 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+29 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+30 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+31 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+
+# MIDI Control Out: play
+0 [0 0 0 0]
+
+# MIDI Control Out: stop
+0 [0 0 0 0]
+
+# MIDI Control Out: pause
+0 [0 0 0 0]
+
+# MIDI Control Out: queue on/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: oneshot on/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: replace on/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: snap1 store/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: snap2 store/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: learn on/opposite
+0 [0 0 0 0] [0 0 0 0]
 
 [mute-group]
 
@@ -292,7 +428,7 @@
 # declared in the 'user' configuration file.  Use this option if
 # you want to be able to see the port names as detected by ALSA.
 
-0   # flag for reveal ALSA ports
+1   # flag for reveal ALSA ports
 
 [interaction-method]
 
@@ -514,6 +650,17 @@
 # Holds a list of the last few recently-loaded MIDI files.
 
 0
+
+[playlist]
+
+# Provides a configured play-list and a flag to activate it.
+
+0     # playlist_active, 1 = active, 0 = do not use it
+
+# Provides the name of a play-list.  If there is none, use '""'.
+# Or set the flag above to 0.
+
+""
 
 # End of C:\Users\chris\AppData\Local\sequencer64\qpseq64.rc
 #

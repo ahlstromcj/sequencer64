@@ -232,59 +232,59 @@ seq_build_details ()
         << "; engine " << seq_app_engine() << "\n"
         << "  Build OS: " << seq_app_build_os() << "\n"
 #ifdef SEQ64_RTMIDI_SUPPORT
-        << "  Native JACK/ALSA (rtmidi) on\n"
+        << "  Native JACK/ALSA (rtmidi)\n"
 #endif
 #ifdef SEQ64_ALSAMIDI_SUPPORT
-        << "  ALSA-only MIDI support on\n"
+        << "  ALSA-only MIDI support\n"
 #endif
 #ifdef SEQ64_PORTMIDI_SUPPORT
-        << "  PortMIDI support on\n"
+        << "  PortMIDI support\n"
 #endif
-        << "  Event editor on\n"
+        << "  Event editor\n"
 #ifdef SEQ64_USE_EVENT_MAP
-        << "  Event multimap (vs list) on\n"
+        << "  Event multimap (vs list)\n"
 #endif
-        << "  Follow progress bar on\n"
+        << "  Follow progress bar\n"
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-        << "  Highlight edit pattern on\n"
+        << "  Highlight edit pattern\n"
 #endif
 #ifdef SEQ64_HIGHLIGHT_EMPTY_SEQS
-        << "  Highlight empty patterns on\n"
+        << "  Highlight empty patterns\n"
 #endif
 #ifdef SEQ64_JACK_SESSION
-        << "  JACK session on\n"
+        << "  JACK session\n"
 #endif
 #ifdef SEQ64_JACK_SUPPORT
-        << "  JACK support on\n"
+        << "  JACK support\n"
 #endif
 #ifdef SEQ64_LASH_SUPPORT
-        << "  LASH support on\n"
+        << "  LASH support\n"
 #endif
-        << "  Seq32 chord generator, LFO window, menu buttons, transpose on\n"
-        << "  BPM Tap button, solid piano-roll grid on\n"
-        << "  Song performance recording on\n"
+        << "  Seq32 chord generator, LFO window, menu buttons, transpose\n"
+        << "  BPM Tap button, solid piano-roll grid\n"
+        << "  Song performance recording\n"
 #ifdef SEQ64_JE_PATTERN_PANEL_SCROLLBARS
-        << "  Main window scroll-bars on\n"
+        << "  Main window scroll-bars\n"
 #endif
 #ifdef SEQ64_SHOW_COLOR_PALETTE
-        << "  Optional pattern coloring on\n"
+        << "  Optional pattern coloring\n"
 #endif
 #ifdef SEQ64_MULTI_MAINWID
-        << "  Multiple main windows on\n"
+        << "  Multiple main windows\n"
 #endif
 #ifdef SEQ64_SONG_BOX_SELECT
-        << "  Box song selection on\n"
+        << "  Box song selection\n"
 #endif
 #ifdef SEQ64_STATISTICS_SUPPORT
-        << "  Statistics support on\n"
+        << "  Statistics support\n"
 #endif
 #ifdef PLATFORM_WINDOWS
-        << "  Windows support on\n"
+        << "  Windows support\n"
 #endif
-        << "  Pause support on\n"
-        << "  Save time-sig/tempo on\n"
+        << "  Pause support\n"
+        << "  Save time-sig/tempo\n"
 #ifdef PLATFORM_DEBUG
-        << "  Debug code on\n"
+        << "  Debug code\n"
 #endif
         << "  " << s_bitness << "\n\n"
     << "Options are enabled/disabled via the configure script,\n"

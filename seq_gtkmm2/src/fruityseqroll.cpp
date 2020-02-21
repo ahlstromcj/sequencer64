@@ -90,8 +90,6 @@ FruitySeqRollInput::FruitySeqRollInput
 void
 FruitySeqRollInput::update_mouse_pointer (bool isadding)
 {
-    ///// seqroll::update_mouse_pointer(adding());
-
     midipulse droptick;
     int dropnote;
     convert_xy(current_x(), current_y(), droptick, dropnote);
@@ -105,8 +103,7 @@ FruitySeqRollInput::update_mouse_pointer (bool isadding)
     {
         long hsize = m_seq.handle_size(s, f);
         if (s <= droptick && droptick <= s + hsize)
-            get_window()->set_cursor(Gdk::Cursor(Gdk::RIGHT_PTR)); // TRIAL!
-            // get_window()->set_cursor(Gdk::Cursor(Gdk::CENTER_PTR));
+            get_window()->set_cursor(Gdk::Cursor(Gdk::RIGHT_PTR));
         else if (f - hsize <= droptick && droptick <= f)
             get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
         else
@@ -146,7 +143,6 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
     {
         /*
          * Causes GitHub issue #90!
-         *
          * int norm_x = snapped_x;
          */
 

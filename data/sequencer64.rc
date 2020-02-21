@@ -1,6 +1,7 @@
-# Sequencer64 0.95.1 (and above) rc configuration file
+# Sequencer64 0.96.7 (and above) rc configuration file
 #
-# Written on 2018-09-05 05:31:46
+# /home/me/.config/sequencer64/sequencer64.rc
+# Written on 2020-02-19 18:33:43
 #
 # This file holds the main configuration options for Sequencer64.
 # It follows the format of the legacy seq24 'rc' configuration
@@ -18,14 +19,17 @@
  a '#' or '[', or that are blank, are ignored.  Start lines that must
  be blank with a space.)
 
-
 [midi-control]
 
 # The leftmost number on each line here is the pattern number, from
-# 0 to 31 (and beyond for the mute-groups). Next, there are three
-# groups of bracketed numbers that follow:
+# 0 to 31; or it is the group number, from 32 to 63, for up to 32 
+# groups; or it is an automation control number, from 64 to 95.
+# This internal MIDI control number is followed by three groups of
+# bracketed numbers, each providing three different type of control:
 #
-#    [toggle]  [on]  [off]
+#    Normal:           [toggle]    [on]      [off]
+#    Playback:         [pause]     [start]   [stop]
+#    Playlist:         [by-value]  [next]    [previous] (if active)
 #
 # In each group, there are six numbers:
 #
@@ -51,7 +55,7 @@
 #   [0 0 0 0 0 0]   [0 0 0 0 0 0]   [0 0 0 0 0 0]
 #    Toggle          On              Off
 
-96      # MIDI controls count (74/84/96)
+112      # MIDI controls count (74/84/96/112)
 
 # Pattern-group section:
 0 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
@@ -164,32 +168,139 @@
 81 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # MIDI Quantized RECORD (toggle, on, off):
 82 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# reserved for expansion:
+# Set Replace versus Merge for loop recording:
 83 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# Reserved for expansion 1
+# One-shot queueing and replacing.  TO DO.
 84 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # MIDI Control for fast-forward
 85 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # MIDI Control for rewind
 86 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# MIDI Control for top...
+# MIDI Control for top (song beginning or L marker)
 87 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # MIDI Control to select playlist (value, next, previous)
 88 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # MIDI Control to select song in current playlist (value, next, previous)
 89 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# Reserved for expansion 7
+# Hot-key slot shift (keystroke)
 90 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# Reserved for expansion 8
+# A second control for starting playback (Live)
 91 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# Reserved for expansion 9
+# A second control for stopping playback
 92 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# Reserved for expansion 10
+# A second snapshot control
 93 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# Reserved for expansion 11
+# For toggling, muting, and unmuting
 94 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# Reserved for expansion 12
+# For setting the position in the song
 95 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Keep queue
+96 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Alternate slot-shift
+97 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Mutes clear
+98 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 35
+99 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Pattern edit
+100 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Event edit
+101 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Song mode
+102 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Toggle JACK
+103 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Menu mode
+104 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Follow JACK transport
+105 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 42
+106 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 43
+107 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 44
+108 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 45
+109 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 46
+110 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved 47
+111 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+
+[midi-control-out]
+
+#    ------------------- on/off (indicate is the section is enabled)
+#    | ----------------- MIDI channel (0-15)
+#    | | --------------- MIDI status (event) byte (e.g. note on)
+#    | | | ------------- data 1 (e.g. note number)
+#    | | | | ----------- data 2 (e.g. velocity)
+#    | | | | |
+#    v v v v v
+#   [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+#       Arm         Mute       Queue      Delete
+
+32 15 0     # screenset size, output buss, enabled (1) /disabled (0)
+
+0 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+1 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+2 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+3 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+4 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+5 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+6 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+7 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+8 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+9 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+10 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+11 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+12 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+13 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+14 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+15 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+16 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+17 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+18 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+19 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+20 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+21 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+22 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+23 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+24 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+25 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+26 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+27 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+28 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+29 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+30 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+31 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
+
+# MIDI Control Out: play
+0 [0 0 0 0]
+
+# MIDI Control Out: stop
+0 [0 0 0 0]
+
+# MIDI Control Out: pause
+0 [0 0 0 0]
+
+# MIDI Control Out: queue on/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: oneshot on/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: replace on/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: snap1 store/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: snap2 store/opposite
+0 [0 0 0 0] [0 0 0 0]
+
+# MIDI Control Out: learn on/opposite
+0 [0 0 0 0] [0 0 0 0]
+
 
 [mute-group]
 
@@ -254,10 +365,20 @@
 # present, but not available, perhaps because another application
 # has exclusive access to the device (e.g. on Windows).
 
-1    # number of MIDI clocks/busses
+6    # number of MIDI clocks/busses
 
 # Output buss name: [0] 14:0 Midi Through Port-0
 0 0    # buss number, clock status
+# Output buss name: [1] 20:0 nanoKEY2 MIDI 1
+1 0    # buss number, clock status
+# Output buss name: [2] 128:0 TiMidity port 0
+2 0    # buss number, clock status
+# Output buss name: [3] 128:1 TiMidity port 1
+3 0    # buss number, clock status
+# Output buss name: [4] 128:2 TiMidity port 2
+4 0    # buss number, clock status
+# Output buss name: [5] 128:3 TiMidity port 3
+5 0    # buss number, clock status
 
 [midi-clock-mod-ticks]
 
@@ -279,15 +400,17 @@
 
 [midi-input]
 
-2   # number of input MIDI busses
+3   # number of input MIDI busses
 
 # The first number is the port number, and the second number
 # indicates whether it is disabled (0), or enabled (1).
 
 # Input buss name: [0] 0:1 system:announce
-0 0  # buss number, input status
+0 1  # buss number, input status
 # Input buss name: [1] 14:0 Midi Through Port-0
 1 0  # buss number, input status
+# Input buss name: [2] 20:0 nanoKEY2 MIDI 1
+2 1  # buss number, input status
 
 # If set to 1, this option allows the master MIDI bus to record
 # (filter) incoming MIDI data by channel, allocating each incoming
@@ -329,7 +452,7 @@
 # the right-click is released while holding the Mod4 (Super or
 # Windows) key.
 
-1   # allow_mod4_mode
+0   # allow_mod4_mode
 
 # Set to 1 to allow Sequencer64 to split performance editor
 # triggers at the closest snap position, instead of splitting the
@@ -406,8 +529,8 @@
 37  4   # percent
 38  5   # ampersand
 40  7   # parenleft
+47  6   # slash
 59  31   # semicolon
-63  6   # question
 65  16   # A
 66  28   # B
 67  26   # C
@@ -444,7 +567,7 @@
 32    # space start sequencer
 65307    # Escape stop sequencer
 46    # period pause sequencer
-1     # show sequence numbers (1 = true / 0 = false); ignored in legacy mode
+0     # show sequence numbers (1 = true / 0 = false); ignored in legacy mode
 61    # equal is the shortcut key to bring up the pattern editor
 45    # minus is the shortcut key to bring up the event editor
 47    # slash shifts the hot-key so that it toggles pattern + 32
@@ -462,8 +585,8 @@
 65476    # F7 handles song pointer-position function
 65478    # F9 emulates clicking the Tap (BPM) button
 65477    # F8 handles the toggling-all-pattern-mutes function
-0    #  toggles the song-record function
-0    #  toggles the one-shot queue function
+80    # P toggles the song-record function
+112    # p toggles the one-shot queue function
 
 [jack-transport]
 
@@ -493,7 +616,7 @@
 #     controls, regardless of which window was used to start the
 #     playback.
 
-0   # song_start_mode
+1   # song_start_mode
 
 # jack_midi - Enable JACK MIDI, which is a separate option from
 # JACK Transport.
@@ -527,7 +650,7 @@
 
 # Last-used and currently-active directory:
 
-/home/ahlstrom/Home/ca/mls/git/sequencer64/data
+/home/me/git/sequencer64/data
 
 [recent-files]
 
@@ -535,7 +658,7 @@
 
 1
 
-/home/ahlstrom/Home/ca/mls/git/sequencer64/data/b4uacuse-gm-patchless.midi
+/home/me/git/sequencer64/data/b4uacuse-gm-patchless.midi
 
 [playlist]
 
@@ -546,7 +669,7 @@
 # Provides the name of a play-list.  If there is none, use '""'.
 # Or set the flag above to 0.
 
-/home/ahlstrom/.config/sequencer64/sample.playlist
+""
 
 # End of /home/ahlstrom/.config/sequencer64/sequencer64.rc
 #

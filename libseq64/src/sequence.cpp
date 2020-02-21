@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-10-14
+ * \updates       2020-02-19
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -5073,6 +5073,9 @@ sequence::set_quantized_recording (bool qr)
  *  Do we need a quantized recording version, or is setting the
  *  quantized-recording flag sufficient?
  *
+ *  Set input on here no matter what, because even if m_thru, input could have
+ *  been replaced in another sequence.
+ *
  * \param record_active
  *      Provides the desired status to set recording.
  *
@@ -5087,19 +5090,7 @@ sequence::set_input_recording (bool record_active, bool toggle)
     if (toggle)
         record_active = ! m_recording;
 
-    /*
-     * Except if already Thru and trying to turn recording (input) off,
-     * set input on here no matter what, because even if m_thru, input could
-     * have been replaced in another sequence.
-     */
-
-    /*
-     * LET's try commenting out the conditional.
-     */
-
-    ////// if (record_active || ! m_thru)
-        m_master_bus->set_sequence_input(record_active, this);
-
+    m_master_bus->set_sequence_input(record_active, this);
     set_recording(record_active);
 }
 
@@ -5174,15 +5165,6 @@ sequence::set_input_thru (bool thru_active, bool toggle)
     if (toggle)
         thru_active = ! m_thru;
 
-    /*
-     * Except if already recording and trying to turn Thru (hence input) off,
-     * set input to here no matter what, because even in m_recording,
-     * input could have been replaced in another sequence.
-     *
-     * LET's try putting in the original conditional.
-     */
-
-    //// if (thru_active or ! m_recording)
      if (! m_recording)
         m_master_bus->set_sequence_input(thru_active, this);
 

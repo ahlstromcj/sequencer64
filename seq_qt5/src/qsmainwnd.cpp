@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2020-02-04
+ * \updates       2020-02-19
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -1967,27 +1967,24 @@ qsmainwnd::keyPressEvent (QKeyEvent * event)
     }
     else
     {
-        if (! done)
+        std::string msgout;
+        done = m_live_frame->handle_group_learn(k, msgout);
+        if (! msgout.empty())
         {
-            std::string msgout;
-            done = m_live_frame->handle_group_learn(k, msgout);
-            if (! msgout.empty())
+            if (done)                           // info message
             {
-                if (done)                           // info message
-                {
-                    QMessageBox * msg = new QMessageBox(this);
-                    msg->setText(tr(msgout.c_str()));
-                    msg->setInformativeText(tr("Click OK to continue."));
-                    msg->setStandardButtons(QMessageBox::Ok);
-                    msg->exec();
-                }
-                else                                // error message
-                {
-                    QErrorMessage * errmsg = new QErrorMessage(this);
-                    errmsg->showMessage(tr(msgout.c_str()));
-                    errmsg->exec();
-                    done = true;                    // key handled nonetheless
-                }
+                QMessageBox * msg = new QMessageBox(this);
+                msg->setText(tr(msgout.c_str()));
+                msg->setInformativeText(tr("Click OK to continue."));
+                msg->setStandardButtons(QMessageBox::Ok);
+                msg->exec();
+            }
+            else                                // error message
+            {
+                QErrorMessage * errmsg = new QErrorMessage(this);
+                errmsg->showMessage(tr(msgout.c_str()));
+                errmsg->exec();
+                done = true;                    // key handled nonetheless
             }
         }
         if (! done)

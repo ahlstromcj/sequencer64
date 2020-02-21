@@ -106,12 +106,7 @@ void
 qperfeditex::closeEvent (QCloseEvent *)
 {
     if (not_nullptr(m_edit_parent))
-    {
-        /////// EXPERIMENT: just hide
-        // m_edit_parent->remove_qperfedit();
-
         m_edit_parent->hide_qperfedit(true);
-    }
 }
 
 

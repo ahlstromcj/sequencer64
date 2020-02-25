@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-09-16
+# \update      2020-02-24
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -62,7 +62,6 @@ FORMS += forms/qlfoframe.ui \
  forms/qsliveframe.ui \
  forms/qsmainwnd.ui \
  forms/qsbuildinfo.ui \
- forms/qlfoframe.ui \
  forms/qseqeventframe.ui
 
 RESOURCES += src/qseq64.qrc
@@ -105,7 +104,6 @@ HEADERS += \
  include/qstriggereditor.hpp \
  include/qt5_helpers.hpp \
  include/qsbuildinfo.hpp \
- include/qlfoframe.hpp \
  include/qseqeventframe.hpp
 
 SOURCES += \
@@ -144,7 +142,6 @@ SOURCES += \
  src/qstriggereditor.cpp \
  src/qt5_helpers.cpp \
  src/qsbuildinfo.cpp \
- src/qlfoframe.cpp \
  src/qseqeventframe.cpp
 
 # The output of the uic command goes to the seq_qt5/forms directory in

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2020-02-17
+ * \updates       2020-02-21
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -1692,26 +1692,6 @@ qsliveframe::paste_seq ()
 }
 
 /**
- *  Use the sequence key to toggle the playing of an active pattern in
- *  the current screen-set.
- *
- * \param seq
- *      This is actually the key-number.
- */
-
-void
-qsliveframe::sequence_key (int seq)
-{
-    /*
-     * From mainwnd!
-     *
-     * set_status_text(std::string(""));
-     */
-
-    perf().sequence_key(seq);
-}
-
-/**
  *  Handles any existing pattern-key statuses.  Used in the timer callback.
  */
 
@@ -1719,11 +1699,14 @@ void
 qsliveframe::sequence_key_check ()
 {
     int seqnum;
-    bool ok = perf().got_seqno(seqnum);
+    bool ok = perf().got_seqno(seqnum);             /* side-effect          */
     if (perf().call_seq_edit())
     {
         if (ok)
         {
+#ifdef PLATFORM_DEBUG_TMI
+            infoprintf("Seq edit %d processed\n", seqnum);
+#endif
             callEditorEx(seqnum);
             perf().clear_seq_edits();
         }
@@ -1732,12 +1715,21 @@ qsliveframe::sequence_key_check ()
     {
         if (ok)
         {
+#ifdef PLATFORM_DEBUG_TMI
+            infoprintf("Event edit %d processed\n", seqnum);
+#endif
             callEditorEvents(seqnum);
             perf().clear_seq_edits();
         }
     }
     else if (ok)
-        sequence_key(seqnum);                       /* toggle loop          */
+    {
+#ifdef PLATFORM_DEBUG_TMI
+        infoprintf("Seq toggle %d processed\n", seqnum);
+#endif
+        perf().sequence_key(seqnum);                /* toggle loop          */
+        update();                                   /* sadly, is needed     */
+    }
 }
 
 /**

@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2020-02-18
+dnl \update        2020-02-24
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -564,6 +564,7 @@ AC_ARG_ENABLE(cli,
 if test "$cli" != "no"; then
     AC_MSG_RESULT([rtmidi command-line build enabled.]);
     AC_DEFINE(APP_NAME, ["seq64cli"], [Names the CLI version of application])
+    AC_DEFINE(APP_CLI, [1], [Indicate the CLI version of application])
     AC_DEFINE(APP_TYPE, ["cli"], [Names the UI of the application])
     AC_DEFINE(APP_ENGINE, ["rtmidi"], [Names the MIDI engine of the application])
     AC_DEFINE(CONFIG_NAME, ["seq64cli"], [Configuration file base name])
@@ -733,7 +734,7 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2020-02-18"
+#define VERSION_DATE_SHORT "2020-02-24"
 #define VERSION "0.96.8"
 
 )

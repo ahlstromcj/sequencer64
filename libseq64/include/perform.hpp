@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-01-16
+ * \updates       2020-02-22
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1169,16 +1169,11 @@ public:
     ~perform ();
 
     void clear_seq_edits ();
-
-    void toggle_call_seq_edit ()
-    {
-        m_call_seq_edit = ! m_call_seq_edit;
-    }
-
-    void toggle_call_seq_eventedit ()
-    {
-        m_call_seq_eventedit = ! m_call_seq_eventedit;
-    }
+    void call_seq_edit (bool flag);
+    void call_seq_eventedit (bool flag);
+    void call_seq_number (int seqno);
+    void toggle_call_seq_edit ();
+    void toggle_call_seq_eventedit ();
 
     bool call_seq_edit () const
     {
@@ -1198,11 +1193,6 @@ public:
     int call_seq_number () const
     {
         return m_call_seq_number;
-    }
-
-    void call_seq_number (int seqno)
-    {
-        m_call_seq_number = seqno;
     }
 
     int call_seq_shift () const

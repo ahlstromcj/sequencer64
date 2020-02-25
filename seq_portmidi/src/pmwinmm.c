@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2019-04-28
+ * \updates     2020-02-24
  * \license     GNU GPLv2 or above
  *
  *  Check out this site:
@@ -84,7 +84,7 @@ static void CALLBACK winmm_streamout_callback
 );
 
 #ifdef SEQ64_USE_SYSEX_PROCESSING
-static void CALLBACK winmm_out_callback
+/* static */ void CALLBACK winmm_out_callback
 (
     HMIDIOUT hmo, UINT wMsg,
     DWORD_PTR dwInstance, DWORD_PTR dwParam1,
@@ -596,7 +596,7 @@ allocate_sysex_buffers (midiwinmm_type m, long data_size)
  *
  */
 
-static LPMIDIHDR
+/* static */ LPMIDIHDR
 get_free_sysex_buffer (PmInternal * midi)
 {
     LPMIDIHDR r = nullptr;
@@ -1901,16 +1901,17 @@ winmm_synchronize (PmInternal * midi)
  * winmm_out_callback -- recycle sysex buffers
  */
 
-static void CALLBACK
+/* static */ void CALLBACK
 winmm_out_callback
 (
-    HMIDIOUT hmo, UINT wMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2
+    HMIDIOUT hmo, UINT wMsg, DWORD dwInstance,
+    DWORD dwParam1, DWORD dwParam2
 )
 {
     PmInternal * midi = (PmInternal *) dwInstance;
     midiwinmm_type m = (midiwinmm_type) midi->descriptor;
     LPMIDIHDR hdr = (LPMIDIHDR) dwParam1;
-    int err = 0;  /* set to 0 so that no buffer match will also be an error */
+    int err;    /* = 0; set to 0 so no buffer match will also be an error   */
 
     /*
      * Future optimization: eliminate UnprepareHeader calls -- they aren't
@@ -1921,14 +1922,16 @@ winmm_out_callback
 
     if (wMsg == MOM_DONE)
     {
+#ifdef PLATFORM_DEBUG
+        (void) midiOutUnprepareHeader(m->handle.out, hdr, sizeof(MIDIHDR));
+#else
         MMRESULT ret = midiOutUnprepareHeader
         (
             m->handle.out, hdr, sizeof(MIDIHDR)
         );
         assert(ret == MMSYSERR_NOERROR);
+#endif
     }
-
-
     err = SetEvent(m->buffer_signal);   /* notify sender, buffer available  */
     assert(err);                        /* false -> error                   */
 }

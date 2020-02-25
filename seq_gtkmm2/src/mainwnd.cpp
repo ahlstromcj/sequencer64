@@ -1400,7 +1400,6 @@ mainwnd::timer_callback ()
         m_adjust_bpm->set_value(bpm);
 
     update_screenset();
-
     if (perf().playlist_mode())
     {
         m_playlist_text->set_text(perf().playlist_song());
@@ -3944,6 +3943,9 @@ mainwnd::sequence_key_check ()
     {
         if (ok)
         {
+#ifdef PLATFORM_DEBUG
+            infoprintf("Seq edit %d processed\n", seqnum);
+#endif
             m_main_wid->seq_set_and_edit(seqnum);
             perf().clear_seq_edits();
         }
@@ -3952,12 +3954,20 @@ mainwnd::sequence_key_check ()
     {
         if (ok)
         {
+#ifdef PLATFORM_DEBUG
+            infoprintf("Event edit %d processed\n", seqnum);
+#endif
             m_main_wid->seq_set_and_eventedit(seqnum);
             perf().clear_seq_edits();
         }
     }
     else if (ok)
+    {
+#ifdef PLATFORM_DEBUG
+        infoprintf("Seq toggle %d processed\n", seqnum);
+#endif
         sequence_key(seqnum);                       /* toggle loop          */
+    }
 }
 
 /**

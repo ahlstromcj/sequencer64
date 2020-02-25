@@ -2825,8 +2825,9 @@ qseqeditframe64::show_lfo_frame ()
     if (is_nullptr(m_lfo_wnd))
     {
         m_lfo_wnd = new qlfoframe(perf(), seq(), *m_seqdata);
+        if (not_nullptr(m_lfo_wnd))
+            m_lfo_wnd->show();
     }
-    m_lfo_wnd->show();
 }
 
 /**

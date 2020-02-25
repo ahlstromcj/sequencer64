@@ -18818,6 +18818,9 @@ $as_echo "rtmidi command-line build enabled." >&6; };
 $as_echo "#define APP_NAME \"seq64cli\"" >>confdefs.h
 
 
+$as_echo "#define APP_CLI 1" >>confdefs.h
+
+
 $as_echo "#define APP_TYPE \"cli\"" >>confdefs.h
 
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2020-01-17
+ * \updates       2020-02-22
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -5319,7 +5319,12 @@ perform::midi_control_event (const event & ev)
  *
  * \param offset
  *      The offset into the control list, used only for changing the playing
- *      status of a sequence/pattern in the current screen-set.
+ *      status of a sequence/pattern in the current screen-set.  Here, the
+ *      offset is into the sequences in a set. The supported offsets range from
+ *      0 to 31 (c_seqs_in_set -1).  The MIDI control shift value (0 to 2) can
+ *      be used to offset the sequence number for the next loop MIDI control
+ *      message that comes in.  TODO: shift for edit ("=") and event ("-")
+ *      operations.
  *
  * \return
  *      Returns true if the event was matched and handled.
@@ -5348,25 +5353,16 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
             }
             if (is_a_sequence)
             {
-                /*
-                 * Here, the offset is into the sequences in a set. The
-                 * supported offsets range from 0 to 31 (c_seqs_in_set -1).
-                 * The MIDI control shift value (0 to 2) can be used to offset
-                 * the sequence number for the next loop MIDI control message
-                 * that comes in.  TODO: shift for edit ("=") and event ("-")
-                 * operations.
-                 */
-
                 if (m_call_seq_shift > 0)
                 {
                     offset += m_call_seq_shift * c_seqs_in_set;
                     m_call_seq_shift = 0;
                 }
-                if (call_seq_edits())
-                    call_seq_number(offset);    /* GUI should raise editor  */
-                else
-                    sequence_playing_toggle(offset);
-
+                call_seq_number(offset);        /* GUI will complete this   */
+#ifdef SEQ64_APP_CLI
+                sequence_playing_toggle(offset);
+                clear_seq_edits();              /* no GUI to complete it    */
+#endif
                 result = true;
             }
             else if (is_ext)
@@ -5487,6 +5483,53 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
     return result;
 }
 
+void
+perform::toggle_call_seq_edit ()
+{
+    bool flag = ! m_call_seq_edit;
+    call_seq_edit(flag);
+}
+
+void
+perform::toggle_call_seq_eventedit ()
+{
+    bool flag = ! m_call_seq_eventedit;
+    call_seq_eventedit(flag);
+}
+
+/**
+ *  Set the seq/event edit number.
+ */
+
+void
+perform::call_seq_number (int seqno)
+{
+    infoprintf("[Call-seq = %d]\n", seqno);
+    m_call_seq_number = seqno;
+}
+
+/**
+ *  Sets the call-seq-edit flag.
+ */
+
+void
+perform::call_seq_edit (bool flag)
+{
+    infoprintf("[Seq-edit = %s]\n", bool_string(flag));
+    m_call_seq_edit = flag;
+}
+
+/**
+ *  Sets the call-event-edit flag.
+ */
+
+void
+perform::call_seq_eventedit (bool flag)
+{
+    infoprintf("[Event-edit = %s]\n", bool_string(flag));
+    m_call_seq_eventedit = flag;
+}
+
 /**
  *  Sets the edit-pending flags to false, and disabled the pending sequence
  *  number.
@@ -5495,6 +5538,9 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
 void
 perform::clear_seq_edits ()
 {
+#ifdef PLATFORM_DEBUG_TMI
+    infoprint("[Seq/Event-edit flags cleared]");
+#endif
     m_call_seq_edit = m_call_seq_eventedit = false;
     m_call_seq_number = (-1);
 }

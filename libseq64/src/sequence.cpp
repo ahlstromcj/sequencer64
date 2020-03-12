@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-02-19
+ * \updates       2020-03-12
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -600,7 +600,7 @@ sequence::select_even_or_odd_notes (int note_len, bool even)
         if (e.is_note_on())
         {
             midipulse tick = e.get_timestamp();
-            if ((tick % note_len) == 0)
+            if ((tick % note_len) == 0)         /* TODO: Check for mod 0    */
             {
                 /*
                  * Note that from the user's point of view of even and odd,
@@ -5600,7 +5600,8 @@ sequence::set_transposable (bool flag)
  * \param divide
  *      A rough indicator of the amount of quantization.  The only values used
  *      in the application are either 1 ("quantize") or 2 ("tighten").
- *      The latter value reduces the amount of change slightly.
+ *      The latter value reduces the amount of change slightly.  If set to 0,
+ *      then this function just returns.
  *
  * \param linked
  *      False by default, this parameter indicates if marked events are to be
@@ -5615,6 +5616,9 @@ sequence::quantize_events
 )
 {
     automutex locker(m_mutex);
+    if (divide == 0)
+        return;
+
     if (mark_selected())
     {
         /*
@@ -5633,28 +5637,31 @@ sequence::quantize_events
             bool match = er.get_status() == status;
             bool canselect;
             if (status == EVENT_CONTROL_CHANGE)
-                canselect = match && d0 == cc;  /* correct status, correct cc */
+                canselect = match && d0 == cc;  /* right status, right cc   */
             else
-                canselect = match;              /* correct status, any cc     */
+                canselect = match;              /* correct status, any cc   */
 
             if (! er.is_marked())
                 canselect = false;
 
             if (canselect)
             {
-                event e = er;                   /* copy the event             */
-                er.select();                    /* selected original event    */
-                e.unmark();                     /* unmark copy of the event   */
+                event e = er;                   /* copy the event           */
+                er.select();                    /* selected original event  */
+                e.unmark();                     /* unmark copy of the event */
 
                 midipulse t = e.get_timestamp();
-                midipulse t_remainder = t % snap_tick;
+                midipulse t_remainder = 0;
                 midipulse t_delta = 0;
+                if (snap_tick > 0)              /* issue #190               */
+                    t_remainder = t % snap_tick;
+
                 if (t_remainder < snap_tick / 2)
                     t_delta = -(t_remainder / divide);
                 else
                     t_delta = (snap_tick - t_remainder) / divide;
 
-                if ((t_delta + t) >= m_length)      /* wrap-around Note On    */
+                if ((t_delta + t) >= m_length)      /* wrap-around Note On   */
                     t_delta = -e.get_timestamp();
 
                 e.set_timestamp(e.get_timestamp() + t_delta);

@@ -62,16 +62,19 @@ dnl guarantee of avoiding naming conflicts in macros.
 AX_PREFIX_CONFIG_H([include/seq64-config.h], [seq64])
 
 dnl gcc support.
-
-AC_GCC_VERSION
-
 dnl C++ support.  Run tests in C++.  Note the order; avoids messy warnings.
+dnl
+dnl AC_GCC_VERSION
+dnl AC_LANG([C])
+dnl AC_LANG([C++])
+dnl
+dnl On a Debian Sid laptop, we have found that gcc/g++ version 9 breaks
+dnl configuration with the error 'C++ preprocessor "/lib/cpp" fails sanity
+dnl check' (it cannot find limits.h!!!), so we try version 8 first.
 
-AC_LANG([C])
-AC_LANG([C++])
-AC_PROG_CC
-AC_PROG_CXX
-AC_PROG_CXXCPP
+AC_PROG_CC([gcc-8 gcc])
+AC_PROG_CXX([g++-8 g++])
+AC_PROG_CXXCPP([cpp-8 cpp])
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MKDIR_P

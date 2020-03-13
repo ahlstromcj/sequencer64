@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2019-04-08
+ * \updates       2020-03-12
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -344,7 +344,7 @@ qperfeditframe64::updateGridSnap (int snapIndex)
     case 3: snap = 8; break;
     case 4: snap = 16; break;
     case 5: snap = 32; break;
-    default: snap = 16; break;
+    default: snap = SEQ64_DEFAULT_SNAP; break;
     }
     m_snap = snap;
     set_guides();
@@ -355,12 +355,16 @@ qperfeditframe64::updateGridSnap (int snapIndex)
  */
 
 void
-qperfeditframe64::set_snap (int a_snap)
+qperfeditframe64::set_snap (int snap)
 {
     char b[16];
-    snprintf(b, sizeof(b), "1/%d", a_snap);
+    if (snap > 0)
+        m_snap = snap;
+    else
+        m_snap = SEQ64_DEFAULT_SNAP;
+
+    snprintf(b, sizeof(b), "1/%d", m_snap);
     ui->cmbGridSnap->setCurrentText(b);
-    m_snap = a_snap;
     set_guides();
 }
 

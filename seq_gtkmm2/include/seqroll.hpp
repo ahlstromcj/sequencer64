@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-10-10
+ * \updates       2020-03-12
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -389,7 +389,7 @@ public:
 
     void set_snap (int snap)
     {
-        m_snap = snap;
+        m_snap = snap > 0 ? snap : SEQ64_DEFAULT_SNAP ;
         reset();
     }
 

@@ -658,22 +658,22 @@ triggers::exact_split (midipulse splittick)
 void
 triggers::adjust_offsets_to_length (midipulse newlength)
 {
-    for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
+    if (newlength > 0)
     {
-        i->offset(adjust_offset(i->offset()));
-        i->offset(m_length - i->offset());               /* flip */
+        for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
+        {
+            i->offset(adjust_offset(i->offset()));
+            i->offset(m_length - i->offset());               /* flip */
 
-        midipulse inverse_offset = m_length - (i->tick_start() % m_length);
-        midipulse local_offset = (inverse_offset - i->offset());
-        local_offset %= m_length;
+            midipulse inv_offset = m_length - (i->tick_start() % m_length);
+            midipulse local_offset = (inv_offset - i->offset());
+            local_offset %= m_length;
 
-        midipulse inverse_offset_new = newlength - (i->tick_start() % newlength);
-        midipulse new_offset = inverse_offset_new - local_offset;
-
-        /** COMMON CODE? **/
-
-        i->offset(new_offset % newlength);
-        i->offset(newlength - i->offset());
+            midipulse inv_offset_new = newlength - (i->tick_start() % newlength);
+            midipulse new_offset = inv_offset_new - local_offset;
+            i->offset(new_offset % newlength);
+            i->offset(newlength - i->offset());
+        }
     }
 }
 

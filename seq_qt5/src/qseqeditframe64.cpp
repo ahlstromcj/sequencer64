@@ -1839,8 +1839,7 @@ qseqeditframe64::inverse_note_selection ()
 void
 qseqeditframe64::quantize_notes ()
 {
-    seq().push_undo();
-    seq().quantize_events(EVENT_NOTE_ON, 0, seq().get_snap_tick(), 1, true);
+    seq().push_quantize(EVENT_NOTE_ON, 0, seq().get_snap_tick(), 1, true);
 }
 
 /**
@@ -1850,8 +1849,7 @@ qseqeditframe64::quantize_notes ()
 void
 qseqeditframe64::tighten_notes ()
 {
-    seq().push_undo();
-    seq().quantize_events(EVENT_NOTE_ON, 0, seq().get_snap_tick(), 2, true);
+    seq().push_quantize(EVENT_NOTE_ON, 0, seq().get_snap_tick(), 2, true);
 }
 
 /**
@@ -1863,8 +1861,7 @@ qseqeditframe64::transpose_notes ()
 {
     QAction * senderAction = (QAction *) sender();
     int transposeval = senderAction->data().toInt();
-    seq().push_undo();
-    seq().transpose_notes(transposeval, 0);
+    seq().push_transpose(transposeval, 0);
 }
 
 /**
@@ -2214,19 +2211,20 @@ qseqeditframe64::update_note_length (int index)
 void
 qseqeditframe64::set_note_length (int notelength)
 {
-#ifdef CAN_MODIFY_GLOBAL_PPQN
-    if (perf().get_ppqn() != m_original_ppqn)
+    if (notelength > 0 && notelength != m_note_length)
     {
-        double factor = double(perf().get_ppqn()) / double(m_original);
-        notelength = int(notelength * factor + 0.5);
-    }
+#ifdef CAN_MODIFY_GLOBAL_PPQN
+        if (perf().get_ppqn() != m_original_ppqn)
+        {
+            double factor = double(perf().get_ppqn()) / double(m_original);
+            notelength = int(notelength * factor + 0.5);
+        }
 #endif
-
-    m_note_length = notelength;
-    m_initial_note_length = notelength;
-    seq().set_snap_tick(notelength);            /* fix for issue #179       */
-    if (not_nullptr(m_seqroll))
-        m_seqroll->set_note_length(notelength);
+        m_initial_note_length = notelength;
+        seq().set_snap_tick(notelength);        /* fix for issue #179       */
+        if (not_nullptr(m_seqroll))
+            m_seqroll->set_note_length(notelength);
+    }
 }
 
 /**

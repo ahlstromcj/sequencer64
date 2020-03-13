@@ -544,13 +544,9 @@ public:
         }
     }
 
-    /**
-     * \setter m_snap
-     */
-
     void set_snap (int snap)
     {
-        m_snap = snap;
+        m_snap = snap > 0 ? snap : SEQ64_DEFAULT_SNAP ;
     }
 
     void set_ppqn (int ppqn);

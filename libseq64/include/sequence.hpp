@@ -466,7 +466,7 @@ private:
 
     midibyte m_status;
     midibyte m_cc;
-    midipulse m_snap;         // replace m_snap_tick???
+    midipulse m_snap;               // replace m_snap_tick???
     int m_scale;
 
     /**
@@ -1698,6 +1698,7 @@ public:
         midipulse snap_tick, int divide, bool linked = false
     );
     void transpose_notes (int steps, int scale);
+    void push_transpose (int steps, int scale);
 
 #ifdef USE_STAZED_SHIFT_SUPPORT
     void shift_notes (midipulse ticks);

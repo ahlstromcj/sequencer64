@@ -485,13 +485,9 @@ public:
         set_zoom(m_initial_zoom);
     }
 
-    /**
-     * \setter m_snap
-     */
-
     void set_snap (int snap)
     {
-        m_snap = snap;
+        m_snap = snap > 0 ? snap : SEQ64_DEFAULT_PERFEDIT_SNAP ;
     }
 
     void set_ppqn (int ppqn);

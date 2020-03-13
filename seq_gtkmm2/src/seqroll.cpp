@@ -545,7 +545,10 @@ seqroll::update_background ()
         }
         else
         {
-            int tick_snap = tick - (tick % m_snap);
+            int tick_snap = tick;
+            if (m_snap > 0)
+                tick_snap -= tick % m_snap;
+
             if (tick == tick_snap)
             {
                 set_line(Gdk::LINE_SOLID);

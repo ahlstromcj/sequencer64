@@ -228,7 +228,10 @@ public:
 
     void set_snap (int snap)
     {
-        m_snap = snap;
+        if (snap > 0)
+            m_snap = snap;
+        else
+            m_snap = SEQ64_DEFAULT_SNAP;
     }
 
     void set_data_type (midibyte status, midibyte control);

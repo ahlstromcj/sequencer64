@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-03-12
+ * \updates       2020-03-13
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -142,7 +142,7 @@ sequence::sequence (int ppqn)
     m_raise                     (false),
     m_status                    (0),
     m_cc                        (0),
-    m_snap                      (0),
+    m_snap                      (SEQ64_DEFAULT_SNAP),   /* issue #190       */
     m_scale                     (0),
     m_name                      (),
     m_last_tick                 (0),
@@ -155,8 +155,8 @@ sequence::sequence (int ppqn)
     m_seq_edit_mode             (EDIT_MODE_NOTE),   /* edit_mode_t          */
     m_length                    (4 * int(m_ppqn)),  /* one bar of ticks     */
     m_snap_tick                 (int(m_ppqn) / 4),
-    m_time_beats_per_measure    (4),
-    m_time_beat_width           (4),
+    m_time_beats_per_measure    (SEQ64_DEFAULT_BEATS_PER_MEASURE),
+    m_time_beat_width           (SEQ64_DEFAULT_BEAT_WIDTH),
     m_clocks_per_metronome      (24),
     m_32nds_per_quarter         (8),
     m_us_per_quarter_note       (tempo_us_from_bpm(SEQ64_DEFAULT_BPM)),
@@ -3453,7 +3453,6 @@ sequence::stream_event (event & ev)
         {
             loop_reset(false);
             remove_all();                       /* clear old items          */
-            // set_dirty(); ???
         }
         ev.set_status(ev.get_status());         /* clear the channel nybble */
         ev.mod_timestamp(m_length);             /* adjust tick re length    */
@@ -5106,6 +5105,8 @@ sequence::set_snap_tick (int st)
     automutex locker(m_mutex);
     if (st > 0)
         m_snap_tick = st;
+    else if (m_snap_tick == 0)
+        m_snap_tick = int(m_ppqn) / 4;
 }
 
 /**
@@ -5492,6 +5493,14 @@ sequence::transpose_notes (int steps, int scale)
         m_events.merge(transposed_events);          /* events get presorted  */
         verify_and_link();
     }
+}
+
+void
+sequence::push_transpose (int steps, int scale)
+{
+    automutex locker(m_mutex);
+    m_events_undo.push(m_events);
+    transpose_notes(steps, scale);
 }
 
 #ifdef USE_STAZED_SHIFT_SUPPORT
@@ -6044,7 +6053,8 @@ sequence::resume_note_ons (midipulse tick)
             {
                 midipulse on = ei->get_timestamp();      /* see banner notes */
                 midipulse off = link->get_timestamp();
-                if (on < (tick % m_length) && off > (tick % m_length))
+                midipulse remainder = tick % m_length;
+                if (on < remainder && off > remainder)
                     put_event_on_bus(*ei);
             }
         }

@@ -2258,7 +2258,7 @@ seqedit::set_zoom (int z)
 void
 seqedit::set_snap (int s)
 {
-    if (s > 0)
+    if (s > 0 && s != m_snap)
     {
         char b[16];
         snprintf(b, sizeof b, "1/%d", m_ppqn * 4 / s);
@@ -2292,22 +2292,25 @@ seqedit::set_snap (int s)
 void
 seqedit::set_note_length (int notelength)
 {
-    char b[8];
-    snprintf(b, sizeof b, "1/%d", m_ppqn * 4 / notelength);
-    m_entry_note_length->set_text(b);
+    if (notelength > 0 && notelength != m_note_length)
+    {
+        char b[8];
+        snprintf(b, sizeof b, "1/%d", m_ppqn * 4 / notelength);
+        m_entry_note_length->set_text(b);
 
 #ifdef CAN_MODIFY_GLOBAL_PPQN
-    if (m_ppqn != m_original_ppqn)
-    {
-        double factor = double(m_ppqn) / double(m_original);
-        notelength = int(notelength * factor + 0.5);
-    }
+        if (m_ppqn != m_original_ppqn)
+        {
+            double factor = double(m_ppqn) / double(m_original);
+            notelength = int(notelength * factor + 0.5);
+        }
 #endif
 
-    m_note_length = notelength;
-    m_initial_note_length = notelength;
-    m_seqroll_wid->set_note_length(notelength);
-    m_seq.set_snap_tick(notelength);
+        m_note_length = notelength;
+        m_initial_note_length = notelength;
+        m_seqroll_wid->set_note_length(notelength);
+        m_seq.set_snap_tick(notelength);
+    }
 }
 
 /**
@@ -2326,7 +2329,6 @@ void
 seqedit::set_scale (int scale)
 {
     m_seq.set_editing(m_editing_status, m_editing_cc, m_snap, m_scale);
-
     m_entry_scale->set_text(c_scales_text[scale]);
     m_seqroll_wid->set_scale(scale);
     m_seqkeys_wid->set_scale(scale);

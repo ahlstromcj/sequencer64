@@ -555,8 +555,8 @@ qseqeditframe::updateGridSnap (int snapindex)
     case  6: snap = p / 16; break;
     case  7: snap = p / 32; break;
     case  8: snap = p * 4; break; // index 8 is a separator
-    case  9: snap = p * 4  / 3; break;
-    case 10: snap = p * 2  / 3; break;
+    case  9: snap = p * 4 / 3; break;
+    case 10: snap = p * 2 / 3; break;
     case 11: snap = p * 1 / 3; break;
     case 12: snap = p / 2 / 3; break;
     case 13: snap = p / 4 / 3; break;
@@ -648,8 +648,8 @@ qseqeditframe::updateNoteLength (int newindex)
      */
 
     case  8: len = p * 4; break;
-    case  9: len = p * 4  / 3; break;
-    case 10: len = p * 2  / 3; break;
+    case  9: len = p * 4 / 3; break;
+    case 10: len = p * 2 / 3; break;
     case 11: len = p * 1 / 3; break;
     case 12: len = p / 2 / 3; break;
     case 13: len = p / 4 / 3; break;
@@ -935,8 +935,7 @@ qseqeditframe::inverseNoteSelection()
 void
 qseqeditframe::quantizeNotes()
 {
-    seq().push_undo();
-    seq().quantize_events(EVENT_NOTE_ON, 0, seq().get_snap_tick(), 1, true);
+    seq().push_quantize(EVENT_NOTE_ON, 0, seq().get_snap_tick(), 1, true);
 }
 
 /**
@@ -946,8 +945,7 @@ qseqeditframe::quantizeNotes()
 void
 qseqeditframe::tightenNotes()
 {
-    seq().push_undo();
-    seq().quantize_events(EVENT_NOTE_ON, 0, seq().get_snap_tick(), 2, true);
+    seq().push_quantize(EVENT_NOTE_ON, 0, seq().get_snap_tick(), 2, true);
 }
 
 /**
@@ -957,10 +955,9 @@ qseqeditframe::tightenNotes()
 void
 qseqeditframe::transposeNotes()
 {
-    QAction * senderAction = (QAction *) sender();
-    int transposeVal = senderAction->data().toInt();
-    seq().push_undo();
-    seq().transpose_notes(transposeVal, 0);
+    QAction * senderaction = (QAction *) sender();
+    int transposeval = senderaction->data().toInt();
+    seq().push_transpose(transposeval, 0);
 }
 
 }           // namespace seq64

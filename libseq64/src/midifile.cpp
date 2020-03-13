@@ -2379,11 +2379,11 @@ midifile::write_song (perform & p)
                      * Add each trigger as described in the function banner.
                      */
 
-                    midipulse previous_ts = 0;
+                    midipulse prev_ts = 0;
                     const triggers::List & trigs = seq.get_triggers();
                     triggers::List::const_iterator i;
                     for (i = trigs.begin(); i != trigs.end(); ++i)
-                        previous_ts = lst.song_fill_seq_event(*i, previous_ts);
+                        prev_ts = lst.song_fill_seq_event(*i, prev_ts);
 
                     if (! trigs.empty())        /* adjust the sequence length */
                     {
@@ -2397,11 +2397,14 @@ midifile::write_song (perform & p)
 
                         midipulse seqend = end_trigger.tick_end();
                         midipulse measticks = seq.measures_to_ticks();
-                        midipulse remainder = seqend % measticks;
-                        if (remainder != measticks - 1)
-                            seqend += measticks - remainder - 1;
-
-                        lst.song_fill_seq_trigger(end_trigger, seqend, previous_ts);
+                        midipulse remainder = 0;
+                        if (measticks > 0)
+                        {
+                            remainder = seqend % measticks;
+                            if (remainder != measticks - 1)
+                                seqend += measticks - remainder - 1;
+                        }
+                        lst.song_fill_seq_trigger(end_trigger, seqend, prev_ts);
                     }
                     write_track(lst);
                 }

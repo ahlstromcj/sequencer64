@@ -81,14 +81,14 @@ public:
         // no code needed
     }
 
-protected:
+protected:      // Qt overrides
 
-
-    void paintEvent (QPaintEvent *);                // to draw on the frame
-    void mousePressEvent (QMouseEvent * event);     // mouse interaction
-    void mouseReleaseEvent (QMouseEvent * event);
-    void mouseMoveEvent (QMouseEvent * event);
-    QSize sizeHint() const;                         // sizehint to set defaults
+    virtual void paintEvent (QPaintEvent *);
+    virtual void mousePressEvent (QMouseEvent * event);
+    virtual void mouseReleaseEvent (QMouseEvent * event);
+    virtual void mouseMoveEvent (QMouseEvent * event);
+    virtual QSize sizeHint() const;                 // sizehint to set defaults
+    virtual void wheelEvent (QWheelEvent * ev);
 
 signals:
 

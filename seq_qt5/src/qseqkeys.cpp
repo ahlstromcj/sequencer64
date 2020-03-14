@@ -271,6 +271,26 @@ qseqkeys::convert_y (int y, int & note)
     note = (m_key_area_y - y - 2) / m_key_y;
 }
 
+/**
+ *  We don't want the scroll wheel to accidentally scroll the piano keys
+ *  vertically, so this override does nothing but accept() the event.
+ *
+ *  ignore() just let's the parent handle the event, which allows scrolling to
+ *  occur.
+ *
+ *  This code solves GitHub issue #197.  However, the best solution would be to
+ *  pass the event along to the qscrollmaster.  But this class doesn't have
+ *  access to the scroll-master.  We might also try this in the constructor:
+ *
+ *      setMouseTracking(false);
+ */
+
+void
+qseqkeys::wheelEvent (QWheelEvent * ev)
+{
+    ev->accept();
+}
+
 }           // namespace seq64
 
 /*

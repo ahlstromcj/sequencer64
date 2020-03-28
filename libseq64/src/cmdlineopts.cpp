@@ -917,10 +917,12 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             seq64::usr().inverse_colors(true);
             break;
 
+#ifdef SEQ64_LASH_SUPPORT
         case 'L':
             seq64::rc().lash_support(true);
             printf("[Activating LASH support]\n");
             break;
+#endif
 
         case 'l':
             seq64::rc().legacy_format(true);
@@ -944,10 +946,12 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             printf("[Deactivating JACK MIDI]\n");
             break;
 
+#ifdef SEQ64_LASH_SUPPORT
         case 'n':
             seq64::rc().lash_support(false);
             printf("[Deactivating LASH support]\n");
             break;
+#endif
 
         case 'o':
 

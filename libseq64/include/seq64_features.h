@@ -265,7 +265,7 @@
  *    - SEQ64_HIGHLIGHT_EMPTY_SEQS
  *    - SEQ64_JACK_SESSION
  *    - SEQ64_JACK_SUPPORT
- *    - SEQ64_LASH_SUPPORT
+ *    - SEQ64_LASH_SUPPORT (currently undefined)
  *    - SEQ64_MULTI_MAINWID
  *      Provides support for up to a 3 x 2 array of mainwids.  Now a configure
  *      option.

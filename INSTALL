@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.96.8 and above
 Chris Ahlstrom
-2015-09-10 to 2020-02-16
+2015-09-10 to 2020-03-24
 
 Getting Sequencer64 requires building the code or going to the
 sequencer64-packages site on GitHub.  The bootstrap setup is primarily
@@ -166,10 +166,20 @@ Advanced Steps:
        of the project.  The branch is included in the resulting tarball name;
        the usual branch would be "master".
 
-Disabling JACK:
+Pipe Option:
 
-    Those who do not want to use the deprecated legacy Sequencer64 project
-    (ALSA only) may want to do an rtmidi build without JACK enabled.  TODO.
+    The gcc -pipe option uses pipes, rather than temporary files, for
+    communication between the various stages of compilation. This fails to work
+    on some systems where the assembler is unable to read from a pipe; the
+    GNU assembler can do it.
+
+    $ CFLAGS="-pipe" ./bootstrap -ed
+
+        or
+
+    $ CFLAGS="-pipe" ./configure --enable-debug --disable-shared
+
+    Then do the normal make.
 
 Qmake-based Install:
 

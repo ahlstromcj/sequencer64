@@ -393,7 +393,7 @@ mainwnd::mainwnd
 
     usr().hide_menu_separator_fudge(true);  // TEST TEST TEST
 
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
 
     /*
      * Trying to debug a way out of a weird GTK freeze-up that occurs if
@@ -3943,7 +3943,7 @@ mainwnd::sequence_key_check ()
     {
         if (ok)
         {
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
             infoprintf("Seq edit %d processed\n", seqnum);
 #endif
             m_main_wid->seq_set_and_edit(seqnum);
@@ -3954,7 +3954,7 @@ mainwnd::sequence_key_check ()
     {
         if (ok)
         {
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
             infoprintf("Event edit %d processed\n", seqnum);
 #endif
             m_main_wid->seq_set_and_eventedit(seqnum);
@@ -3963,7 +3963,7 @@ mainwnd::sequence_key_check ()
     }
     else if (ok)
     {
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
         infoprintf("Seq toggle %d processed\n", seqnum);
 #endif
         sequence_key(seqnum);                       /* toggle loop          */

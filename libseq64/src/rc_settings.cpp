@@ -218,6 +218,7 @@ rc_settings::operator = (const rc_settings & rhs)
         m_print_keys                = rhs.m_print_keys;
         m_device_ignore             = rhs.m_device_ignore;
         m_device_ignore_num         = rhs.m_device_ignore_num;
+        m_interaction_method        = rhs.m_interaction_method;
         m_mute_group_saving         = rhs.m_mute_group_saving;
         m_filename                  = rhs.m_filename;
         m_jack_session_uuid         = rhs.m_jack_session_uuid;
@@ -227,9 +228,9 @@ rc_settings::operator = (const rc_settings & rhs)
         m_user_filename             = rhs.m_user_filename;
         m_config_filename_alt       = rhs.m_config_filename_alt;
         m_user_filename_alt         = rhs.m_user_filename_alt;
-        m_playlist_filename         = rhs.m_playlist_filename;
         m_use_midi_control_file     = rhs.m_use_midi_control_file;
         m_midi_control_filename     = rhs.m_midi_control_filename;
+        m_playlist_filename         = rhs.m_playlist_filename;
 
         /*
          * const: m_application_name = rhs.m_application_name;
@@ -264,20 +265,21 @@ rc_settings::set_defaults ()
     m_priority                  = false;
     m_stats                     = false;
     m_pass_sysex                = false;
+    m_with_jack_transport       = false;
+    m_with_jack_master          = false;
+    m_with_jack_master_cond     = false;
 #ifdef SEQ64_RTMIDI_SUPPORT
     m_with_jack_midi            = true;
 #else
     m_with_jack_midi            = false;
 #endif
-    m_with_jack_transport       = false;
-    m_with_jack_master          = false;
-    m_with_jack_master_cond     = false;
     m_manual_alsa_ports         = false;
     m_reveal_alsa_ports         = false;
     m_print_keys                = false;
     m_device_ignore             = false;
     m_device_ignore_num         = 0;
-    m_device_ignore_num         = e_seq24_interaction;
+    m_interaction_method        = e_seq24_interaction;
+    m_mute_group_saving         = e_mute_group_preserve;
     m_filename.clear();
     m_jack_session_uuid.clear();
 #if defined PLATFORM_WINDOWS            /* but see home_config_directory()  */
@@ -291,9 +293,9 @@ rc_settings::set_defaults ()
     m_user_filename             = "sequencer64.usr";    // ditto
     m_config_filename_alt       = ".seq24rc";
     m_user_filename_alt         = ".seq24usr";
-    m_playlist_filename         = "";                   // empty by default
     m_use_midi_control_file     = false;
     m_midi_control_filename     = "";
+    m_playlist_filename         = "";                   // empty by default
     m_application_name          = seq_app_name();       // make it up-to-date
     m_app_client_name           = seq_client_name();    // ditto
     m_tempo_track_number        = 0;

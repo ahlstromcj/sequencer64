@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-05-17
- * \updates       2020-03-13
+ * \updates       2020-03-30
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -43,46 +43,37 @@ namespace seq64
 {
 
 /**
- *  Provides the replacement for all of the other "global_xxx" variables.
- */
-
-static rc_settings g_rc_settings;
-
-/**
  *  Returns a reference to the global rc_settings object.  Why a function
  *  instead of direct variable access?  Encapsulation.  We are then free to
  *  change the way "global" settings are accessed, without changing client
  *  code.
  *
  * \return
- *      Returns the global object g_rc_settings.
+ *      Returns the global object s_rc_settings.
  */
 
 rc_settings &
 rc ()
 {
-    return g_rc_settings;
+    static rc_settings s_rc_settings;
+    return s_rc_settings;
 }
 
 /**
  *  Provides the replacement for all of the other settings in the "user"
  *  configuration file, plus some of the "constants" in the globals module.
- */
-
-static user_settings g_user_settings;
-
-/**
  *  Returns a reference to the global user_settings object, for better
  *  encapsulation.
  *
  * \return
- *      Returns the global object g_user_settings.
+ *      Returns the global object s_user_settings.
  */
 
 user_settings &
 usr ()
 {
-    return g_user_settings;
+    static user_settings s_user_settings;
+    return s_user_settings;
 }
 
 /**

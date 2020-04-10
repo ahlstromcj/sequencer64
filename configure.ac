@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2020-03-13
+dnl \update        2020-04-10
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -160,10 +160,8 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(APP_NAME, ["seq64"], "The default name of the Sequencer64 executable")
 AC_DEFINE(APP_TYPE, ["gtk"], "The type of the Sequencer64 executable, gtk/qt/cli")
 AC_DEFINE(APP_ENGINE, ["rtmidi"], "Sequencer64 MIDI engine, rtmidi/alsa/portmidi")
-build_os="'$(uname -srvm)'"
+build_os="'$(uname -srm)'"
 AC_DEFINE_UNQUOTED(APP_BUILD_OS, ["$build_os"], "Distro where build was done")
-dnl AC_DEFINE(APP_BUILD_OS, ["$build_os"], "Distro where build was done")
-
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 
 VERSION="0.96.8"
@@ -737,7 +735,7 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2020-03-13"
+#define VERSION_DATE_SHORT "2020-04-10"
 #define VERSION "0.96.8"
 
 )

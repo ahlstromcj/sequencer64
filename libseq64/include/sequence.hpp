@@ -1771,10 +1771,6 @@ public:
     void show_events () const;
     void copy_events (const event_list & newevents);
 
-    /**
-     * \getter m_note_length
-     */
-
     midipulse note_off_margin () const
     {
         return m_note_off_margin;

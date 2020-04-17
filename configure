@@ -4638,12 +4638,11 @@ $as_echo "#define APP_TYPE \"gtk\"" >>confdefs.h
 
 $as_echo "#define APP_ENGINE \"rtmidi\"" >>confdefs.h
 
-build_os="'$(uname -srvm)'"
+build_os="'$(uname -srm)'"
 
 cat >>confdefs.h <<_ACEOF
 #define APP_BUILD_OS "$build_os"
 _ACEOF
-
 
 
 $as_echo "#define CLIENT_NAME \"seq64\"" >>confdefs.h

@@ -594,29 +594,32 @@ sequence::select_even_or_odd_notes (int note_len, bool even)
     int result = 0;
     automutex locker(m_mutex);
     unselect();
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    if (note_len > 0)
     {
-        event & e = DREF(i);
-        if (e.is_note_on())
+        for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
-            midipulse tick = e.get_timestamp();
-            if ((tick % note_len) == 0)         /* TODO: Check for mod 0    */
+            event & e = DREF(i);
+            if (e.is_note_on())
             {
-                /*
-                 * Note that from the user's point of view of even and odd,
-                 * we start counting from 1, not 0.
-                 */
-
-                int is_even = (tick / note_len) % 2;
-                if ((even && is_even) || (! even && ! is_even))
+                midipulse tick = e.get_timestamp();
+                if ((tick % note_len) == 0)
                 {
-                    e.select();
-                    ++result;
-                    if (e.is_linked())
+                    /*
+                     * Note that from the user's point of view of even and odd,
+                     * we start counting from 1, not 0.
+                     */
+
+                    int is_even = (tick / note_len) % 2;
+                    if ((even && is_even) || (! even && ! is_even))
                     {
-                        event * note_off = e.get_linked();
-                        note_off->select();
+                        e.select();
                         ++result;
+                        if (e.is_linked())
+                        {
+                            event * note_off = e.get_linked();
+                            note_off->select();
+                            ++result;
+                        }
                     }
                 }
             }

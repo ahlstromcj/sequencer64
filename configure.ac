@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2020-04-10
+dnl \update        2020-04-16
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -152,6 +152,11 @@ AC_DEFUN([AC_DATAROOTDIR_CHECKED])
 
 dnl 1. Package version information.  We define the name of the package, the
 dnl    name of the client application for display, and the version.
+dnl
+dnl Note that "uname -a" caused build issues on a Slackware system:
+dnl
+dnl Linux ryzen5 4.4.202 #1 SMP Sat Nov 16 14:15:34 CST 2019 x86_64 AMD Ryzen 5
+dnl 1500X Quad-Core Processor AuthenticAMD GNU/Linux
 
 PACKAGE="sequencer64"
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
@@ -377,7 +382,9 @@ dnl  [-Wall],
 dnl  [-Wall -Wextra -Wno-missing-field-initializers -DGSEAL_ENABLE],
 dnl  [G GDK GDK_PIXBUF PANGO GTK])
 
-dnl 4. Get external flags, if any.
+dnl 4. Get external flags, if any.  One Slackware user was getting segfaults
+dnl unless he did: export CFLAGS="-O2 -pipe -march=native" before running
+dnl bootstrap -ed -rm.
 
 CFLAGS="${CFLAGS}"
 
@@ -735,7 +742,7 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2020-04-10"
+#define VERSION_DATE_SHORT "2020-04-16"
 #define VERSION "0.96.8"
 
 )

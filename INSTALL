@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.96.8 and above
 Chris Ahlstrom
-2015-09-10 to 2020-03-24
+2015-09-10 to 2020-04-17
 
 Getting Sequencer64 requires building the code or going to the
 sequencer64-packages site on GitHub.  The bootstrap setup is primarily
@@ -180,6 +180,9 @@ Pipe Option:
     $ CFLAGS="-pipe" ./configure --enable-debug --disable-shared
 
     Then do the normal make.
+
+    One Slackware user was getting segfaults after the build unless he set
+    CFLAGS="-O2 -pipe -march=native" for the bootstrap/configurate.
 
 Qmake-based Install:
 

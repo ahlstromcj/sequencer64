@@ -2273,7 +2273,8 @@ seqedit::set_snap (int s)
 
 /**
  *  Selects the given note-length value.  It is passed to the seqroll
- *  object, as well.
+ *  object, as well, so it is very important that this function be called at
+ *  least once!
  *
  * \warning
  *      Currently, we don't handle changes in the global PPQN after the
@@ -2292,7 +2293,7 @@ seqedit::set_snap (int s)
 void
 seqedit::set_note_length (int notelength)
 {
-    if (notelength > 0 && notelength != m_note_length)
+    if (notelength > 0)     /* && notelength != m_note_length BAD */
     {
         char b[8];
         snprintf(b, sizeof b, "1/%d", m_ppqn * 4 / notelength);

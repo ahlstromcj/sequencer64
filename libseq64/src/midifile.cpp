@@ -2397,10 +2397,9 @@ midifile::write_song (perform & p)
 
                         midipulse seqend = end_trigger.tick_end();
                         midipulse measticks = seq.measures_to_ticks();
-                        midipulse remainder = 0;
                         if (measticks > 0)
                         {
-                            remainder = seqend % measticks;
+                            midipulse remainder = seqend % measticks;
                             if (remainder != measticks - 1)
                                 seqend += measticks - remainder - 1;
                         }

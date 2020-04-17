@@ -8,7 +8,7 @@
 # \library    	Any project
 # \author     	Chris Ahlstrom
 # \date       	2015-07-24
-# \update     	2019-09-21
+# \update     	2020-04-17
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -449,9 +449,10 @@ function clean_gnufiles()
 # clean_debfiles
 #------------------------------------------------------------------------------
 #
-#     Cleans out the whole project tree of Debian-related files.
+#     Cleans out the whole project tree of Debian-related files, if debhelpers
+#     is installed. Non-Debian-based platforms might not have that package.
 #
-#     We could run "dh_clean" instead.
+#     We could run "dh_clean" instead of "debian/rules clean".
 #
 #------------------------------------------------------------------------------
 
@@ -466,7 +467,12 @@ function clean_debfiles()
    #     find . -path "*.$FILE" # -exec rm -f '{}' \; 2> /dev/null
    #  done
 
-   debian/rules clean
+   dh_auto_build --no-act &> /dev/null
+   if [ $? == 0 ] ; then
+      debian/rules clean
+   else
+      echo "   No debhelper functionality installed, skipping."
+   fi
 
    # These come from using the control-split file on a trial basis.
 

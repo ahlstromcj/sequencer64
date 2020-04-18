@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2020-04-16
+dnl \update        2020-04-18
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -72,9 +72,9 @@ dnl On a Debian Sid laptop, we have found that gcc/g++ version 9 breaks
 dnl configuration with the error 'C++ preprocessor "/lib/cpp" fails sanity
 dnl check' (it cannot find limits.h!!!), so we try version 8 first.
 
-AC_PROG_CC([gcc-8 gcc])
-AC_PROG_CXX([g++-8 g++])
-AC_PROG_CXXCPP([cpp-8 cpp])
+AC_PROG_CC([gcc-8 gcc-7 gcc])
+AC_PROG_CXX([g++-8 g++-7 g++])
+AC_PROG_CXXCPP([cpp-8 cpp-7 cpp])
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MKDIR_P
@@ -742,7 +742,7 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2020-04-16"
+#define VERSION_DATE_SHORT "2020-04-18"
 #define VERSION "0.96.8"
 
 )
@@ -905,11 +905,11 @@ AC_MSG_RESULT([$SEQ64_APP_NAME]);
 cat << E_O_F
 
 Run 'make' to compile the configured application.  Run 'make install' as
-root/sudo to install the configured application.  Run 'make dist', etc. to create
-gzip and other archives.  To build the PDF documentation, make sure Doxygen,
-Graphviz, and TexLive are installed, change to the doc/dox directory, and run
-'./make_dox reference'.  To clean the documentation, run './make_dox clean'.
-'install' and 'uninstall' are other options for make_dox.
+root/sudo to install the configured application.  See INSTALL for details.
+To build the PDF documentation, make sure Doxygen, Graphviz, and TexLive are
+installed, change to the doc/dox directory, and run './make_dox reference'.  To
+clean the documentation, run './make_dox clean'.  'install' and 'uninstall' are
+other options for make_dox.
 
 E_O_F
 

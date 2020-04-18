@@ -166,7 +166,7 @@ Advanced Steps:
        of the project.  The branch is included in the resulting tarball name;
        the usual branch would be "master".
 
-Pipe Option:
+Pipe and March Options:
 
     The gcc -pipe option uses pipes, rather than temporary files, for
     communication between the various stages of compilation. This fails to work
@@ -182,7 +182,7 @@ Pipe Option:
     Then do the normal make.
 
     One Slackware user was getting segfaults after the build unless he set
-    CFLAGS="-O2 -pipe -march=native" for the bootstrap/configurate.
+    CFLAGS="-O2 -pipe -march=native" for the bootstrap/configure.
 
 Qmake-based Install:
 

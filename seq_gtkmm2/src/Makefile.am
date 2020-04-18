@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2018-03-08
+# \update      2020-04-18
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -106,6 +106,9 @@ git_info = "$(git_version) $(git_branch)"
 #	because we include the perform module in some modules, and it includes
 #	the platform-specific stuff.
 #
+#	Also, we're getting warning from libsigc++ now, so we're adding this flag for
+#	now: -Wno-cast-function-type
+#
 #------------------------------------------------------------------------------
 
 AM_CXXFLAGS = \
@@ -120,6 +123,7 @@ AM_CXXFLAGS = \
  $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
  $(LASH_CFLAGS) \
+ -Wno-cast-function-type \
  -DSEQ64_GIT_VERSION=\"$(git_info)\"
 
 #******************************************************************************

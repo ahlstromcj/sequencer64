@@ -6,7 +6,7 @@
 # \library    	seq64rtmidi application
 # \author     	Chris Ahlstrom
 # \date       	2016-12-03
-# \update      2017-09-01
+# \update      2020-04-18
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -80,6 +80,9 @@ libseq_gtkmm2dir = $(builddir)/seq_gtkmm2/src/.libs
 # 	'AM_CPPFLAGS' is the set of directories needed to access all of the
 # 	library header files used in this project.
 #
+#	Also, we're getting warning from libsigc++ now, so we're adding this flag for
+#	now: -Wno-cast-function-type
+#
 #------------------------------------------------------------------------------
 
 AM_CXXFLAGS = \
@@ -88,7 +91,8 @@ AM_CXXFLAGS = \
  -I$(top_srcdir)/seq_gtkmm2/include \
  $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
- $(LASH_CFLAGS)
+ $(LASH_CFLAGS) \
+ -Wno-cast-function-type
 
 #******************************************************************************
 # libmath

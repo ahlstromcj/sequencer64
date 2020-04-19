@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2019-08-31
+ * \updates       2020-04-19
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -47,6 +47,7 @@
 #include <string>
 
 #include "seq64_features.h"             /* SEQ64_USE_ZOOM_POWER_OF_2    */
+#include "app_limits.h"                 /* SEQ64_ALSA_OUTPUT_BUSS_MAX   */
 #include "recent.hpp"                   /* seq64::recent class          */
 
 /*
@@ -145,6 +146,7 @@ private:
     bool m_with_jack_midi;          /**< Use JACK MIDI.                     */
     bool m_filter_by_channel;       /**< Record only sequence channel data. */
     bool m_manual_alsa_ports;       /**< [manual-alsa-ports] setting.       */
+    int m_manual_port_count;        /**< [manual-alsa-ports] port count.    */
     bool m_reveal_alsa_ports;       /**< [reveal-alsa-ports] setting.       */
     bool m_print_keys;              /**< Show hot-key in main window slot.  */
     bool m_device_ignore;           /**< From seq24 module, unused!         */
@@ -493,6 +495,11 @@ public:
     bool manual_alsa_ports () const
     {
         return m_manual_alsa_ports;
+    }
+
+    int manual_port_count () const
+    {
+        return m_manual_port_count;
     }
 
     /**
@@ -861,6 +868,14 @@ protected:
     void manual_alsa_ports (bool flag)
     {
         m_manual_alsa_ports = flag;
+    }
+
+    void manual_port_count (int count)
+    {
+        if (count <= 0)
+            count = SEQ64_ALSA_OUTPUT_BUSS_MAX;
+
+        m_manual_port_count = count;
     }
 
     /**

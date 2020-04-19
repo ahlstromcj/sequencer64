@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2019-01-21
+ * \updates       2020-04-19
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -106,6 +106,7 @@ rc_settings::rc_settings ()
     m_with_jack_master_cond     (false),
     m_with_jack_midi            (true),
     m_manual_alsa_ports         (false),
+    m_manual_port_count         (SEQ64_ALSA_OUTPUT_BUSS_MAX),
     m_reveal_alsa_ports         (false),
     m_print_keys                (false),
     m_device_ignore             (false),
@@ -157,6 +158,7 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_with_jack_master_cond     (rhs.m_with_jack_master_cond),
     m_with_jack_midi            (rhs.m_with_jack_midi),
     m_manual_alsa_ports         (rhs.m_manual_alsa_ports),
+    m_manual_port_count         (rhs.m_manual_port_count),
     m_reveal_alsa_ports         (rhs.m_reveal_alsa_ports),
     m_print_keys                (rhs.m_print_keys),
     m_device_ignore             (rhs.m_device_ignore),
@@ -214,6 +216,7 @@ rc_settings::operator = (const rc_settings & rhs)
         m_with_jack_master_cond     = rhs.m_with_jack_master_cond;
         m_with_jack_midi            = rhs.m_with_jack_midi;
         m_manual_alsa_ports         = rhs.m_manual_alsa_ports;
+        m_manual_port_count         = rhs.m_manual_port_count;
         m_reveal_alsa_ports         = rhs.m_reveal_alsa_ports;
         m_print_keys                = rhs.m_print_keys;
         m_device_ignore             = rhs.m_device_ignore;
@@ -274,6 +277,7 @@ rc_settings::set_defaults ()
     m_with_jack_midi            = false;
 #endif
     m_manual_alsa_ports         = false;
+    m_manual_port_count         = SEQ64_ALSA_OUTPUT_BUSS_MAX;
     m_reveal_alsa_ports         = false;
     m_print_keys                = false;
     m_device_ignore             = false;

@@ -166,8 +166,9 @@ private:
 
     /**
      *  Provides the MIDI output buss, that is the port number for MIDI output.
-     *  Currently, this value is hard-wired to 15, and the user must be sure to
-     *  avoid using this buss value for music.
+     *  Currently, this value defaults to 15, and the user must be sure to
+     *  avoid using this buss value for music.  It can be changed in the "rc"
+     *  file.
      */
 
     bussbyte m_buss;                    /* SEQ64_MIDI_CONTROL_OUT_BUSS      */

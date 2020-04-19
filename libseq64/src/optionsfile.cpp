@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-01-17
+ * \updates       2020-04-19
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -757,6 +757,12 @@ optionsfile::parse (perform & p)
     {
         sscanf(m_line, "%ld", &flag);
         rc().manual_alsa_ports(bool(flag));
+        if (next_data_line(file))
+        {
+            int count;
+            sscanf(m_line, "%d", &count);
+            rc().manual_port_count(count);
+        }
     }
     if (line_after(file, "[reveal-alsa-ports]"))
     {
@@ -1406,9 +1412,11 @@ optionsfile::write (const perform & p)
            "# JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports\n"
            "# already running on one's computer, or to use the autoconnect\n"
            "# feature (Sequencer64 connects to existing JACK ports on startup.\n"
+           "# A new feature is to change the number of ports; defaults to 16.\n"
            "\n"
         << (rc().manual_alsa_ports() ? "1" : "0")
-        << "   # flag for manual ALSA ports\n"
+        << "   # flag for manual (virtual) ALSA or JACK ports\n"
+        << rc().manual_port_count() << "   # number of manual/virtual ports\n"
         ;
 
     /*
@@ -1698,7 +1706,7 @@ optionsfile::write (const perform & p)
         << p.song_start_mode() << "   # song_start_mode\n\n"
         "# jack_midi - Enable JACK MIDI, which is a separate option from\n"
         "# JACK Transport.\n\n"
-        << rc().with_jack_midi()  << "   # with_jack_midi\n"
+        << rc().with_jack_midi() << "   # with_jack_midi\n"
         ;
 
     /*
@@ -2367,7 +2375,7 @@ optionsfile::write_midi_control_out
         "#       Arm         Mute       Queue      Delete\n"
         "\n"
         << setsize << " " << buss << " " << (disabled ? "0" : "1")
-        << "     # screenset size, output buss, enabled (1) /disabled (0)\n\n"
+        << "     # screenset size, output buss (0-15), enabled/disabled (1/0)\n\n"
         ;
 
         for (int seq = 0; seq < setsize; ++seq)
@@ -2402,7 +2410,16 @@ optionsfile::write_midi_control_out
             }
             file << "\n";
         }
-        file << "\n";
+        file <<
+            "\n"
+            "# These control events are laid out in this order: \n"
+            "#\n"
+            "#     enabled [ channel status d0 d1]\n"
+            "#\n"
+            "# where enabled is 1. Also, the order of the lines that follow must\n"
+            "# must be preserved.\n"
+            "\n"
+            ;
 
         write_ctrl_event(file, mco, midi_control_out::action_play);
         write_ctrl_event(file, mco, midi_control_out::action_stop);

@@ -197,8 +197,8 @@ mastermidibus::~mastermidibus ()
 
 /**
  *  Initialize the mastermidibus.  It initializes 16 MIDI output busses, a
- *  hardwired constant, SEQ64_ALSA_OUTPUT_BUSS_MAX == 16.  Only one MIDI input
- *  buss is initialized.
+ *  configurable value which defaults to SEQ64_ALSA_OUTPUT_BUSS_MAX == 16.  Only
+ *  one MIDI input buss is initialized.
  *
  * \note
  *      We now start the buss numbers at 0 in manual mode, so they match the
@@ -225,7 +225,7 @@ mastermidibus::api_init (int ppqn, midibpm bpm)
 {
     if (rc().manual_alsa_ports())
     {
-        int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
+        int num_buses = rc().manual_port_count();
         for (int i = 0; i < num_buses; ++i)             /* output busses    */
         {
             midibus * m = new midibus                   /* virtual port     */

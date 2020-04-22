@@ -2414,7 +2414,7 @@ optionsfile::write_midi_control_out
             "\n"
             "# These control events are laid out in this order: \n"
             "#\n"
-            "#     enabled [ channel status d0 d1]\n"
+            "#     enabled [ channel status d0 d1 ]\n"
             "#\n"
             "# where enabled is 1. Also, the order of the lines that follow must\n"
             "# must be preserved.\n"

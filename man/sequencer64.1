@@ -1,4 +1,4 @@
-.TH Sequencer64 "April 27 2019" "Version 0.96.4" "Seq64 Manual Page"
+.TH Sequencer64 "April 20 2020" "Version 0.96.8" "Seq64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real-time live MIDI sequencer refactored from Seq24
@@ -6,18 +6,24 @@ Sequencer64 - Real-time live MIDI sequencer refactored from Seq24
 .SH SYNOPSIS
 .B sequencer64
 [\fIOPTIONS\fP] [\fIFILENAME\fP]
+.BR
 .B seq64
 [\fIOPTIONS\fP] [\fIFILENAME\fP]
+.BR
 .B seq64cli
 [\fIOPTIONS\fP] [\fIFILENAME\fP]
+.BR
 .B qseq64
 [\fIOPTIONS\fP] [\fIFILENAME\fP]
+
+The name of the executable depends on the build: ALSA-only (deprecated), Gtk UI,
+command-line, and Qt UI.
 
 .SH DESCRIPTION
 .PP
 \fISequencer64\fP is a real-time MIDI sequencer. It was created to
 provide a simple interface for editing and playing MIDI 'loops'.
-It uses gtk-2 for the user interface.
+It uses gtk-2 or Qt 5 for the user interface.
 
 .SH OPTIONS
 Sequencer64 accepts the following options, plus an optional name of
@@ -107,29 +113,37 @@ Instead, specify the file itself as the last command-line argument.
 
 .TP 8
 .B \-m, \-\-manual-alsa-ports
-Sequencer64 won't attach ALSA MIDI ports, it will make "manual" (virtual) ports.
-Instead, it will create is own set of virtual input and output busses/ports.
-Not support in the PortMIDI build.
+Sequencer64 won't attach ALSA MIDI ports. Instead it will make "manual"
+(virtual) ports.
+It will create is own set of virtual input and output busses/ports.
+By default, 16 ports (0 to 15) are created.  There is an option in the 'rc' file
+(sequencer64.rc) to reduces this number.  The opposite option is '-a'.
+Not supported in the PortMIDI build.
 
 .TP 8
 .B \-a, \-\-auto-alsa-ports
 Sequencer64 will attach ALSA ports.  Useful for overriding the
-sequencer64.rc configuration file when set up to use manual (virtual) ports.
+sequencer64.rc configuration file when set up to use manual (virtual) ports.  The
+opposite option is '-m'.
 
 .TP 8
 .B \-r, \-\-reveal-alsa-ports
 Do not use the 'user' definition for port names, used the actual
-port names reported by ALSA.
+port names reported by ALSA. Shows the native system port names.
+The opposite option is '-R'.
 
 .TP 8
-.B \-r, \-\-hide-alsa-ports
-Use the 'user' definition for port names (useful for overriding a
-configuration).
+.B \-R, \-\-hide-alsa-ports
+Use the 'user' definition for port names. These option looks up the port names in
+the 'user' file, sequencer64.usr, and uses them.  Useful to show the actual
+equipment attached to each port.
+The opposite option is '-r'.
 
 .TP 8
 .B \-A, \-\-alsa
 Sequencer64 will use ALSA MIDI ports.  This option is useful to override the
 configuration file, if it was set up for JACK.  This is a sticky option.
+The opposite option (JACK), is '-t'. JACK transport is also disabled.
 
 .TP 8
 .B \-s, \-\-show-midi
@@ -137,7 +151,7 @@ Dumps incoming MIDI to screen.
 
 .TP 8
 .B \-k, \-\-show-keys
-Prints pressed key value.
+Prints the pressed key value.
 
 .TP 8
 .B \-K, \-\-inverse
@@ -273,7 +287,7 @@ configuration-file names to be used.
 
 .SH BUGS
 Sequencer64 has them.  See 
-.UR https://github.com/ahlstromcj/sequencer64/issues
+https://github.com/ahlstromcj/sequencer64/issues
 for the reported bugs.  We take pride in hiding a few more :-D.
 
 .SH SUGGESTIONS AND BUG REPORTS
@@ -281,7 +295,7 @@ Any bugs found should be reported to the upstream author and/or package
 maintainer.  See the link in the previous section.
 
 .SH HOMEPAGE
-.UR https://github.com/ahlstromcj/sequencer64/
+https://github.com/ahlstromcj/sequencer64/
 
 .SH OTHER INFO
 --ppqn works, but be aware that it may have bugs.  If a MIDI file is re-saved,

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2019-02-05
+ * \updates       2020-04-21
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -126,6 +126,8 @@ static struct option s_long_options [] =
     {"config",              required_argument, 0, 'c'}, /* new */
     {"rc",                  required_argument, 0, 'f'}, /* new */
     {"usr",                 required_argument, 0, 'F'}, /* new */
+    {"User",                0, 0, 'Z'},                 /* new */
+    {"Native",              0, 0, 'z'},                 /* new */
 
     /**
      * Legacy command-line options are using underscores, which are confusing
@@ -169,7 +171,7 @@ static struct option s_long_options [] =
  *
 \verbatim
         0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz#
-         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx *xx xxxxx xxxxx  xx    x
+         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx *xx xxxxx xxxxx  xx  aax
 \endverbatim
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
@@ -177,11 +179,20 @@ static struct option s_long_options [] =
  *  * Also note that 'o' options argument cannot be included here due to
  *  issues involving parse_o_options(), but it is *reserved* here, without the
  *  argument indicator.
+ *
+ * Manual + User mode '-Z' versus Auto + Native mode '-z':
+ *
+ *      Creates virtual ports '-m' and hides the native names for the ports '-R'
+ *      in favor of the 'user' definition of the names of ports and channels.
+ *
+ *      The opposite (native) setting uses '-a' and '-r'.
+ *
+ *      Both modes turn on the --user-save (-u) option.
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNnoPpq:RrtSsU:uVvX:x:#" /* modern args      */
-    "1234:5:67:89@"                                     /* legacy args      */
+    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNnoPpq:RrtSsU:uVvX:x:Zz#" /* modern args    */
+    "1234:5:67:89@"                                       /* legacy args    */
     ;
 
 /**
@@ -1033,6 +1044,20 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             (
                 seq64::interaction_method_t(atoi(optarg))
             );
+            break;
+
+        case 'Z':
+            seq64::rc().manual_alsa_ports(true);
+            seq64::rc().reveal_alsa_ports(false);
+            seq64::usr().save_user_config(true);
+            printf("[User mode: Manual ports and user-configured port names]\n");
+            break;
+
+        case 'z':
+            seq64::rc().manual_alsa_ports(false);
+            seq64::rc().reveal_alsa_ports(true);
+            seq64::usr().save_user_config(true);
+            printf("[Native mode: Native ports and port names]\n");
             break;
 
         case '#':

@@ -1,0 +1,840 @@
+# Sequencer64 0.95.0 (and above) user-configuration file
+#
+# /home/ahlstrom/.config/sequencer64/seq24.usr
+# Written on 2020-04-20 09:10:09
+#
+# Created by reading the following file and writing it out via the
+# Sequencer64 application:
+#
+# https://raw.githubusercontent.com/vext01/seq24/master/seq24usr.example
+#
+# This is a sequencer64.usr file. Edit it and place it in the
+# $HOME/.config/sequencer64 directory. It allows one to provide an
+# alias (alternate name) to each MIDI bus, MIDI channel, and MIDI
+# control codes per channel.
+#
+# The [comments] section lets one document this file.  Lines starting
+# with '#' and '[' are ignored.  Blank lines are ignored.  To show a
+# blank line, add a space character to the line.
+
+[comments]
+
+(Comments added to this section are preserved.  Lines starting with
+ a '#' or '[', or that are blank, are ignored.  Start lines that must
+ be blank with a space.)
+
+# 1. Define your instruments and their control-code names,
+#    if they have them.
+# 2. Define a MIDI bus, its name, and what instruments are
+#    on which channel.
+#
+# In the following MIDI buss definitions, channels are counted
+# from 0 to 15, not 1 to 16.  Instruments not set here are set to
+# -1 (SEQ64_GM_INSTRUMENT_FLAG) and are GM (General MIDI).
+# These replacement MIDI buss labels are shown in MIDI Clocks,
+# MIDI Inputs, and in the Pattern Editor buss drop-down.
+#
+# To temporarily disable the entries, set the count values to 0.
+
+[user-midi-bus-definitions]
+
+3     # number of user-defined MIDI busses
+
+[user-midi-bus-0]
+
+# Device name
+2x2 A (SuperNova,Q,TX81Z,DrumStation)
+
+16      # number of instrument settings
+0 1    # channel index & instrument number
+1 1    # channel index & instrument number
+2 1    # channel index & instrument number
+3 1    # channel index & instrument number
+4 1    # channel index & instrument number
+5 1    # channel index & instrument number
+6 1    # channel index & instrument number
+7 1    # channel index & instrument number
+8 3    # channel index & instrument number
+9 3    # channel index & instrument number
+10 3    # channel index & instrument number
+11 0    # channel index & instrument number
+12 0    # channel index & instrument number
+13 0    # channel index & instrument number
+14 0    # channel index & instrument number
+15 2    # channel index & instrument number
+
+[user-midi-bus-1]
+
+# Device name
+2x2 B (WaveStation,ESI-2000,MV4,ES-1,ER-1)
+
+16      # number of instrument settings
+0 4    # channel index & instrument number
+1 4    # channel index & instrument number
+2 4    # channel index & instrument number
+3 4    # channel index & instrument number
+4 5    # channel index & instrument number
+5 5    # channel index & instrument number
+6 5    # channel index & instrument number
+7 5    # channel index & instrument number
+8 5    # channel index & instrument number
+9 5    # channel index & instrument number
+10 5    # channel index & instrument number
+11 5    # channel index & instrument number
+12 5    # channel index & instrument number
+13 5    # channel index & instrument number
+14 6    # channel index & instrument number
+15 7    # channel index & instrument number
+
+[user-midi-bus-2]
+
+# Device name
+PCR-30 (303)
+
+1      # number of instrument settings
+0 8    # channel index & instrument number
+
+# In the following MIDI instrument definitions, active controller
+# numbers (i.e. supported by the instrument) are paired with
+# the (optional) name of the controller supported.
+
+[user-instrument-definitions]
+
+9     # instrument list count
+
+[user-instrument-0]
+
+# Name of instrument
+Waldorf Micro Q
+
+115    # number of MIDI controller number & name pairs
+1 A Modulation Wheel
+2 A Breath Control
+4 A Foot Control
+5 A Glide Rate
+7 A Channel Volume
+10 A Pan
+12 A Arp Range (0-9) (1-10 octaves)
+13 A Arp Length (0-15) (1-16 steps)
+14 A Arp Active (0-3) (Off,On,One Shot,Hold)
+15 A LFO 1 Shape (0-5) (Sine,Tri,Square,Saw,Rand,S&H)
+16 A LFO 1 Speed (0-127) (256 Bars-1/96)
+17 A LFO 1 Sync (0-1) (Off,On)
+18 A LFO 1 Delay
+19 A LFO 2 Shape (0-5) (Sine,Tri,Square,Saw,Rand,S&H)
+20 A LFO 2 Speed (0-127) (256 Bars-1/96)
+21 A LFO 2 Sync (0-1) (Off,On)
+22 A LFO 2 Delay
+23 A LFO 3 Shape (0-5) (Sine,Tri,Square,Saw,Rand,S&H)
+24 A LFO 3 Speed (0-127) (256 Bars-1/96)
+25 A LFO 3 Sync (0-1) (Off,On)
+26 A LFO 3 Delay
+27 A Osc 1 Octave (16,28,40-112) (128'-1/2')
+28 A Osc 1 Semitone (52-76) (-12-+12)
+29 A Osc 1 Detune (0-127) (-64-63)
+30 A Osc 1 FM 
+31 A Osc 1 Shape (0-5) (Pulse,Saw,Tri,Sine,Alt 1,Alt 2)
+32 Bank Select LSB (0-3) (Bank A-D)
+33 Osc 1 PW
+34 Osc 1 PWM (0-127) (-64-63)
+35 Osc 2 Octave (16,28,40-112) (128'-1/2')
+36 Osc 2 Semitone (52-76) (-12-+12)
+37 Osc 2 Detune (0-127) (-64-63)
+38 Osc 2 FM 
+39 Osc 2 Shape (0-5) (Pulse,Saw,Tri,Sine,Alt 1,Alt 2)
+40 Osc 2 PW
+41 Osc 2 PWM (0-127) (-64-63)
+42 Osc 3 Octave (16,28,40-112) (128'-1/2')
+43 Osc 3 Semitone (52-76) (-12-+12)
+44 Osc 3 Detune (0-127) (-64-63)
+45 Osc 3 FM 
+46 Osc 3 Shape (0-5) (Pulse,Saw,Tri,Sine,Alt 1,Alt 2)
+47 Osc 3 PW
+48 Osc 3 PWM (0-127) (-64-63)
+49 Sync (0-1) (Off,On)
+50 Pitchmod (0-127) (-64-63)
+51 Glide Mode (0-9)
+52 Osc 1 Level
+53 Osc 1 Balance (0-127) (F1-mid-F2)
+54 Ringmod Level 
+55 Ringmod Balance (0-127) (F1-mid-F2)
+56 Osc 2 Level
+57 Osc 2 Balance (0-127) (F1-mid-F2)
+58 Osc 3 Level
+59 Osc 3 Balance (0-127) (F1-mid-F2)
+60 Noise/External Level
+61 Noise/External Balance (0-127) (F1-mid-F2)
+64 Sustain Pedal
+65 Glide Active (0-1) (Off,On)
+66 Sostenuto (0-1) (Off,On)
+67 Routing (0-1) (Serial,Parallel)
+68 Filter 1 Type (0-10) 
+69 Filter 1 Cutoff
+70 Filter 1 Resonance
+71 Filter 1 Drive
+72 Filter 1 Keytrack (0-127) (-200-197)
+73 Filter 1 Env Amount (0-127) (-64-63)
+74 Filter 1 Env Velocity (0-127) (-64-63)
+75 Filter 1 Cutoff Mod (0-127) (-64-63)
+76 Filter 1 FM (0-127) (Off,1-127)
+77 Filter 1 Pan (0-127) (L-mid-R)
+78 Filter 1 Pan Mod (0-127) (-64-63)
+79 Filter 2 Type (0-10) 
+80 Filter 2 Cutoff
+81 Filter 2 Resonance
+82 Filter 2 Drive
+83 Filter 2 Keytrack (0-127) (-200-197)
+84 Filter 2 Env Amount (0-127) (-64-63)
+85 Filter 2 Env Velocity (0-127) (-64-63)
+86 Filter 2 Cutoff Mod (0-127) (-64-63)
+87 Filter 2 FM (0-127) (Off,1-127)
+88 Filter 2 Pan (0-127) (L-mid-R)
+89 Filter 2 Pan Mod (0-127) (-64-63)
+90 Amp Volume
+91 Amp Velocity (0-127) (-64-63)
+92 Amp Mod (0-127) (-64-63)
+93 FX 1 Mix
+94 FX 2 Mix
+95 Filter Env Attack
+96 Filter Env Decay
+97 Filter Env Sustain
+98 Filter Env Decay 2
+99 Filter Env Sustain 2
+100 Filter Env Release
+101 Amp Env Attack
+102 Amp Env Decay
+103 Amp Env Sustain
+104 Amp Env Decay 2
+105 Amp Env Sustain 2
+106 Amp Env Release
+107 Env 3 Attack
+108 Env 3 Decay
+109 Env 3 Sustain
+110 Env 3 Decay 2
+111 Env 3 Sustain 2
+112 Env 3 Release
+113 Env 4 Attack
+114 Env 4 Decay
+115 Env 4 Sustain
+116 Env 4 Decay 2
+117 Env 4 Sustain 2
+118 Env 4 Release
+120 All Sound Off (0)
+121 Reset All Controllers (0)
+122 Local Control (0-127) (Off,On)
+123 All Notes Off (0)
+
+[user-instrument-1]
+
+# Name of instrument
+SuperNova
+
+128    # number of MIDI controller number & name pairs
+0 B Bank Select MSB
+1 B Modulation Wheel
+2 B Breath Controller
+3 B Arp Pattern Select
+4 B Ring Modulator 2 * 3 Mix Level
+5 B Portamento Time
+6 B Data Entry
+7 B Part / Program Volume
+8 B Effects Confg Morph Amount
+9 B Arp Speed (Internal Clock Rate) [*]
+10 B Pan
+11 B Osc 1 Fine Tune
+12 B Osc 3 Fine Tune
+13 B Osc 1 Soften
+14 B Osc 2 Soften
+15 B Osc 3 Soften
+16 B LFO 1 Speed
+17 B LFO 1 Delay
+18 B LFO 2 Speed
+19 B LFO 2 Delay
+20 B Osc 1 Pitch Env 2
+21 B Osc 1 Pitch LFO 1
+22 B Osc 1 Pulse Width
+23 B Osc 2 Fine Tune
+24 B Noise Soften
+25 B Osc 2 Pitch Env 2
+26 B Osc 2 Pitch LFO 1
+27 B Osc 2 Pulse Width
+28 B Osc 1 Mix Level
+29 B Osc 2 Mix Level
+30 B Noise Mix Level
+31 B Ring Modulator 1 * 3 Mix Level
+32 Bank Select LSB
+33 Osc 3 Mix Level
+34 Filter Tracking
+35 Filter Freq LFO 2
+36 Osc 1 Mix Env 2
+37 Osc 2 Mix Env 2
+38 Osc 3 Mix Env 2
+39 Noise Mix Env 2
+40 Osc 3 Pitch Env 2
+41 Osc 3 Pitch LFO 1
+42 Osc 3 Pulse Width
+43 Osc 1 Width Env 2
+44 Osc 2 Width Env 2
+45 Osc 3 Width Env 2
+46 Osc 1 Width LFO 1
+47 Osc 2 Width LFO 1
+48 Osc 3 Width LFO 1
+49 Osc 1 Sync
+50 Osc 2 Sync
+51 Osc 3 Sync
+52 Osc 1 Sync Env 2
+53 Osc 2 Sync Env 2
+54 Osc 3 Sync Env 2
+55 Osc 1 Sync LFO 1
+56 Osc 2 Sync LFO 1
+57 Osc 3 Sync LFO 1
+58 Distortion Mod Wheel Depth
+59 Filter Freq Env 3
+60 Filter Freq LFO 1
+61 Osc 1 Soften Env 2
+62 Osc 2 Soften Env 2
+63 Osc 3 Soften Env 2
+64 Sustain / Arp Latch
+65 Arp Latch
+66 Osc 1 Pitch Env 3
+67 Osc 2 Pitch Env 3
+68 Osc 3 Pitch Env 3
+69 Osc 1 Width LFO 2
+70 Osc 2 Width LFO 2
+71 Osc 3 Width LFO 2
+72 Filter Res Env 2
+73 Filter Res LFO 1
+74 Env 3 Delay
+75 Env 3 Attack
+76 Env 3 Decay
+77 Env 3 Sustain
+78 Env 3 Release
+79 Env 3 Velocity
+80 LFO 1 Speed Env 3
+81 LFO 2 Speed Env 3
+82 LFO 1 Offset
+83 LFO 2 Offset
+84 Reverb Mod Wheel Depth
+85 Filter Res Env 3
+86 Filter Res LFO 2
+87 Chorus Speed
+88 Chorus Mod Depth
+89 Chorus Feedback
+90 Distortion Level
+91 Reverb Send Level
+92 Delay Send Level
+93 Chorus Send Level
+94 Chorus Mod Wheel Depth
+95 Reverb Decay
+96 Reverb HF Damp
+97 Master Volume Level [*]
+98 NRPN Select LSB
+99 NRPN Select MSB
+100 Reverb Type / Early Ref Level [**]
+101 Delay Time
+102 Delay Feedback
+103 Delay HF Damp
+104 Filter Overdrive
+105 Filter Cutoff Freq
+106 Filter Resonance
+107 Filter Freq Env 2
+108 Env 1 Attack
+109 Env 1 Decay
+110 Env 1 Sustain
+111 Env 1 Release
+112 Env 1 Velocity
+113 Env 2 Delay
+114 Env 2 Attack
+115 Env 2 Decay
+116 Env 2 Sustain
+117 Env 2 Release
+118 Env 2 Velocity
+119 Delay Mod Wheel Depth
+120 All Sound Off
+121 Reset Controllers
+122 Local Control [*]
+123 All Notes Off
+124 All Notes Off
+125 All Notes Off
+126 All Notes Off
+127 All Notes Off
+
+[user-instrument-2]
+
+# Name of instrument
+DrumStation
+
+92    # number of MIDI controller number & name pairs
+20 C Bass Drum Front cut
+21 C Bass Drum Pan
+22 C Bass Drum Distortion
+23 C Bass Drum Tune
+24 C Bass Drum Tone
+25 C Bass Drum Decay
+26 C Snare Drum Front cut
+27 C Snare Drum Pan
+28 C Snare Drum Distortion
+29 C Snare Drum Tune
+30 C Snare Drum Tone
+31 C Snare Drum Snappy
+32 808 Low Tom Front cut
+33 808 Low Tom Pan
+34 808 Low Tom Distortion
+35 808 Low Tom Tune
+36 808 Low Tom Decay
+37 808 Mid Tom Front cut
+38 808 Mid Tom Pan
+43 808 Mid Tom Pan
+44 808 Mid Tom Distortion
+45 808 Mid Tom Tune
+46 808 Mid Tom Decay
+47 808 Rim Shot Pan
+48 808 Rim Shot Tune
+49 808 Hand Clap Pan
+50 808 Hand Clap Tune
+51 808 Cowbell Pan
+52 808 Cowbell Distortion
+53 808 Cowbell Tune
+54 808 Closed HiHat Pan
+55 808 Closed HiHat Tune
+56 808 Closed HiHat Decay
+57 808 Open HiHat Pan
+58 808 Open HiHat Tune
+59 808 Open HiHat Decay
+60 808 Crash Cymbal Pan
+65 808 Crash Cymbal Tune
+66 808 Mid Conga Pan
+67 808 Mid Conga Distortion
+68 808 Mid Conga Tune
+69 808 High Conga Pan
+70 808 High Conga Distortion
+71 808 High Conga Tune
+72 808 Maracas Pan
+73 808 Maracas Tune
+74 808 Claves Pan
+75 808 Claves Tune
+76 909 Bass Drum Tune
+77 909 Bass Drum Attack
+78 909 Bass Drum Decay
+79 909 Snare Drum Tune
+80 909 Snare Drum Tone
+81 909 Snare Drum Snappy
+82 909 Low Tom Front cut
+83 909 Low Tom Pan
+84 909 Low Tom Distortion
+85 909 Low Tom Tune
+86 909 Low Tom Decay
+87 909 Mid Tom Front cut
+88 909 Mid Tom Pan
+89 909 Mid Tom Distortion
+90 909 Mid Tom Tune
+91 909 Mid Tom Decay
+92 909 High Tom Front cut
+93 909 High Tom Pan
+94 909 High Tom Distortion
+95 909 High Tom Tune
+96 909 High Tom Decay
+97 909 Rim Shot Pan
+98 909 Rim Shot Tune
+99 909 Rim Shot Hand Clap Pan
+100 909 Rim Shot Tune
+101 909 Closed HiHat Distortion
+102 909 Closed HiHat Tune
+103 909 Closed HiHat Decay
+104 909 Open HiHat Tune
+105 909 Bass Drum Front cut
+106 909 Bass Drum Pan
+107 909 Bass Drum Distortion
+108 909 Snare Drum Front cut
+109 909 Snare Drum Pan
+110 909 Snare Drum Distortion
+111 909 Closed HiHat Pan
+112 909 Open HiHat Pan
+113 909 Open HiHat Decay
+114 909 Crash Cymbal Pan
+115 909 Crash Cymbal Tune
+116 909 Crash Cymbal Decay
+117 909 Ride Cymbal Pan
+118 909 Ride Cymbal Tune
+119 909 Ride Cymbal Decay
+
+[user-instrument-3]
+
+# Name of instrument
+TX81Z
+
+2    # number of MIDI controller number & name pairs
+0 D Test 1
+1 D Test 2
+
+[user-instrument-4]
+
+# Name of instrument
+WaveStation
+
+0    # number of MIDI controller number & name pairs
+
+[user-instrument-5]
+
+# Name of instrument
+ESI-2000
+
+0    # number of MIDI controller number & name pairs
+
+[user-instrument-6]
+
+# Name of instrument
+ES-1
+
+0    # number of MIDI controller number & name pairs
+
+[user-instrument-7]
+
+# Name of instrument
+ER-1
+
+0    # number of MIDI controller number & name pairs
+
+[user-instrument-8]
+
+# Name of instrument
+TB-303
+
+0    # number of MIDI controller number & name pairs
+
+# ======== Sequencer64-Specific Variables Section ========
+
+[user-interface-settings]
+
+# These settings specify the modifiable configuration
+# of some of the Sequencer64 user-interface elements.
+
+# Specifies the style of the main-window grid of patterns.
+#
+# GTK:
+#   0 = Normal style, matches the GTK theme, has brackets.
+#   1 = White grid boxes that have brackets.
+#   2 = Black grid boxes (no brackets, our favorite).
+#
+# Qt:
+#   0 = Slot coloring matches Kepler34; the whole slot is colored.
+#   1 = Slot coloring more like GTK; color only the event box.
+
+0       # grid_style
+
+# Specifies the box style of an empty slot in the main-window
+# grid, for the GTK user-interface only.
+#
+#  0 = Draw a one-pixel box outline around the pattern slot.
+#  1 = Draw brackets on the sides of the pattern slot.
+#  2 to 30 = Make the brackets thicker and thicker.
+# -1 = Same as 0, draw a box outline one-pixel thick.
+# -2 to -30 = Draw a box outline, thicker and thicker.
+
+1       # grid_brackets
+
+# Specifies the number of rows in the main window.
+# Values of 4 (the default) through 8 (the best alternative value)
+# are allowed. Same as R in the '-o sets=RxC' option.
+
+4       # mainwnd_rows
+
+# Specifies the number of columns in the main window.
+# At present, values from 8 (the default) to 12 are supported.
+# are allowed. Same as C in the '-o sets=RxC' option.
+
+8       # mainwnd_cols
+
+# Specifies the maximum number of sets, which defaults to 32.
+# It is currently never necessary to change this value. In fact,
+# it should be a derived value.
+
+32      # max_sets
+
+# Specifies the border width in the main window.
+
+0      # mainwid_border
+
+# Specifies the border spacing in the main window. Normally 2, it
+# can range from 2 to 16.
+
+2      # mainwid_spacing
+
+# Specifies a quantity that affects the height of the main window.
+
+0      # control_height
+
+# Specifies the initial zoom for the piano rolls.  Ranges from 1.
+# to 512 (the legacy maximum was 32), and defaults to 2 unless
+# changed here.  Note that large PPQN values will require larger
+# zoom values in order to look good in the sequence editor.
+# Sequencer64 adapts the zoom to the PPQN, if zoom is set to 0.
+
+2      # default zoom (0 = auto-adjust to PPQN)
+
+# Specifies if the key, scale, and background sequence are to be
+# applied to all sequences, or to individual sequences.  The
+# behavior of Seq24 was to apply them to all sequences.  But
+# Sequencer64 takes it further by applying it immediately, and
+# by saving to the end of the MIDI file.  Note that these three
+# values are stored in the MIDI file, not this configuration file.
+# Also note that reading MIDI files not created with this feature
+# will pick up this feature if active, and the file gets saved.
+# It is contagious.
+#
+# 0 = Allow each sequence to have its own key/scale/background.
+#     Settings are saved with each sequence.
+# 1 = Apply these settings globally (similar to seq24).
+#     Settings are saved in the global final section of the file.
+
+1      # global_seq_feature
+
+# Specifies if the old, console-style font, or the new anti-
+# aliased font, is to be used as the font throughout the GUI.
+# In legacy mode, the old font is the default.
+#
+# 0 = Use the old-style font.
+# 1 = Use the new-style font.
+
+1      # use_new_font
+
+# Specifies if the user-interface will support two song editor
+# windows being shown at the same time.  This makes it easier to
+# edit songs with a large number of sequences.
+#
+# 0 = Allow only one song editor (performance editor).
+# 1 = Allow two song editors.
+
+1      # allow_two_perfedits
+
+# Specifies the number of 4-measure blocks for horizontal page
+# scrolling in the song editor.  The old default, 1, is a bit
+# small.  The new default is 4.  The legal range is 1 to 6, where
+# 6 is the width of the whole performance piano roll view.
+
+4      # perf_h_page_increment
+
+# Specifies the number of 1-track blocks for vertical page
+# scrolling in the song editor.  The old default, 1, is a bit
+# small.  The new default is 8.  The legal range is 1 to 18, where
+# 18 is about the height of the whole performance piano roll view.
+
+8      # perf_v_page_increment
+
+# Specifies if the progress bar is colored black, or a different
+# color.  The following integer color values are supported:
+# 
+# 0 = black
+# 1 = dark red
+# 2 = dark green
+# 3 = dark orange
+# 4 = dark blue
+# 5 = dark magenta
+# 6 = dark cyan
+
+0      # progress_bar_colored
+
+# Specifies if the progress bar is thicker.  The default is 1
+# pixel.  The 'thick' value is 2 pixels.  (More than that is not
+# useful.  Set this value to 1 to enable the feature, 0 to disable
+# it.
+
+0      # progress_bar_thick
+
+# Specifies using an alternate (darker) color palette.  The
+# default is the normal palette.  Not all items in the user
+# interface are altered by this setting, and it's not perfect.
+# Set this value to 1 to enable the feature, 0 to disable it.
+# Same as the -K or --inverse command-line options.
+
+0      # inverse_colors
+
+# Specifies the window redraw rate for all windows that support
+# that concept.  The default is 40 ms.  Some windows used 25 ms,
+# which is faster.
+
+40      # window_redraw_rate
+
+# Specifies using icons for some of the user-interface buttons
+# instead of text buttons.  This is purely a preference setting.
+# If 0, text is used in some buttons (the main window buttons).
+# Otherwise, icons are used.  One will have to experiment :-).
+
+0      # use_more_icons (currently affects only main window)
+
+# Specifies the number of set-window ('wid') rows to show.
+# The long-standing default is 1, but 2 or 3 may also be set.
+# Corresponds to R in the '-o wid=RxC,F' option.
+
+1      # block_rows (number of rows of set blocks/wids)
+
+# Specifies the number of set window ('wid') columns to show.
+# The long-standing default is 1, but 2 may also be set.
+# Corresponds to C in the '-o wid=RxC,F' option.
+
+1      # block_columns (number of columns of set blocks/wids)
+
+# Specifies if the multiple set windows are 'in sync' or can
+# be set to arbitrary set numbers independently.
+# The default is false (0), means that there is a single set
+# spinner, which controls the set number of the upper-left 'wid',
+# and the rest of the set numbers follow sequentially.  If true
+# (1), then each 'wid' can be set to any set-number.
+# Corresponds to the 'f' (true, false, or 'indep') in the
+# '-o wid=RxC,F' option.  Here, 1 is the same as 'indep' or false,
+# and 0 is the same as f = true.  Backwards, so be careful.
+
+0      # block_independent (set spinners for each block/wid)
+
+# Specifies an enlargement of the main window of Sequencer64.
+# The normal value is 1.0, which is the legacy sizing.  If this
+# value is between 1.0 and 3.0, it will increase the size of all
+# of the main window elements proportionately. Same as the
+# '-o scale=x.y' option.
+
+1      # window_scale (scales the main window upwards in size)
+
+[user-midi-settings]
+
+# These settings specify MIDI-specific value that might be
+# better off as variables, rather than constants.
+
+# Specifies parts-per-quarter note to use, if the MIDI file.
+# does not override it.  Default is 192, but we'd like to go
+# lower and higher than that. Set to 0 to use the PPQN from the
+# MIDI file, rather than scaling its PPQN re this value.
+
+192       # midi_ppqn, --ppqn p
+
+# Specifies the default beats per measure, or beats per bar.
+# The default value is 4, the range is 1 to 20.
+
+4       # midi_beats_per_measure/bar
+
+# Specifies the default beats per minute.  The default value
+# is 120, and the legal range is 20 to 600. Also see the value of
+# midi_bpm_minimum and midi_bpm_maximum below.
+
+120       # midi_beats_per_minute
+
+# Specifies the default beat width. The default value is 4.
+
+4       # midi_beat_width
+
+# Specifies the buss-number override, the same as the --bus
+# command-line option. The default value is -1, which means that
+# there is no buss override.  If a value from 0 to 31 is given,
+# then that buss value overrides all buss values in all patterns.
+# Change this value from -1 only to use a single output buss,
+# either for testing or convenience.  And don't save the MIDI file
+# afterwards, unless you want to overwrite all the buss values!
+
+-1       # midi_buss_override (disabled)
+
+# Specifies the default velocity override when adding notes in the
+# sequence/pattern editor.  This value is obtained via the 'Vol'
+# button, and ranges from 0 (not recommended :-) to 127.  If the
+# value is -1, then the incoming note velocity is preserved.
+
+-1       # velocity_override (-1 = 'Free')
+
+# Specifies the precision of the beats-per-minutes spinner and
+# MIDI control over the BPM value.  The default is 0, which means
+# the BPM is an integer.  Other values are 1 and 2 decimal digits
+# of precision.
+
+0       # bpm_precision
+
+# Specifies the step increment of the beats/minute spinner and
+# MIDI control over the BPM value.  The default is 1. For a
+# precision of 1 decimal point, 0.1 is a good value.  For a
+# precision of 2 decimal points, 0.01 is a good value, but one
+# might want somethings a little faster, like 0.05.
+
+1       # bpm_step_increment
+
+# Specifies the page increment of the beats/minute field. It is
+# used when the Page-Up/Page-Down keys are pressed while the BPM
+# field has the keyboard focus.  The default value is 10.
+
+10       # bpm_page_increment
+
+# Specifies the minimum value of beats/minute in tempo graphing.
+# By default, the tempo graph ranges from 0.0 to 127.0.
+# This value can be increased to give a magnified view of tempo.
+
+0       # midi_bpm_minimum
+
+# Specifies the maximum value of beats/minute in tempo graphing.
+# By default, the tempo graph ranges from 0.0 to 127.0.
+# This value can be increased to give a magnified view of tempo.
+
+127       # midi_bpm_maximum
+
+[user-options]
+
+# These settings specify application-specific values that are
+# set via the -o or --option switch, which help expand the number
+# of options the Sequencer64 options can support.
+
+# The 'daemonize' option is used in seq64cli to indicate that the
+# application should be gracefully run as a service.
+
+0       # option_daemonize
+
+# This value specifies an optional log-file that replaces output
+# to standard output and standard error.  To indicate no log-file,
+# the string "" is used.  Currently, this option works best from
+# the command line, as in '-o log=filename.log'.  However, the
+# name here is used only if the bare option '-o log' is specified.
+
+""
+
+[user-work-arounds]
+
+# These settings specify application-specific values that work
+# around issues that we have not been able to truly fix for all
+# users.
+
+# The work_around_play_image option can be set to 0 or 1.  0 is
+# the normal setting. Set it to 1 if multiple-clicks of the play
+# button (or the equivalent play/pause/stop actions) cause the
+# sequencer64 application to crash.
+
+0       # work_around_play_image
+
+# The work_around_transpose_image option is similar, for an issue
+# some users have setting the transpose button in seqedit.
+
+0       # work_around_transpose_image
+
+[user-ui-tweaks]
+
+# This first value specifies the height of the keys in the
+# sequence editor.  Defaults to 12 (pixels), but 8 is better.
+# Currently used only in the Qt GUI.
+
+10       # (user_ui_) key_height
+
+# Normally, the Qt version of Sequencer64 uses the old pattern
+# editor in the 'Edit' tab.  If the following value is set to 1,
+# then the new, larger, more functional pattern editor can be
+# used in the 'Edit' tab.  This setting also has the side-effect
+# of making the whole Sequencer64 window larger.
+# Currently used only in the Qt GUI.
+
+1       # (user_ui_) use_new_seqedit
+
+[new-pattern-editor]
+
+# This section contains the setup values for recording when a new
+# pattern is opened. For flexibility, a new pattern means only that
+# the loop has the default name, 'Unititled'. These values save time
+# during a live recording session. The values are simple bits (0/1).
+# Values for recordstyle are 0=merge, 1=overwrite/replace, and 2=expand.
+
+0 0 0 0 0    # armed thru record qrecord recordstyle
+
+# End of /home/ahlstrom/.config/sequencer64/seq24.usr
+#
+# vim: sw=4 ts=4 wm=4 et ft=sh

@@ -1,6 +1,209 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2019-10-09
+2016-12-03 to 2020-05-16
+
+Define usr-midi-bus and usr-instruments (#183)                                                                      
+I'm coming quite late, but I discovered yesterday that what is being passed in
+`[usr-midi-bus]` has an effect only when using Alsa Midi instead of Native Jack
+(`with_jack_midi` in the rc file), maybe that was your issue?
+
+-------------------------
+
+,
+My [midi-control-out] section looks as follows (using Akai APC Mini):
+```
+[midi-control-out]
+
+...
+
+32 1 1     # screenset size, output buss, enabled (1) /disabled (0)
+
+0 [1 0 144 56 1] [1 0 144 56 5] [1 0 144 56 2] [1 0 144 56 3]
+...
+31 [1 0 144 3 1] [1 0 144 3 5] [1 0 144 3 2] [1 0 144 3 3]
+
+# MIDI Control Out: play                                                            
+0 [0 144 82 1]
+
+# MIDI Control Out: stop                                                            
+0 [0 144 82 0]
+
+# MIDI Control Out: pause                                                           
+0 [0 144 82 0]
+...
+```
+It works fine for the sequence buttons (controls 0 to 31) so I can see the
+signal  coming out of Seq64 in aseqdump and the lights turn on on the
+controller. However no signal is detected by aseqdump for play/pause/stop.
+Is that a mistake in my configuration, or a real bug?
+
+
+[Question/Feature request] Live midi pattern  recording (#188)             
+
+Segfault at startup of both Seq64rtmidi and Seq64qt5 (#191)               
+
+Using the midi-control branch of today, with the same CFLAGS options as before:
+
+export CFLAGS="-O2 -pipe -march=native"
+./bootstrap -ed -rm
+
+Program starts ok.  Adding notes seems to work correctly.
+
+Now I notice a new strange thing. When moving a selection down, it jumps up 1
+note after the mouse is released. This problem does not occur when moving
+selections up.
+
+
+Performance recording incorrect note length (#199)                                                                      
+I previously had set things up such that when notes were input via midi
+controller  as a pattern played live. These midi events could then be recorded
+at any obligatory length.  
+
+When I started qseq64 today (as packaged by kx.studio), midi note events from
+my hardware would only resolve as the note length specified by the pattern
+editor. This makes recording sequences live tough, as I dont have a free hand
+to switch the note length midway through a sequence.
+
+Have I switched a setting somewhere?
+
+dh: Command not found (#200)                
+
+
+Piano roll follows the progress bar Button have no effect (#202):
+
+Piano roll follow the progress bar Button being deactivated have no effect on
+progress bar following. i. e. the progress bar remains be followed by piano roll
+
+Watch the screencast for details, here please.
+
+built from source on linux mint 19.3
+seq64 0.96.7
+2020-02-16
+
+
+
+
+Reconnect to Midi input (and output?) ports (#204)
+
+I've been having this issue for a while, but I was not sure whether it was due to
+how I was handling things, till today, so here goes (might be linked to #183 ):
+These days I usually use RaySession (based on NSM) to manage my sessions, where
+the session usually contains Carla or Ardour, a bunch of plugins in those, 1 or 2
+mididings scripts and a few jack_mixers when using Carla.
+To this I connect 0 to 3 MIDI devices (keyboards and control surface). I've been
+playing around with seq64's [manual-alsa-ports] and [reveal-alsa-ports] settings
+to figure out if any combination might work out as I expect, and I usually keep
+
+[manual-alsa-ports]
+0
+[reveal-alsa-ports]
+0
+since I use the native Jack setup, which displays (as expected) the names of the
+ports as detected by Jack.
+My problem is that the MIDI connections with Seq64 when I reopen the session are
+(almost) always messed up.
+
+Most of the time, I've supposed that it depends on the sequence in which I launch
+the applications: if Seq64 is launched at the same time as Carla or Ardour, Seq64
+obviously opens much faster, and all MIDI ports popping up from the tracks and
+plugins are not auto-detected because they don't exist yet. So I close Seq64
+(most likely overwriting the RC file's input/output settings) and reopen, the
+ports are back, but the connections are lost or messed up (input ports are almost
+always lost, even when I use a MIDI through plugin to make sure I don't change
+the connections to Seq64 whether or not I plug my actual MIDI devices).
+I guess that it may be due to the fact that Seq64 "remembers" the port to connect
+based on their ID, rather than their name, so if applications are not started in
+the same order or MIDI devices not plugged in the same order, the ports may not
+get the same ID, and connections are subsequently incorrect. Does this make
+sense? If yes, would it be doable to reconnect based on the port's name?
+
+Today however, I was very careful to not open Seq64 before Ardour, which contains
+MIDI busses for my devices and MIDI busses for the sequences' synths, so that
+connections can be restored properly, but it seems that my 2 input ports where
+still inversed!
+
+So I'm wondering a bit how you use this and whether I do it wrong...
+
+Using [reveal-alsa-ports]=1 or the ones hardcoded in the USR file
+([manual-alsa-ports]=1) might work, but then it limits the number of output ports
+to 16, which may in some cases not be sufficient for my instruments/synths (I
+could of course use channels and/or instruments for each port, but I'm very
+reluctant so far because it makes it much more difficult to monitor what goes
+where and I may have to add plugins to filter the channels to dispatch between
+the synths... but I'm relatively new to this so it may be the way it should be
+done?).
+
+What do you think?
+I'd be curious to know more about your setup as well if you can share :)
+
+I'm using 0.96.8 from the midi_control branch btw.
+And while I'm at it (but maybe I should open another ticket for that), is there
+any hope for the future to have the RC and USR files in any folder, e.g. a
+project or session's folder, rather than always in .config/sequencer64?
+
+
+
+
+MIDI Controls Issues (#205):
+
+I've been trying to set up more MIDI controls for my control surface, and I can't find any configuration that works, similarly to what I had in the end of the thread on #188.
+I've tried many configurations on 3 different controls, here goes:
+
+1. Mod Queue
+
+# mod queue
+70 [1 0 144 87 127 127] [0 0 0 0 0 0] [0 0 0 0 0 0]
+or
+70 [1 0 144 87 0 127] [0 0 0 0 0 0] [0 0 0 0 0 0]
+
+don't do anything, not even if I keep key 87 pressed when selecting a pattern.
+
+70 [0 0 0 0 0 0] [1 0 144 87 127 127] [0 0 0 0 0 0] turns on the queue mode,
+including the Q button on the interface - isn't that supposed to be "keep queue"
+instead? (question 1.a)
+
+However I can't turn the queue mode off, not even with 70 [0 0 0 0 0 0] [1 0 144
+87 127 127] [1 0 144 87 0 0]. Question 1.b: am I missing something or is that a
+bug?
+
+2. Keep queue
+
+Neither of the two following seem to have any effect:
+
+# Keep queue
+96 [1 0 144 87 127 127] [0 0 0 0 0 0] [0 0 0 0 0 0]
+96 [0 0 0 0 0 0] [1 0 144 87 127 127] [0 0 0 0 0 0]
+
+3. Other similar controls
+
+I've had similar results with the toggle command (only 1st column, haven't tried
+all combinations) for screen set up and down (66 and 67), mod snapshot (69), mod
+glearn (72) and solo (76).
+
+4. Midi Record
+
+When I open the pattern editor (with the solution from #188 that works ;) ) I try
+to active MIDI RECORD without success with any of these 3 attempts:
+
+# MIDI RECORD (toggle, on, off):
+81 [1 0 144 82 0 127] [0 0 0 0 0 0] [0 0 0 0 0 0]
+81 [1 0 144 82 127 127] [0 0 0 0 0 0] [0 0 0 0 0 0]
+81 [0 0 0 0 0 0] [1 0 144 82 127 127] [0 0 0 0 0 0]
+
+Conclusion
+
+That's what I tried for now. Since so many controls are having similar issue, it
+may be a general problem (but I'd be surprised that nobody raised it before) or I
+may be doing something wrong :)
+
+I'm on 0.96.8 midi_control. Midi controls work to turn patterns on and off,
+play/pause, pattern edit, and midi_control_out works (LEDs light up when I select
+Queue or Learn in the GUI, as well as patterns buttons' lights). I've briefly
+tried MIDI RECORD, Learn and Queue on 0.96.1 and I can't get it to work either
+(Play/Pause works though).
+
+Sorry for the super long post, I've tried to be exhaustive, let me know if
+there's anything else you'd like me to try out.
 
 Related issues for #179 remaining:
 

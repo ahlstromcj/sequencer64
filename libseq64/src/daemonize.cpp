@@ -3,7 +3,7 @@
  * \library       sequencer64 application (from PSXC library)
  * \author        Chris Ahlstrom
  * \date          2005-07-03 to 2007-08-21 (pre-Sequencer24/64)
- * \updates       2020-02-09
+ * \updates       2020-05-26
  * \license       GNU GPLv2 or above
  *
  *  Daemonization module of the POSIX C Wrapper (PSXC) library
@@ -67,16 +67,20 @@
 
 #ifdef PLATFORM_LINUX
 #include <signal.h>                     /* struct sigaction                 */
+#include <time.h>                       /* C::nanosleep(2)                  */
+#include <unistd.h>                     /* usleep() or select()             */
 #endif
 
 #if defined PLATFORM_WINDOWS
 
 /*
- * For Windows, only the reroute_stdio() function is defined, currently.
+ * For Windows, only the reroute_stdio() and microsleep() functions are
+ * defined, currently.
  */
 
 #include <fcntl.h>                      /* _O_RDWR                          */
 #include <io.h>                         /* _open(), _close()                */
+#include <synchapi.h>                   /* recent Windows "wait" functions  */
 
 #define STD_CLOSE       _close
 #define STD_OPEN        _open
@@ -399,10 +403,126 @@ reroute_stdio (const std::string & logfile, bool closem)
     return result;
 }
 
+/**
+ *  This free-function in the seq64 namespace provides a way to suspend a
+ *  thread for a small amount of time.
+ *
+ * \linux
+ *      We can use the usleep(3) function.
+ *
+ * \unix
+ *    In POSIX, select() can return early if any signal occurs.  We don't
+ *    correct for that here at this time.  Actually, it is a convenient
+ *    feature, and we wish that Sleep() would provide it.
+ *
+ * \win32
+ *    In Windows, the Sleep(0) function does not sleep, but it does cede
+ *    control of the thread to the operating system, which then schedules
+ *    another thread to run.
+ *
+ * \warning
+ *    Please note that this function isn't all that accurate for small
+ *    sleep values, due to the time taken to set up the operation, and
+ *    resolution issues in many operating systems.
+ *
+ * \param ms
+ *    The number of milliseconds to "sleep".
+ *
+ * \return
+ *    Returns true if the ms parameter was 0 or greater.
+ */
+
+bool
+millisleep (int ms)
+{
+    bool result = ms >= 0;
+    if (result)
+    {
+#if defined PLATFORM_LINUX
+        return microsleep(ms * 1000);
+#elif defined PLATFORM_UNIX
+        struct timeval tv;
+        struct timeval * tvptr = &tv;
+        tv.tv_usec = long(ms % 1000) * 1000;
+        tv.tv_sec = long(ms / 1000;
+        result = select(0, 0, 0, 0, tvptr) != (-1);
+#elif defined PLATFORM_WINDOWS              // or PLATFORM_MINGW
+        if (ms == 0)
+            Sleep((DWORD) ms);
+        else
+            result = microsleep(ms * 1000);
+#endif
+    }
+    return result;
+}
+
+#ifdef PLATFORM_LINUX
+
+/**
+ *  Sleeps for the given number of microseconds. nanosleep() is a Linux
+ *  function which has some advantage over sleep(3) and usleep(3), such as not
+ *  interacting with signals.  It seems that it supports a non-busy wait.
+ *
+ * \param us
+ *      Provides the desired number of microseconds to wait.
+ *
+ * \return
+ *      Returns true if the full sleep occurred, or if interruped by a signal.
+ */
+
+bool
+microsleep (int us)
+{
+    struct timespec ts;
+    ts.tv_sec = us / 1000000;
+    ts.tv_nsec = (us % 1000000) * 1000;
+
+    int rc = nanosleep(&ts, NULL);
+    return rc == 0 || rc == EINTR;
+}
+
+#endif  // PLATFORM_LINUX
+
+#ifdef PLATFORM_WINDOWS
+
+/**
+ *  This implementation comes from https://gist.github.com/ngryman/6482577 and
+ *  performs busy-waiting, meaning it will NOT relinquish the processor.
+ *
+ * \param us
+ *      Provides the desired number of microseconds to wait.
+ *
+ * \return
+ *      Returns true only if all calls succeeded.  It doesn't matter if the
+ *      wait completed, at this point.
+ */
+
+bool
+microsleep (int us)
+{
+	HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);   /* synchapi.h */
+    bool result = timer != NULL;
+    if (result)
+    {
+        LARGE_INTEGER ft;
+        ft.QuadPart = -(10 * (__int64) us);
+        result = SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0) != 0;
+        if (result)
+            result = WaitForSingleObject(timer, INFINITE) != WAIT_FAILED;
+
+        CloseHandle(timer);
+    }
+    return result;
+}
+
+#endif // PLATFORM_WINDOWS
+
 #ifdef PLATFORM_LINUX
 
 /*
- * TODO:  Make these values atomic?
+ *  Session-handling is Linux-only.
+ *
+ *  TODO:  Make these values atomic?
  */
 
 static bool sg_needs_close = false;

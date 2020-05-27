@@ -245,7 +245,7 @@ midi_api::cancel_callback ()
 int
 midi_api::api_poll_for_midi ()
 {
-    millisleep(1);
+    (void) millisleep(1);
     return 0;
 }
 

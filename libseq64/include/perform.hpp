@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-02-22
+ * \updates       2020-05-25
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2387,6 +2387,7 @@ public:
     void mute_screenset (int ss, bool flag = true);
     void output_func ();
     void input_func ();
+    bool poll_cycle ();
     void set_group_mute_state (int gtrack, bool muted);
     bool get_group_mute_state (int gtrack);
     int mute_group_offset (int track);
@@ -3104,7 +3105,7 @@ private:
     midi_control & midi_control_toggle (int ctl);
     midi_control & midi_control_on (int ctl);
     midi_control & midi_control_off (int ctl);
-    bool midi_control_event (const event & ev);
+    bool midi_control_event (const event & ev, bool recording = false);
     bool midi_control_record (const event & ev);
     bool handle_midi_control (int control, bool state);
     bool handle_midi_control_ex (int control, midi_control::action a, int v);

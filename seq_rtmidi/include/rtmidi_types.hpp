@@ -9,7 +9,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2017-12-31
+ * \updates       2020-05-24
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -176,6 +176,11 @@ public:
     const char * array () const
     {
         return reinterpret_cast<const char *>(&m_bytes[0]);
+    }
+
+    const midibyte * data () const
+    {
+        return m_bytes.data();
     }
 
     int count () const

@@ -480,9 +480,6 @@ private:
 
     bool save_clock (bussbyte bus, clock_e clock);
     bool save_input (bussbyte bus, bool inputing);
-#if 0
-    void swap ();
-#endif
 
 };          // class mastermidibase
 

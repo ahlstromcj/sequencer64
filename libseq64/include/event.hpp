@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-11-24
+ * \updates       2020-05-25
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -166,8 +166,8 @@ const midibyte EVENT_MIDI_START          = 0xFA;    // no data bytes
 const midibyte EVENT_MIDI_CONTINUE       = 0xFB;    // no data bytes
 const midibyte EVENT_MIDI_STOP           = 0xFC;    // no data bytes
 const midibyte EVENT_MIDI_SONG_FD        = 0xFD;    // undefined
-const midibyte EVENT_MIDI_ACTIVE_SENSE   = 0xFE;    // 0 data bytes, not used
-const midibyte EVENT_MIDI_RESET          = 0xFF;    // 0 data bytes, not used
+const midibyte EVENT_MIDI_ACTIVE_SENSE   = 0xFE;    // 0 data bytes
+const midibyte EVENT_MIDI_RESET          = 0xFF;    // 0 data bytes
 
 /**
  *  0xFF is a MIDI "escape code" used in MIDI files to introduce a MIDI meta
@@ -582,6 +582,15 @@ public:
     }
 
     /**
+     *  Static test for sense/reset messages.
+     */
+
+    static bool is_sense_or_reset (midibyte m)
+    {
+        return m == EVENT_MIDI_ACTIVE_SENSE || m == EVENT_MIDI_RESET;
+    }
+
+    /**
      *  Static test for messages that involve notes and velocity: Note On,
      *  Note Off, and Aftertouch.  This function requires that the channel
      *  nybble has already been masked off.
@@ -677,6 +686,12 @@ public:
     void set_status (midibyte eventcode, midibyte channel);
     void set_meta_status (midibyte metatype);
     void set_status_keep_channel (midibyte eventcode);
+    bool set_midi_event
+    (
+        midipulse timestamp,
+        const midibyte * buffer,
+        int count
+    );
 
     /**
      *  Sets the channel "nybble", without modifying the status "nybble".
@@ -839,9 +854,9 @@ public:
         m_data[1] = (m_data[1] - 1) & 0x7F;
     }
 
-    bool append_sysex (midibyte * data, int len);
+    bool append_sysex (const midibyte * data, int len);
     bool append_sysex (midibyte data);
-    bool append_meta_data (midibyte metatype, midibyte * data, int len);
+    bool append_meta_data (midibyte metatype, const midibyte * data, int len);
     bool append_meta_data (midibyte metatype, const std::vector<midibyte> & data);
     void restart_sysex ();              // kind of useless
 
@@ -1154,8 +1169,6 @@ public:
         return is_note_off_velocity(m_status, m_data[1]);
     }
 
-    void adjust_note_off ();
-
     /**
      *  Indicates if the m_status value is a one-byte message (Program Change
      *  or Channel Pressure.  Channel is stripped, because sometimes we keep
@@ -1164,7 +1177,7 @@ public:
 
     bool is_one_byte () const
     {
-        return is_one_byte_msg(m_status);   // && 0xF0);
+        return is_one_byte_msg(m_status);
     }
 
     /**
@@ -1188,6 +1201,17 @@ public:
     bool is_sysex () const
     {
         return m_status == EVENT_MIDI_SYSEX;
+    }
+
+    /**
+     *  Indicates if the event is a Sense event or a Reset event.
+     *  Currently ignored by Sequencer64.
+     */
+
+    bool is_sense_reset ()
+    {
+        return m_status == EVENT_MIDI_ACTIVE_SENSE ||
+            m_status == EVENT_MIDI_RESET;
     }
 
     /**
@@ -1244,6 +1268,7 @@ public:
     }
 
     void print () const;
+    void print_note (bool is_a_link = false) const;
 
     /**
      *  This function is used in sorting MIDI status events (e.g. note

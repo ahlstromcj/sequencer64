@@ -343,30 +343,6 @@ qlfoframe::scale_lfo_change (int /*v*/)
     ui->m_phase_text->setText(tmp);
 }
 
-#if 0
-
-/**
- *  Undoes the LFO changes if there is undo available.
- *
- *  TODO:  implement undo via selection of "None" for the wave type.
- *
- * \return
- *      Always returns true.
- */
-
-bool
-qlfoframe::on_focus_out_event (GdkEventFocus * /* p0 */)
-{
-    if (m_seq.get_hold_undo())
-    {
-        m_seq.push_undo(true);
-        m_seq.set_hold_undo(false);
-    }
-    return true;
-}
-
-#endif  // 0
-
 /**
  *
  */

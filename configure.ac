@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2020-04-18
+dnl \update        2020-05-27
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -742,7 +742,7 @@ dnl      automatically for us.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2020-04-18"
+#define VERSION_DATE_SHORT "2020-05-27"
 #define VERSION "0.96.8"
 
 )
@@ -816,9 +816,13 @@ dnl
 dnl 2015-10-02:  After a Debian Sid update, the configfile module wouldn't
 dnl compile because, we think, the sigc++ now required C++11 support.
 dnl Note the c++14 option.
+dnl
+dnl 2020-05-26: gcc 9 uncovers a -Wdeprecated-copy warning in some glibmm
+dnl header files.  We will try removing the disabling of this warning
+dnl periodically.  Not an issue with the Qt interface, though.
 
 CFLAGS="$CFLAGS $COMMONFLAGS"
-CXXFLAGS="$CFLAGS -std=c++14 -Wno-variadic-macros -Wno-deprecated-declarations"
+CXXFLAGS="$CFLAGS -std=c++14 -Wno-deprecated-copy -Wno-variadic-macros -Wno-deprecated-declarations"
 
 AM_CONDITIONAL(GNU_WIN, test x$gnuwin = xyes)
 

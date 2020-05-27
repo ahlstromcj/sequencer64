@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2020-02-22
+ * \updates       2020-05-26
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -4381,16 +4381,8 @@ perform::output_func ()
                 delta_us = long(next_clock_delta_us);
 
             if (delta_us > 0)
-            {
-#ifdef PLATFORM_WINDOWS
-                delta = delta_us / 1000;
-                Sleep(delta);
-#else
-                delta.tv_sec = delta_us / 1000000;
-                delta.tv_nsec = (delta_us % 1000000) * 1000;
-                nanosleep(&delta, NULL);    /* nanosleep() is Linux */
-#endif
-            }
+                (void) microsleep(delta_us);            /* daemonize.hpp    */
+
 #ifdef SEQ64_STATISTICS_SUPPORT
             else
             {
@@ -5045,6 +5037,8 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
  *  midi_control_event() iterates through all values.  We need to "iterate"
  *  between the record, quan_record, and thru values only.
  *
+ *  CURRENTLY NOT USED!!!
+ *
  * \param ev
  *      Provides the MIDI event to potentially trigger a recording-control
  *      action.
@@ -5278,31 +5272,52 @@ perform::set_thru (bool thru_active, int seq, bool toggle)
  * \param ev
  *      Provides the MIDI event to potentially trigger a control action.
  *
+ * \param recording
+ *      This parameter, if true, restricts the handled controls to start, stop, and
+ *      record.
+ *
  * \return
  *      Returns true if the event was actually handled, at least once.
  */
 
 bool
-perform::midi_control_event (const event & ev)
+perform::midi_control_event (const event & ev, bool recording)
 {
     bool result = false;
     int offset = m_screenset_offset;
-    for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
+    if (recording)
     {
-        /*
-         * \change ca 2018-10-28 GitHub issue #170.
-         *      Breaking after success prevents a MIDI control from handling
-         *      the same control event more than one time.  For example,
-         *      this prevents toggling multiple patterns with the same event.
-         *
-         *  result = handle_midi_control_event(ev, ctl, offset);
-         *  if (result)
-         *      break;      // differs from legacy behavior, which keeps going
-         */
-
-        bool ok = handle_midi_control_event(ev, ctl, offset);
+        bool ok = handle_midi_control_event(ev, c_midi_control_start, offset);
         if (! result)
             result = ok;
+
+        ok = handle_midi_control_event(ev, c_midi_control_stop, offset);
+        if (! result)
+            result = ok;
+
+        ok = handle_midi_control_event(ev, c_midi_control_record, offset);
+        if (! result)
+            result = ok;
+    }
+    else
+    {
+        for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
+        {
+            /*
+             * \change ca 2018-10-28 GitHub issue #170.
+             *      Breaking after success prevents a MIDI control from handling
+             *      the same control event more than one time.  For example,
+             *      this prevents toggling multiple patterns with the same event.
+             *
+             *  result = handle_midi_control_event(ev, ctl, offset);
+             *  if (result)
+             *      break;      // differs from legacy behavior, which keeps going
+             */
+
+            bool ok = handle_midi_control_event(ev, ctl, offset);
+            if (! result)
+                result = ok;
+        }
     }
     return result;
 }
@@ -5647,7 +5662,7 @@ perform::handle_playlist_control (int ctl, midi_control::action a, int v)
  *      reset the position. Or, when continue is received, we won't reset the
  *      position.  We do an inner_stop(); the m_midiclockpos member holds the
  *      stop position in case the next event is "continue".  This feature is
- *      not in Kepler34.
+ *      not in Kepler34 or Seq24, but is done in Seq32.
  *
  * EVENT_MIDI_CLOCK:
  *
@@ -5692,191 +5707,150 @@ perform::handle_playlist_control (int ctl, midi_control::action a, int v)
  *      It seems specific to certain Yamaha devices, but might prove useful
  *      later.
  *
- *  For events less than or equal to SysEx, we call midi_control_event()
- *  to handle the MIDI controls that Sequencer64 supports.  (These are
- *  configurable in the "rc" configuration file.)
+ *  For events less than or equal to SysEx, we call midi_control_event() to handle
+ *  the MIDI controls that Sequencer64 supports.  (These are configurable in the
+ *  "rc" configuration file.) We test for MIDI control events even if "dumping".
+ *  Otherwise, we cannot handle any more control events once recording is turned
+ *  on.  WARNING:  This can slow down recording, so we check only for recording
+ *  status now.
  */
 
 void
 perform::input_func ()
 {
-    event ev;
     while (m_inputing)              /* perhaps we should lock this variable */
     {
-        if (m_master_bus->poll_for_midi() > 0)
+        if (! poll_cycle())
+            return;
+    }
+    pthread_exit(0);
+}
+
+/**
+ *  A helper function for perform::input_func().
+ */
+
+bool
+perform::poll_cycle ()
+{
+    bool result = true;
+    if (m_master_bus->poll_for_midi() > 0)
+    {
+        do
         {
-            do
+            event ev;
+            if (m_master_bus->get_midi_event(&ev))
             {
-                if (m_master_bus->get_midi_event(&ev))
+                if (ev.get_status() < EVENT_MIDI_SYSEX)
                 {
-                    /*
-                     * Used when starting from the beginning of the song.
-                     * Obey the MIDI time clock.  Comments moved to the
-                     * banner.
-                     */
-
-                    if (ev.get_status() == EVENT_MIDI_START)
-                    {
-                        stop();                             // Kepler34
-                        song_start_mode(false);             // Kepler34
-                        start(song_start_mode());
-                        m_midiclockrunning = m_usemidiclock = true;
-                        m_midiclocktick = m_midiclockpos = 0;
-                    }
-                    else if (ev.get_status() == EVENT_MIDI_CONTINUE)
-                    {
-                        m_midiclockrunning = true;
-                        song_start_mode(false);             // Kepler34
-                        start(song_start_mode());
-                    }
-                    else if (ev.get_status() == EVENT_MIDI_STOP)
-                    {
-						/*
-                         * Do nothing; let the system pause; we're not getting
-                         * ticks after the stop, so the song won't advance when
-                         * start is received. We'll reset the position, or, when
-                         * continue is received, we won't.
-                         */
-
-                        m_midiclockrunning = false;
-                        all_notes_off();
-
-                        /*
-                         * This is not done in Seq24, but is done in Seq32.
-                         */
-
-                        inner_stop(true);           /* eventually flushes   */
-                        m_midiclockpos = get_tick();
-                    }
-                    else if (ev.get_status() == EVENT_MIDI_CLOCK)
-                    {
-                        /*
-                         * Issue #179.  Higher PPQN need a longer increment than
-                         * SEQ64_MIDI_CLOCK_INCREMENT (8) to get 24 clocks per
-                         * quarter note.
-                         */
-
-                        if (m_midiclockrunning)
-                            m_midiclocktick += m_midiclockincrement;
-                    }
-                    else if (ev.get_status() == EVENT_MIDI_SONG_POS)
-                    {
-                        midibyte d0, d1;                // see note in banner
-                        ev.get_data(d0, d1);
-                        m_midiclockpos = combine_bytes(d0, d1);
-                    }
-#ifdef USE_ACTIVE_SENSE_AND_RESET
-                    /*
-                     * Currently filtered in midi_jack, but what about ALSA?
-                     */
-
-                    else if
-                    (
-                        ev.get_status() == EVENT_MIDI_ACTIVE_SENSE ||
-                        ev.get_status() == EVENT_MIDI_RESET
-                    )
-                    {
-                        /*
-                         * For now, we ignore these events on input. See
-                         * GitHub sequencer64-packages/issues/4.  MIGHT NOT BE
-                         * A VALID FIX.  STILL INVESTIGATING.
-                         */
-
-                        return;
-                    }
-#endif
                     /*
                      * Send out the current event, if "dumping".
                      */
 
-                    if (ev.get_status() <= EVENT_MIDI_SYSEX)
+                    if (m_master_bus->is_dumping())
                     {
-                        /*
-                         * Test for MIDI control events even if "dumping".
-                         * Otherwise, we cannot handle any more control events
-                         * once recording is turned on.  WARNING:  This can
-                         * slow down recording, so we check only for recording
-                         * status now.
-                         */
-
-                        if (m_master_bus->is_dumping())
+                        if (midi_control_event(ev, true))   /* quick check  */
                         {
-                            /*
-                             * Check for all events, not just record-control,
-                             * to prevent unwanted recordings. Issue #150?
-                             *
-                             * if (! midi_control_record())
-                             */
-
-                            if (midi_control_event(ev))
-                            {
 #ifdef PLATFORM_DEBUG_TMI
-                                std::string estr = to_string(ev);
-                                printf("MIDI control event %s\n", estr.c_str());
+                            std::string estr = to_string(ev);
+                            printf("MIDI control event %s\n", estr.c_str());
 #endif
-                            }
-                            else
-                            {
-                                ev.set_timestamp(get_tick());
-                                if (rc().show_midi())
-                                    ev.print();
-
-                                if (m_filter_by_channel)
-                                    m_master_bus->dump_midi_input(ev);
-                                else
-                                    m_master_bus->get_sequence()->stream_event(ev);
-                            }
                         }
                         else
                         {
+                            ev.set_timestamp(get_tick());
+#ifdef PLATFORM_DEBUG_TMI
+                            ev.print_note();
+#endif
                             if (rc().show_midi())
                                 ev.print();
 
-                            (void) midi_control_event(ev);
+                            if (m_filter_by_channel)
+                                m_master_bus->dump_midi_input(ev);
+                            else
+                                m_master_bus->get_sequence()->stream_event(ev);
                         }
-
-#ifdef USE_STAZED_PARSE_SYSEX               // more code to incorporate!!!
-
-                        /*
-                         * Sequencer64 doesn't use incoming SysEx events. This
-                         * code comes from the Seq32 project.
-                         */
-
-                        if (global_use_sysex)
-                        {
-                            if (FF_RW_button_type != FF_RW_RELEASE)
-                            {
-                                if (ev.is_note_off())
-                                {
-                                    /*
-                                     * Notes 91 G5 & 96 C6 on YPT = FF/RW keys
-                                     */
-
-                                    midibyte n = ev.get_note();
-                                    if (n == 91 || n == 96)
-                                        FF_RW_button_type = FF_RW_RELEASE;
-                                }
-                            }
-                        }
-#endif
                     }
-                    if (ev.get_status() == EVENT_MIDI_SYSEX)
+                    else
                     {
-#ifdef USE_STAZED_PARSE_SYSEX               // more code to incorporate!!!
-                        if (global_use_sysex)
-                            parse_sysex(ev);
-#endif
                         if (rc().show_midi())
                             ev.print();
 
-                        if (rc().pass_sysex())
-                            m_master_bus->sysex(&ev);
+                        (void) midi_control_event(ev);
                     }
                 }
-            } while (m_master_bus->is_more_input());
-        }
+                else if (ev.get_status() == EVENT_MIDI_START)   /* restart  */
+                {
+                    stop();                                     /* Kepler34 */
+                    song_start_mode(false);                     /* Kepler34 */
+                    start(false);
+                    m_midiclockrunning = m_usemidiclock = true;
+                    m_midiclocktick = m_midiclockpos = 0;
+#ifdef PLATFORM_DEBUG
+                    if (rc().verbose_option())
+                        infoprint("MIDI Start");
+#endif
+                }
+                else if (ev.get_status() == EVENT_MIDI_CONTINUE)
+                {
+                    m_midiclockrunning = true;
+                    song_start_mode(false);                     /* Kepler34 */
+                    start(false);
+#ifdef PLATFORM_DEBUG
+                    if (rc().verbose_option())
+                        infoprint("MIDI Continue");
+#endif
+                }
+                else if (ev.get_status() == EVENT_MIDI_STOP)    /* pause    */
+                {
+                    m_midiclockrunning = false;
+                    all_notes_off();
+                    inner_stop(true);                           /* flush    */
+                    m_midiclockpos = get_tick();
+#ifdef PLATFORM_DEBUG
+                    if (rc().verbose_option())
+                        infoprint("MIDI Stop");
+#endif
+                }
+                else if (ev.get_status() == EVENT_MIDI_CLOCK)
+                {
+                    /*
+                     * Issue #179.  Higher PPQN need a longer increment than
+                     * SEQ64_MIDI_CLOCK_INCREMENT (8) to get 24 clocks per
+                     * quarter note.
+                     */
+
+                    if (m_midiclockrunning)
+                        m_midiclocktick += m_midiclockincrement;
+                }
+                else if (ev.get_status() == EVENT_MIDI_SONG_POS)
+                {
+                    midibyte d0, d1;                // see note in banner
+                    ev.get_data(d0, d1);
+                    m_midiclockpos = combine_bytes(d0, d1);
+                }
+#ifdef USE_ACTIVE_SENSE_AND_RESET
+                else if (ev.is_sense_reset())
+                {
+                    /*
+                     * Currently filtered in midi_jack, but what about ALSA?
+                     */
+
+                    return false;
+                }
+#endif
+                else if (ev.get_status() == EVENT_MIDI_SYSEX)
+                {
+                    if (rc().show_midi())
+                        ev.print();
+
+                    if (rc().pass_sysex())
+                        m_master_bus->sysex(&ev);
+                }
+            }
+        } while (m_master_bus->is_more_input());
     }
-    pthread_exit(0);
+    return result;
 }
 
 /**
@@ -5893,7 +5867,7 @@ perform::input_func ()
  *  value (actually 16-bit since most computer CPUs deal with 16-bit, not
  *  14-bit, integers).
  *
- *  I think Kepler64 got the bytes backward.
+ *  I think Kepler34 got the bytes backward.
  *
  * \param b0
  *      The first byte to be combined.

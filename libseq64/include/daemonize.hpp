@@ -5,7 +5,7 @@
  * \file          daemonize.hpp
  * \author        Chris Ahlstrom
  * \date          2005-07-03 to 2007-08-21 (from xpc-suite project)
- * \updates       2020-02-04
+ * \updates       2020-05-26
  * \license       GNU GPLv2 or above
  *
  *    Daemonization of POSIX C Wrapper (PSXC) library
@@ -50,8 +50,8 @@ namespace seq64
 {
 
 /*
- *  Free functions.
- *    These functions do a lot of the work of dealing with UNIX daemons.
+ *  Free functions.  These functions do a lot of the work of dealing with UNIX
+ *  daemons and timing.
  */
 
 extern bool check_daemonize (int argc, char * argv []);
@@ -62,13 +62,20 @@ extern uint32_t daemonize
     int mask                        = 0
 );
 extern void undaemonize (uint32_t previous_umask);
+
+/*
+ * Linux and Windows support.
+ */
+
 extern bool reroute_stdio
 (
     const std::string & logfile = "",
     bool closem = false
 );
+extern bool microsleep (int us);
+extern bool millisleep (int ms);
 
-/*
+/**
  * Basic session handling from use falkTX, circa 2020-02-02.  The following
  * function is internal.
  *

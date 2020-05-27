@@ -364,28 +364,6 @@ qseqroll::paintEvent (QPaintEvent *)
     old_progress_x(seq().get_last_tick() / zoom() + c_keyboard_padding_x);
 
     /*
-     * It would be easier to use ticks here, rather than x values.
-     */
-
-#if 0
-
-    static bool s_loop_in_progress = false;     /* indicates when to reset  */
-    if (old_progress_x() > c_keyboard_padding_x)
-    {
-        s_loop_in_progress = true;
-    }
-    else
-    {
-        if (s_loop_in_progress)
-        {
-            seq().loop_reset(true);             /* for overwrite recording  */
-            s_loop_in_progress = false;
-        }
-    }
-
-#endif
-
-    /*
      * End of draw_progress_on_window()
      */
 

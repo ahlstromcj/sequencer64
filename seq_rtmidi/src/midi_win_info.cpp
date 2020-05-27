@@ -270,32 +270,6 @@ midi_win_info::~midi_win_info ()
 void
 midi_win_info::connect ()
 {
-#if 0
-    if (is_nullptr(result))
-    {
-        const char * clientname = rc().app_client_name().c_str();
-        result = create_win_client(clientname);
-        if (not_nullptr(result))
-        {
-            int rc = set_process_callback(...);
-            m_win_client = result;
-            if (rc == 0)
-            {
-            }
-            else
-            {
-                m_error_string = "can't set I/O callback";
-                error(rterror::WARNING, m_error_string);
-            }
-        }
-        else
-        {
-            m_error_string = "Windows MM server not running?";
-            error(rterror::WARNING, m_error_string);
-        }
-    }
-    return result;
-#endif
 }
 
 /**
@@ -305,14 +279,6 @@ midi_win_info::connect ()
 void
 midi_win_info::disconnect ()
 {
-#if 0
-    if (not_nullptr(m_jack_client))
-    {
-        // jack_deactivate(m_jack_client);
-        // jack_client_close(m_jack_client);
-        // m_win_client = nullptr;
-    }
-#endif
 }
 
 /**
@@ -441,36 +407,7 @@ midi_win_info::api_flush ()
 bool
 midi_win_info::api_connect ()
 {
-#if 0
-    bool result = not_nullptr(client_handle());
-    if (result)
-    {
-        for
-        (
-            std::vector<midibus *>::iterator it = bus_container().begin();
-            it != bus_container().end(); ++it
-        )
-        {
-            midibus * m = *it;
-            if (! m->is_virtual_port())
-            {
-                result = m->api_connect();
-                if (! result)
-                {
-                    break;
-                }
-            }
-        }
-    }
-    if (! result)
-    {
-        m_error_string = "JACK can't activate and connect I/O";
-        error(rterror::WARNING, m_error_string);
-    }
-    return result;
-#else
     return true;
-#endif
 }
 
 /**
@@ -526,7 +463,7 @@ midi_win_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 int
 midi_win_info::api_poll_for_midi ()
 {
-    millisleep(1);
+    (void) microsleep(100);     // millisleep(1);
     return 0;
 }
 

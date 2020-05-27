@@ -508,7 +508,7 @@ mastermidibus::api_poll_for_midi ()
 {
     int result = poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
     if (result == 0)
-        millisleep(1);
+        (void) microsleep(100);     // millisleep(1);
 
     return result;
 }

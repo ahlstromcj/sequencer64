@@ -596,14 +596,15 @@ int
 mastermidibase::api_poll_for_midi ()
 {
     int result = m_inbus_array.poll_for_midi();
+printf("mastermidibase::api_poll_for_midi ()\n");
     if (result > 0)
     {
         if (result <= 2)
-            millisleep(1);              /* is this sensible?    */
+            (void) microsleep(100);     // millisleep(1); is this sensible?
     }
     else
     {
-        millisleep(1);
+        (void) microsleep(100);         // millisleep(1);
     }
     return result;
 }

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-06-09
+ * \updates       2020-05-25
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -354,6 +354,79 @@ event::set_status_keep_channel (midibyte eventcode)
 }
 
 /**
+ *  In relation to issue #206.
+ *
+ *  Combines a bunch of common operations in getting events.  Code used in:
+ *
+ *      -   midi_in_jack::api_get_midi_event(event *)
+ *      -   midi_alsa_info::api_get_midi_event(event *)
+ *
+ *  Can we use it in these contexts?
+ *
+ *      -   wrkfile::NoteArray(int, int)
+ *      -   midifile::parse_smf_1(...)      [very unlikely]
+ *
+ *  Some keyboards send Note On with velocity 0 for Note Off, so we take care
+ *  of that situation here by creating a Note Off event, with the channel
+ *  nybble preserved. Note that we call event::set_status_keep_channel()
+ *  instead of using stazed's set_status function with the "record" parameter.
+ *  Also, we have to mask in the actual channel number.
+ *
+ *  Encapsulates some common code.  This function assumes we have already set
+ *  the status and data bytes.
+ */
+
+bool
+event::set_midi_event
+(
+    midipulse timestamp,
+    const midibyte * buffer,
+    int count
+)
+{
+    bool result = true;
+    set_timestamp(timestamp);
+    set_sysex_size(count);
+#ifdef PLATFORM_DEBUG_TMI
+    printf
+    (
+        "set_midi_event([%ld], status %02x, d0 %02X, d1 %02X, %d bytes)\n",
+        timestamp, buffer[0], buffer[1], buffer[2], count
+    );
+#endif
+    if (count == 3)
+    {
+        set_status_keep_channel(buffer[0]);
+        set_data(buffer[1], buffer[2]);
+        if (is_note_off_recorded())
+        {
+            midibyte channel = buffer[0] & EVENT_GET_CHAN_MASK;
+            midibyte status = EVENT_NOTE_OFF | channel;
+            set_status_keep_channel(status);
+        }
+    }
+    else if (count == 2)
+    {
+        set_status_keep_channel(buffer[0]);
+        set_data(buffer[1]);
+    }
+    else
+    {
+        if (buffer[0] == EVENT_MIDI_SYSEX)
+        {
+            restart_sysex();            /* set up for sysex if needed   */
+            if (! append_sysex(buffer, count))
+            {
+                errprint("event::append_sysex() failed");
+            }
+        }
+        else
+            result = false;
+    }
+    return result;
+}
+
+/**
  *  Sets a Meta event.  Meta events have a status byte of EVENT_MIDI_META ==
  *  0xff and a channel value that reflects the type of Meta event (e.g. 0x51
  *  for a "Set Tempo" event.
@@ -371,27 +444,6 @@ event::set_meta_status (midibyte metatype)
 {
     m_status = EVENT_MIDI_META;
     m_channel = metatype;
-}
-
-/**
- *  Some keyboards send Note On with velocity 0 for Note Off, so we take care
- *  of that situation here by creating a Note Off event, with the channel
- *  nybble preserved. Note that we call event::set_status_keep_channel()
- *  instead of using stazed's set_status function with the "record" parameter.
- *  Also, we have to mask in the actual channel number.
- *
- *  Encapsulates some common code.  This function assumes we have already set
- *  the status and data bytes.
- */
-
-void
-event::adjust_note_off ()
-{
-    if (is_note_off_recorded())
-    {
-        midibyte status = EVENT_NOTE_OFF | m_channel;
-        set_status_keep_channel(status);
-    }
 }
 
 /**
@@ -427,7 +479,7 @@ event::restart_sysex ()
  */
 
 bool
-event::append_sysex (midibyte * data, int dsize)
+event::append_sysex (const midibyte * data, int dsize)
 {
     bool result = false;
     if (not_nullptr(data) && (dsize > 0))
@@ -482,7 +534,7 @@ event::append_sysex (midibyte * data, int dsize)
  */
 
 bool
-event::append_meta_data (midibyte metatype, midibyte * data, int dsize)
+event::append_meta_data (midibyte metatype, const midibyte * data, int dsize)
 {
     bool result = not_nullptr(data) && (dsize > 0);
     if (result)
@@ -576,6 +628,31 @@ event::print () const
     else
     {
         printf("data[2]: %02X %02X\n", m_data[0], m_data[1]);
+    }
+}
+
+/**
+ *
+ */
+
+void
+event::print_note (bool is_a_link) const
+{
+    if (is_note())
+    {
+        std::string type = is_note_on() ? "On" : "Off" ;
+        printf
+        (
+            "[%06ld] Note %s Key %02X Vel %02X Ch %02X ",
+            m_timestamp, type.c_str(), m_data[0], m_data[1], m_channel
+        );
+        if (is_linked() && ! is_a_link)
+        {
+            event * mylink = get_linked();
+            printf(": Link ");
+            mylink->print_note(true);
+        }
+        printf("\n");
     }
 }
 

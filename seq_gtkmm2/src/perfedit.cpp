@@ -278,7 +278,7 @@ perfedit::perfedit (perform & p, bool second_perfedit)
     m_entry_snap->set_size_request(40, -1);
     m_entry_snap->set_editable(false);
 
-    char num[12];
+    char num[16];
     for (int i = -SEQ64_OCTAVE_SIZE; i <= SEQ64_OCTAVE_SIZE; ++i)
     {
         if (i != 0)
@@ -315,7 +315,7 @@ perfedit::perfedit (perform & p, bool second_perfedit)
 
 #define SET_BPB     mem_fun(*this, &perfedit::set_beats_per_bar)
 
-    char b[4];
+    char b[16];
     for (int i = 0; i < SEQ64_MAXIMUM_BEATS_PER_MEASURE; ++i)
     {
         snprintf(b, sizeof b, "%d", i + 1);
@@ -701,7 +701,7 @@ perfedit::set_beats_per_bar (int bpm)
         bpm <= SEQ64_MAXIMUM_BEATS_PER_MEASURE
     )
     {
-        char b[8];
+        char b[16];
         snprintf(b, sizeof b, "%d", bpm);
         m_entry_bpm->set_text(b);
         if (m_bpm != 0)                     /* are we in construction?      */
@@ -729,7 +729,7 @@ perfedit::set_beat_width (int bw)
 {
     if (bw != m_bw && bw > 0)
     {
-        char b[8];
+        char b[16];
         snprintf(b, sizeof b, "%d", bw);
         m_entry_bw->set_text(b);
         if (m_bw != 0)                      /* are we in construction?      */
@@ -925,7 +925,7 @@ perfedit::transpose_button_callback (int transpose)
 void
 perfedit::set_transpose (int transpose)
 {
-    char b[12];
+    char b[16];
     snprintf(b, sizeof b, "%+d", transpose);
     m_entry_xpose->set_text(b);
     perf().all_notes_off();

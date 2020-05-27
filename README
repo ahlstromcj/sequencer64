@@ -1,6 +1,6 @@
 README for Sequencer64 0.96.8 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2020-02-16
+2015-09-10 to 2020-05-27
 
 Sequencer64 is a reboot of seq24, extending it greatly over the last four years.
 The heart of seq24 remains intact.  It is an old friend with a whole lot of
@@ -42,6 +42,11 @@ and using a conventional source tarball.
 
 Recent changes:
 
+    -   Version 0.96.8:
+        -   Many many tweaks and optimizations.
+        -   Fixed bug in event_list::link_new().
+        -   Sped up the MIDI record code to try to avoid issues recording
+            chords from a MIDI keyboard.
     -   Version 0.96.7:
         -   Fixed issue #181 by adding more beats/bar menu values up to 20.
             Note that the fix to issue #77 allows numbers up to 128 to be

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-03-13
+ * \updates       2020-05-25
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1256,7 +1256,16 @@ void
 sequence::verify_and_link ()
 {
     automutex locker(m_mutex);
+
+#ifdef PLATFORM_DEBUG_TMI
+    m_events.print_notes("before");
+#endif
+
     m_events.verify_and_link(m_length);
+
+#ifdef PLATFORM_DEBUG_TMI
+    m_events.print_notes("after");
+#endif
 }
 
 /**
@@ -3272,9 +3281,16 @@ bool
 sequence::add_event (const event & er)
 {
     automutex locker(m_mutex);
+
+    /*
+     * Here, Seq32 marks painted events and removes them.  Should we adopt
+     * this code?
+     */
+
     bool result = m_events.add(er);     /* post/auto-sorts by time & rank   */
     if (result)
     {
+        verify_and_link();              /* ca 2020-05-25                    */
         reset_draw_marker();
         set_dirty();
     }
@@ -3510,7 +3526,7 @@ sequence::stream_event (event & ev)
         if (m_thru)
             put_event_on_bus(ev);                       /* more locking     */
 
-        link_new();                                     /* more locking     */
+        m_events.link_new();                            /* already locked   */
         if (m_quantized_rec && m_parent->is_pattern_playing())
         {
             if (ev.is_note_off())

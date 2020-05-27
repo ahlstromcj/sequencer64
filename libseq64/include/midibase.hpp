@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2017-05-12
+ * \updates       2020-05-26
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -35,8 +35,9 @@
  *  base class for all such classes.
  */
 
-#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
-#include "easy_macros.h"                /* for autoconf header files    */
+#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN           */
+#include "daemonize.hpp"                /* milli- and microsleep()          */
+#include "easy_macros.h"                /* for autoconf header files        */
 #include "mutex.hpp"
 #include "midibus_common.hpp"
 #include "midibyte.hpp"                 /* seq64::midibyte typedef          */
@@ -622,12 +623,6 @@ protected:
     virtual void api_clock (midipulse tick) = 0;
 
 };          // class midibase
-
-/*
- *  Free functions
- */
-
-extern void millisleep (unsigned long ms);
 
 }           // namespace seq64
 

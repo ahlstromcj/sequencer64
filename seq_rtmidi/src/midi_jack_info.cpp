@@ -534,7 +534,7 @@ midi_jack_info::api_port_start
 int
 midi_jack_info::api_poll_for_midi ()
 {
-    millisleep(1);
+    (void) millisleep(1);
     return 0;
 }
 

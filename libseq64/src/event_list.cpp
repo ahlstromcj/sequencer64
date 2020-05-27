@@ -335,7 +335,7 @@ event_list::merge (event_list & el, bool presort)
 #endif  // SEQ64_USE_EVENT_MAP
 
 /**
- *  Links a new event.  This function checks for a note on, then look for
+ *  Links a new event.  This function checks for a note on, then looks for
  *  its note off.  This function is provided in the event_list because it
  *  does not depend on any external data.  Also note that any desired
  *  thread-safety must be provided by the caller.
@@ -344,7 +344,6 @@ event_list::merge (event_list & el, bool presort)
 void
 event_list::link_new ()
 {
-    bool endfound = false;
     for (Events::iterator on = m_events.begin(); on != m_events.end(); ++on)
     {
         event & eon = dref(on);
@@ -352,14 +351,14 @@ event_list::link_new ()
         {
             Events::iterator off = on;              /* point to note on     */
             ++off;                                  /* get next element     */
-            endfound = false;
+            bool endfound = false;
             while (off != m_events.end())
             {
                 event & eoff = dref(off);
-                if                  /* off event, == notes, and not linked  */
+                if                          /* Off, == notes, not linked    */
                 (
                     eoff.is_note_off() &&
-                    eoff.get_note() == eoff.get_note() && ! eoff.is_linked()
+                    eoff.get_note() == eon.get_note() && ! eoff.is_linked()
                 )
                 {
                     eon.link(&eoff);                /* link backward        */
@@ -403,6 +402,12 @@ event_list::link_new ()
  *      resize or move of notes must modify for wrapping if Note Off is >=
  *      m_length.
  *
+ *  THINK ABOUT IT:  If we're in legacy merge mode for a loop, the Note Off is
+ *  actually earlier than the Note On.  And in replace mode, the Note On is
+ *  cleared, leaving us with a dangling Note Off event.  We should consider, in
+ *  both modes, automatically adding the Note Off at the end of the loop and
+ *  ignoring the next note off on the same note from the keyboard.  Careful!
+ *
  * \threadunsafe
  *      As in most case, the caller will use an automutex to call this
  *      function safely.
@@ -426,29 +431,18 @@ event_list::verify_and_link (midipulse slength)
             while (off != m_events.end())
             {
                 event & eoff = dref(off);
-                if                          /* Off, == notes, not marked    */
+                if                          /* Off, == notes, not linked    */
                 (
                     eoff.is_note_off() &&
-                    eoff.get_note() == eon.get_note() && ! eoff.is_marked()
+                    eoff.get_note() == eon.get_note() && ! eoff.is_linked()
                 )
                 {
                     /*
-                     * THINK ABOUT IT:  If we're in legacy merge mode for a
-                     * loop, the Note Off is actually earlier than the Note
-                     * On.  And in replace mode, the Note On is cleared,
-                     * leaving us with a dangling Note Off event.
-                     *
-                     * We should consider, in both modes, automatically adding
-                     * the Note Off at the end of the loop and ignoring the
-                     * next note off on the same note from the keyboard.
-                     *
-                     * Careful!
+                     * See THINK ABOUT IT in the function banner.
                      */
 
                     eon.link(&eoff);                    /* link + mark */
                     eoff.link(&eon);
-                    eon.mark();
-                    eoff.mark();
                     endfound = true;
                     break;
                 }
@@ -463,13 +457,11 @@ event_list::verify_and_link (midipulse slength)
                     if
                     (
                         eoff.is_note_off() &&
-                        eoff.get_note() == eon.get_note() && ! eoff.is_marked()
+                        eoff.get_note() == eon.get_note() && ! eoff.is_linked()
                     )
                     {
                         eon.link(&eoff);                /* link + mark */
                         eoff.link(&eon);
-                        eon.mark();
-                        eoff.mark();
                         endfound = true;
                         break;
                     }
@@ -478,7 +470,6 @@ event_list::verify_and_link (midipulse slength)
             }
         }
     }
-    unmark_all();
     mark_out_of_range(slength);
     remove_marked();                        /* prune out-of-range events    */
 
@@ -652,7 +643,7 @@ event_list::mark_out_of_range (midipulse slength)
     for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & e = dref(i);
-        bool prune = e.get_timestamp() > slength;   /* WAS ">=", SEE BANNER */
+        bool prune = e.get_timestamp() >= slength;   /* WAS ">=", SEE BANNER */
         if (! prune)
             prune = e.get_timestamp() < 0;          /* added back, seq24    */
 
@@ -858,11 +849,41 @@ event_list::unselect_all ()
  */
 
 void
-event_list::print () const
+event_list::print (const std::string & tag) const
 {
-    printf("events[%d]:\n", count());
-    for (Events::const_iterator i = m_events.begin(); i != m_events.end(); ++i)
-        dref(i).print();
+    if (count() > 0)
+    {
+        printf("%d events %s:\n", count(), tag.c_str());
+        for
+        (
+            Events::const_iterator i = m_events.begin();
+            i != m_events.end(); ++i
+        )
+        {
+            dref(i).print();
+        }
+    }
+}
+
+/**
+ *  Prints a list of the currently-held events.  Useful for debugging.
+ */
+
+void
+event_list::print_notes (const std::string & tag) const
+{
+    if (count() > 0)
+    {
+        printf("Notes %s:\n", tag.c_str());
+        for
+        (
+            Events::const_iterator i = m_events.begin();
+            i != m_events.end(); ++i
+        )
+        {
+            dref(i).print_note();
+        }
+    }
 }
 
 }           // namespace seq64

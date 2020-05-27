@@ -174,43 +174,6 @@ alsa_use_queue (void)
     return pmNoError;
 }
 
-#if 0
-/*
- * EXPERIMENTAL.
- *
- *  The s_queue must already exist.
- */
-
-static void
-alsa_set_beats_per_minute (int tempo_us)
-{
-    if (s_queue >= 0 && not_nullptr(s_seq))
-    {
-        snd_seq_queue_tempo_t * tempo;
-        snd_seq_queue_tempo_alloca(&tempo);
-        snd_seq_queue_tempo_set_tempo(tempo, tempo_us);
-        (void) snd_seq_set_queue_tempo(s_seq, s_queue, tempo);
-
-        /*
-         * Do we have a snd_seq_restart_queue() to call?
-         */
-    }
-}
-
-static void
-alsa_set_ppqn (int ppqn)
-{
-    snd_seq_queue_tempo_t * tempo;
-    snd_seq_queue_tempo_alloca(&tempo);
-    snd_seq_queue_tempo_set_ppq(tempo, ppqn);
-
-    /*
-     * Do we have a snd_seq_restart_queue() to call?
-     */
-}
-
-#endif
-
 /**
  *
  */
@@ -652,12 +615,6 @@ static PmError
 alsa_write_flush (PmInternal * midi, PmTimestamp UNUSED(timestamp))
 {
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
-
-#if 0
-    if (VERBOSE_ON)
-        printf("snd_seq_drain_output: 0x%x\n", (unsigned) s_seq);
-#endif
-
     desc->error = snd_seq_drain_output(s_seq);
     if (desc->error < 0)
         return pmHostError;

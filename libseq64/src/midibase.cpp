@@ -52,12 +52,6 @@
 #include "midibase.hpp"                 /* seq64::midibase for ALSA         */
 #include "settings.hpp"                 /* seq64::rc()                      */
 
-#ifdef PLATFORM_WINDOWS
-#include <windows.h>                    /* Sleep()                          */
-#else
-#include <unistd.h>                     /* usleep() or select()             */
-#endif
-
 /*
  *  Do not document a namespace; it breaks Doxygen.
  */
@@ -821,49 +815,6 @@ midibase::show_bus_values ()
             int(get_clock()), get_input() ? "yes" : "no"
         );
     }
-}
-
-/*
- *  This free-function in the seq64 namespace provides a way to suspend a
- *  thread for a small amount of time.
- *
- * \linux
- *      We can use the usleep(3) function.
- *
- * \unix
- *    In POSIX, select() can return early if any signal occurs.  We don't
- *    correct for that here at this time.  Actually, it is a convenient
- *    feature, and we wish that Sleep() would provide it.
- *
- * \win32
- *    In Windows, the Sleep(0) function does not sleep, but it does cede
- *    control of the thread to the operating system, which then schedules
- *    another thread to run.
- *
- * \warning
- *    Please note that this function isn't all that accurate for small
- *    sleep values, due to the time taken to set up the operation, and
- *    resolution issues in many operating systems.
- *
- * \param ms
- *    The number of milliseconds to "sleep".
- *
- */
-
-void
-millisleep (unsigned long ms)
-{
-#if defined PLATFORM_LINUX
-    (void) usleep((useconds_t) (ms * 1000));
-#elif defined PLATFORM_UNIX
-   struct timeval tv;
-   struct timeval * tvptr = &tv;
-   tv.tv_usec = long(ms % 1000) * 1000;
-   tv.tv_sec = long(ms / 1000;
-   (void) select(0, 0, 0, 0, tvptr);
-#elif defined PLATFORM_WINDOWS              // or PLATFORM_MINGW
-   Sleep((DWORD) ms);
-#endif
 }
 
 }           // namespace seq64

@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2017-08-20
- * \updates       2019-01-05
+ * \updates       2020-05-24
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  * \deprecated
@@ -934,12 +934,12 @@ midi_in_win::api_poll_for_midi ()
     rtmidi_in_data * rtindata = m_jack_data.m_jack_rtmidiin;
     if (rtindata->using_callback())
     {
-        millisleep(1);
+        (void) microsleep(100);     // millisleep(1);
         return 0;
     }
     else
     {
-        millisleep(1);
+        (void) microsleep(100);     // millisleep(1);
         return rtindata->queue().count();
     }
 }
@@ -964,54 +964,7 @@ midi_in_win::api_get_midi_event (event * inev)
     if (result)
     {
         midi_message mm = rtindata->queue().pop_front();
-        inev->set_timestamp(mm.timestamp());
-        if (mm.count() == 3)
-        {
-            inev->set_status_keep_channel(mm[0]);
-            inev->set_data(mm[1], mm[2]);
-
-            /*
-             *  Some keyboards send Note On with velocity 0 for Note Off, so
-             *  we take care of that situation here by creating a Note Off
-             *  event, with the channel nybble preserved. Note that we call
-             *  event::set_status_keep_channel() instead of using stazed's
-             *  set_status function with the "record" parameter.  Also, we
-             *  have to mask in the actual channel number.
-             */
-
-            if (inev->is_note_off_recorded())
-            {
-                midibyte channel = mm[0] & EVENT_GET_CHAN_MASK;
-                midibyte status = EVENT_NOTE_OFF | channel;
-                inev->set_status_keep_channel(status);
-            }
-        }
-        else if (mm.count() == 2)
-        {
-            inev->set_status_keep_channel(mm[0]);
-            inev->set_data(mm[1]);
-        }
-        else
-        {
-            infoprint("SysEx information encountered?");
-
-#ifdef SEQ64_USE_SYSEX_PROCESSING
-
-            /**
-             *  We will only get EVENT_SYSEX on the first packet of MIDI data;
-             *  the rest we have to poll for.  SysEx processing is currently
-             *  disabled.  The code that follows has a big bug!
-             */
-
-            midibyte buffer[0x1000];        /* temporary buffer for Sysex   */
-            inev->set_sysex_size(bytes);
-            if (buffer[0] == EVENT_MIDI_SYSEX)
-            {
-                inev->restart_sysex();      /* set up for sysex if needed   */
-                sysex = inev->append_sysex(buffer, bytes);
-            }
-#endif
-        }
+        result = inev->set_midi_event(ev->time.tick, buffer, bytes);
     }
     return result;
 }

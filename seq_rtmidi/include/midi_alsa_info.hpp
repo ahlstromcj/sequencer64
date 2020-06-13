@@ -9,7 +9,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-12-04
- * \updates       2017-03-21
+ * \updates       2020-06-13
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the ALSA information of
@@ -102,6 +102,10 @@ public:
 private:
 
     virtual int get_all_port_info ();
+
+    void get_poll_descriptors ();
+    void remove_poll_descriptors ();
+    bool check_port_type (snd_seq_port_info_t * pinfo) const;
 
 };          // class midi_alsa_info
 

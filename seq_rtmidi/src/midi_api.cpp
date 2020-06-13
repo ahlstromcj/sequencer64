@@ -239,13 +239,13 @@ midi_api::cancel_callback ()
  *  like having so many overrides.
  *
  * \return
- *      Always returns 0, after a milliseconds's sleep.
+ *      Always returns 0, after a 100 microseconds's sleep.
  */
 
 int
 midi_api::api_poll_for_midi ()
 {
-    (void) millisleep(1);
+    microsleep(100);                            /* (void) millisleep(1);    */
     return 0;
 }
 

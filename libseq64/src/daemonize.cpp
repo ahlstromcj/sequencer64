@@ -3,7 +3,7 @@
  * \library       sequencer64 application (from PSXC library)
  * \author        Chris Ahlstrom
  * \date          2005-07-03 to 2007-08-21 (pre-Sequencer24/64)
- * \updates       2020-05-26
+ * \updates       2020-06-06
  * \license       GNU GPLv2 or above
  *
  *  Daemonization module of the POSIX C Wrapper (PSXC) library
@@ -464,7 +464,8 @@ millisleep (int ms)
  *  interacting with signals.  It seems that it supports a non-busy wait.
  *
  * \param us
- *      Provides the desired number of microseconds to wait.
+ *      Provides the desired number of microseconds to wait.  If set to 0, then
+ *      a sched_yield() is called, similar to Sleep(0) in Windows.
  *
  * \return
  *      Returns true if the full sleep occurred, or if interruped by a signal.
@@ -473,12 +474,24 @@ millisleep (int ms)
 bool
 microsleep (int us)
 {
-    struct timespec ts;
-    ts.tv_sec = us / 1000000;
-    ts.tv_nsec = (us % 1000000) * 1000;
+    bool result = us >= 0;
+    if (result)
+    {
+        if (us == 0)
+        {
+            sched_yield();
+        }
+        else
+        {
+            struct timespec ts;
+            ts.tv_sec = us / 1000000;
+            ts.tv_nsec = (us % 1000000) * 1000;
 
-    int rc = nanosleep(&ts, NULL);
-    return rc == 0 || rc == EINTR;
+            int rc = nanosleep(&ts, NULL);
+            result = rc == 0 || rc == EINTR;
+        }
+    }
+    return result;
 }
 
 #endif  // PLATFORM_LINUX
@@ -500,17 +513,28 @@ microsleep (int us)
 bool
 microsleep (int us)
 {
-	HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);   /* synchapi.h */
-    bool result = timer != NULL;
+    bool result = us >= 0;
     if (result)
     {
-        LARGE_INTEGER ft;
-        ft.QuadPart = -(10 * (__int64) us);
-        result = SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0) != 0;
-        if (result)
-            result = WaitForSingleObject(timer, INFINITE) != WAIT_FAILED;
+        if (us == 0)
+        {
+            Sleep(0);
+        }
+        else
+        {
+            HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
+            bool result = timer != NULL;
+            if (result)
+            {
+                LARGE_INTEGER ft;
+                ft.QuadPart = -(10 * (__int64) us);
+                result = SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0) != 0;
+                if (result)
+                    result = WaitForSingleObject(timer, INFINITE) != WAIT_FAILED;
 
-        CloseHandle(timer);
+                CloseHandle(timer);
+            }
+        }
     }
     return result;
 }

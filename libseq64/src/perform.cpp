@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2020-05-26
+ * \updates       2020-06-06
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -379,7 +379,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_midiclockrunning          (false),
     m_midiclocktick             (0),
     m_midiclockincrement        (clock_ticks_from_ppqn(m_ppqn)),
-    m_midiclockpos              (-1),
+    m_midiclockpos              (0),
     m_dont_reset_ticks          (false),
     m_screenset_notepad         (),         // string array [c_max_sets]
     m_midi_cc_toggle            (),         // midi_control []
@@ -5743,11 +5743,7 @@ perform::poll_cycle ()
             {
                 if (ev.get_status() < EVENT_MIDI_SYSEX)
                 {
-                    /*
-                     * Send out the current event, if "dumping".
-                     */
-
-                    if (m_master_bus->is_dumping())
+                    if (m_master_bus->is_dumping())         /* "playing"    */
                     {
                         if (midi_control_event(ev, true))   /* quick check  */
                         {
@@ -5781,36 +5777,39 @@ perform::poll_cycle ()
                 }
                 else if (ev.get_status() == EVENT_MIDI_START)   /* restart  */
                 {
-                    stop();                                     /* Kepler34 */
                     song_start_mode(false);                     /* Kepler34 */
-                    start(false);
                     m_midiclockrunning = m_usemidiclock = true;
                     m_midiclocktick = m_midiclockpos = 0;
-#ifdef PLATFORM_DEBUG
+                    stop_playing();
+                    start_playing(false);                       /* Live     */
                     if (rc().verbose_option())
                         infoprint("MIDI Start");
-#endif
                 }
                 else if (ev.get_status() == EVENT_MIDI_CONTINUE)
                 {
-                    m_midiclockrunning = true;
                     song_start_mode(false);                     /* Kepler34 */
-                    start(false);
-#ifdef PLATFORM_DEBUG
+                    m_midiclockpos = get_tick();
+                    m_dont_reset_ticks = true;
+                    m_midiclockrunning = m_usemidiclock = true;
+
+                    /*
+                     * Not sure why, but doing this twice works.
+                     */
+
+                    pause_playing(false); start_playing(false);
+                    pause_playing(false); start_playing(false);
                     if (rc().verbose_option())
                         infoprint("MIDI Continue");
-#endif
                 }
                 else if (ev.get_status() == EVENT_MIDI_STOP)    /* pause    */
                 {
-                    m_midiclockrunning = false;
                     all_notes_off();
-                    inner_stop(true);                           /* flush    */
+                    m_usemidiclock = true;
+                    m_midiclockrunning = false;
                     m_midiclockpos = get_tick();
-#ifdef PLATFORM_DEBUG
+                    stop_playing();                             /* flush?   */
                     if (rc().verbose_option())
                         infoprint("MIDI Stop");
-#endif
                 }
                 else if (ev.get_status() == EVENT_MIDI_CLOCK)
                 {
@@ -5825,9 +5824,17 @@ perform::poll_cycle ()
                 }
                 else if (ev.get_status() == EVENT_MIDI_SONG_POS)
                 {
-                    midibyte d0, d1;                // see note in banner
+                    midibyte d0, d1;                /* see note in banner   */
                     ev.get_data(d0, d1);
                     m_midiclockpos = combine_bytes(d0, d1);
+                }
+                else if (ev.get_status() == EVENT_MIDI_SYSEX)
+                {
+                    if (rc().show_midi())
+                        ev.print();
+
+                    if (rc().pass_sysex())
+                        m_master_bus->sysex(&ev);
                 }
 #ifdef USE_ACTIVE_SENSE_AND_RESET
                 else if (ev.is_sense_reset())
@@ -5839,13 +5846,9 @@ perform::poll_cycle ()
                     return false;
                 }
 #endif
-                else if (ev.get_status() == EVENT_MIDI_SYSEX)
+                else
                 {
-                    if (rc().show_midi())
-                        ev.print();
-
-                    if (rc().pass_sysex())
-                        m_master_bus->sysex(&ev);
+                    /* ignore the event */
                 }
             }
         } while (m_master_bus->is_more_input());

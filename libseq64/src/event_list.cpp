@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2018-11-03
+ * \updates       2020-06-11
  * \license       GNU GPLv2 or above
  *
  *  This container now can indicate if certain Meta events (time-signaure or
@@ -351,7 +351,9 @@ event_list::link_new ()
         {
             Events::iterator off = on;              /* point to note on     */
             ++off;                                  /* get next element     */
+#ifdef SEQ64_USE_STAZED_NEW_LINK_EXTENSION
             bool endfound = false;
+#endif
             while (off != m_events.end())
             {
                 event & eoff = dref(off);
@@ -363,11 +365,23 @@ event_list::link_new ()
                 {
                     eon.link(&eoff);                /* link backward        */
                     eoff.link(&eon);                /* link forward         */
+#ifdef SEQ64_USE_STAZED_NEW_LINK_EXTENSION
                     endfound = true;                /* note on fulfilled    */
+#endif
                     break;
                 }
                 ++off;
             }
+
+#ifdef SEQ64_USE_STAZED_NEW_LINK_EXTENSION
+
+            /*
+             * This code, meant to allow wraparound of notes in a pattern, is
+             * problematic.  Commenting it out for now.  A possible
+             * alternative is to generated a Note Off event timestamped at the
+             * end of the pattern.
+             */
+
             if (! endfound)
             {
                 off = m_events.begin();
@@ -388,6 +402,7 @@ event_list::link_new ()
                     ++off;
                 }
             }
+#endif
         }
     }
 }

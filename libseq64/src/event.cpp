@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-05-25
+ * \updates       2020-06-03
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -387,7 +387,7 @@ event::set_midi_event
     bool result = true;
     set_timestamp(timestamp);
     set_sysex_size(count);
-#ifdef PLATFORM_DEBUG_TMI
+#ifdef PLATFORM_DEBUG   // _TMI
     printf
     (
         "set_midi_event([%ld], status %02x, d0 %02X, d1 %02X, %d bytes)\n",
@@ -409,6 +409,11 @@ event::set_midi_event
     {
         set_status_keep_channel(buffer[0]);
         set_data(buffer[1]);
+    }
+    else if (count == 1)
+    {
+        set_status(buffer[0]);
+        clear_data();
     }
     else
     {

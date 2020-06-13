@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-05-25
+ * \updates       2020-06-10
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -3526,7 +3526,9 @@ sequence::stream_event (event & ev)
         if (m_thru)
             put_event_on_bus(ev);                       /* more locking     */
 
-        m_events.link_new();                            /* already locked   */
+        if (ev.is_note_off())                           /* time to relink   */
+            m_events.link_new();                        /* already locked   */
+
         if (m_quantized_rec && m_parent->is_pattern_playing())
         {
             if (ev.is_note_off())

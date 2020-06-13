@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2020-05-24
+ * \updates       2020-06-13
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -62,6 +62,25 @@
 #include "midibus_common.hpp"           /* from the libseq64 sub-project    */
 #include "settings.hpp"                 /* seq64::rc() configuration object */
 
+/**
+ *  We tried opening the ALSA port in non-blocking mode.  Didn't seem to
+ *  offer any benefit.
+ *
+ *  -   0                       Blocking mode.
+ *  -   SND_SEQ_NONBLOCK        Non-blocking mode.
+ *
+ *  We did reduce the polling timeout from 1000 milliseconds to 100 milliseconds,
+ *  and removed the addition 100 microsecond wait.
+ */
+
+#define SEQ64_SND_SEQ_OPEN_BLOCK_MODE      0
+
+#if defined SEQ64_USE_SLEEPY_POLL
+#define SEQ64_POLL_WAIT_MS              1000
+#else
+#define SEQ64_POLL_WAIT_MS               100
+#endif
+
 /*
  * Do not document the namespace; it breaks Doxygen.
  */
@@ -81,6 +100,10 @@ unsigned midi_alsa_info::sm_output_caps =
 
 /**
  *  Principal constructor.
+ *
+ *      This function calls snd_seq_open() to set up the sequencer for duplex
+ *      (both input and output).  We also will try SND_SEQ_NONBLOCK instead of
+ *      0 [2020-06-06].
  *
  * \param appname
  *      Provides the name of the application.
@@ -103,10 +126,10 @@ midi_alsa_info::midi_alsa_info
     m_num_poll_descriptors  (0),            /* from ALSA mastermidibus      */
     m_poll_descriptors      (nullptr)       /* ditto                        */
 {
-    snd_seq_t * seq;                        /* point to member              */
+    snd_seq_t * seq;                        /* will be a pointer member     */
     int result = snd_seq_open               /* set up ALSA sequencer client */
     (
-        &seq, "default", SND_SEQ_OPEN_DUPLEX, 0 // SND_SEQ_NONBLOCK
+        &seq, "default", SND_SEQ_OPEN_DUPLEX, SEQ64_SND_SEQ_OPEN_BLOCK_MODE
     );
     if (result < 0)
     {
@@ -124,26 +147,7 @@ midi_alsa_info::midi_alsa_info
         midi_handle(seq);
         snd_seq_set_client_name(m_alsa_seq, rc().application_name().c_str());
         global_queue(snd_seq_alloc_queue(m_alsa_seq));
-
-        /*
-         * Get the number of MIDI input poll file descriptors.  Allocate the
-         * poll-descriptors array.  Then get the input poll-descriptors into
-         * the array.  Finally, set the input and output buffer sizes.  Can we
-         * do this before creating all the MIDI busses?  If not, we'll put
-         * them in a separate function to call later.
-         */
-
-        m_num_poll_descriptors = snd_seq_poll_descriptors_count
-        (
-            m_alsa_seq, POLLIN
-        );
-        m_poll_descriptors = new pollfd[m_num_poll_descriptors];
-        snd_seq_poll_descriptors
-        (
-            m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
-        );
-        snd_seq_set_output_buffer_size(m_alsa_seq, c_midibus_output_size);
-        snd_seq_set_input_buffer_size(m_alsa_seq, c_midibus_input_size);
+        get_poll_descriptors();
     }
 }
 
@@ -162,16 +166,74 @@ midi_alsa_info::~midi_alsa_info ()
         snd_seq_free_queue(m_alsa_seq, global_queue());
         snd_seq_close(m_alsa_seq);                      /* close client     */
         (void) snd_config_update_free_global();         /* more cleanup     */
-        if (not_nullptr(m_poll_descriptors))
-        {
-            delete [] m_poll_descriptors;
-            m_poll_descriptors = nullptr;
-        }
+        m_alsa_seq = nullptr;
+        remove_poll_descriptors();
     }
 }
 
-#define SEQ64_PORT_CLIENT      0xFF000000
-#define SEQ64_PORT_COUNT       (-1)
+/**
+ *  Get the number of MIDI input poll file descriptors.  Allocate the
+ *  poll-descriptors array.  Then get the input poll-descriptors into the array.
+ *  Finally, set the input and output buffer sizes.  Can we do this before
+ *  creating all the MIDI busses?  If not, we'll put them in a separate function
+ *  to call later.
+ *
+ * This is done in the constructor, too!
+ */
+
+void
+midi_alsa_info::get_poll_descriptors ()
+{
+    m_num_poll_descriptors = snd_seq_poll_descriptors_count(m_alsa_seq, POLLIN);
+    if (m_num_poll_descriptors > 0)
+    {
+        m_poll_descriptors = new (std::nothrow) pollfd[m_num_poll_descriptors];
+        if (not_nullptr(m_poll_descriptors))
+        {
+            snd_seq_poll_descriptors                /* get input descriptors */
+            (
+                m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
+            );
+            snd_seq_set_output_buffer_size(m_alsa_seq, c_midibus_output_size);
+            snd_seq_set_input_buffer_size(m_alsa_seq, c_midibus_input_size);
+        }
+    }
+    else
+    {
+        errprint("No ALSA poll descriptors found");
+    }
+}
+
+/**
+ *  Removes the poll descriptors.
+ */
+
+void
+midi_alsa_info::remove_poll_descriptors ()
+{
+    if (not_nullptr(m_poll_descriptors))
+    {
+        delete [] m_poll_descriptors;
+        m_poll_descriptors = nullptr;
+        m_num_poll_descriptors = 0;
+    }
+}
+
+/**
+ *  Checks the port type for not being the "generic" types
+ *  SND_SEQ_PORT_TYPE_MIDI_GENERIC and SND_SEQ_PORT_TYPE_SYNTH.
+ */
+
+bool
+midi_alsa_info::check_port_type (snd_seq_port_info_t * pinfo) const
+{
+    unsigned alsatype = snd_seq_port_info_get_type(pinfo);
+    return
+    (
+        ((alsatype & SND_SEQ_PORT_TYPE_MIDI_GENERIC) == 0) &&
+        ((alsatype & SND_SEQ_PORT_TYPE_SYNTH) == 0)
+    );
+}
 
 /**
  *  Gets information on ALL ports, putting input data into one midi_info
@@ -233,15 +295,8 @@ midi_alsa_info::get_all_port_info ()
             snd_seq_port_info_set_port(pinfo, -1);
             while (snd_seq_query_next_port(m_alsa_seq, pinfo) >= 0)
             {
-                unsigned alsatype = snd_seq_port_info_get_type(pinfo);
-                if
-                (
-                    ((alsatype & SND_SEQ_PORT_TYPE_MIDI_GENERIC) == 0) &&
-                    ((alsatype & SND_SEQ_PORT_TYPE_SYNTH) == 0)
-                )
-                {
+                if (check_port_type(pinfo))
                     continue;
-                }
 
                 unsigned caps = snd_seq_port_info_get_capability(pinfo);
                 std::string clientname = snd_seq_client_info_get_name(cinfo);
@@ -341,7 +396,7 @@ midi_alsa_info::api_set_beats_per_minute (midibpm b)
 /**
  *  Polls for any ALSA MIDI information using a timeout value of 1000
  *  milliseconds.  Identical to seq_alsamidi's mastermidibus ::
- *  api_poll_for_midi(), which waits 1 millisecond if no input is pending.
+ *  api_poll_for_midi(), which waits 0.1 millisecond if no input is pending.
  *
  * \return
  *      Returns the result of the call to poll() on the global ALSA poll
@@ -351,9 +406,15 @@ midi_alsa_info::api_set_beats_per_minute (midibpm b)
 int
 midi_alsa_info::api_poll_for_midi ()
 {
-    int result = poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
+    int result = poll
+    (
+        m_poll_descriptors, m_num_poll_descriptors, SEQ64_POLL_WAIT_MS
+    );
+
+#if defined SEQ64_USE_SLEEPY_POLL
     if (result == 0)
-        (void) microsleep(100);     // millisleep(1);
+        (void) microsleep(100);
+#endif
 
     return result;
 }
@@ -433,10 +494,16 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
             if (test >= 0)
                 bus_slot = test;
 
-            midibus * m = new midibus(masterbus.m_midi_master, bus_slot);
-            m->is_virtual_port(false);
-            m->is_input_port(false);
-            masterbus.m_outbus_array.add(m, e_clock_off);   /* disabled? */
+            midibus * m = new (std::nothrow) midibus
+            (
+                masterbus.m_midi_master, bus_slot
+            );
+            if (not_nullptr(m))
+            {
+                m->is_virtual_port(false);
+                m->is_input_port(false);
+                masterbus.m_outbus_array.add(m, e_clock_off);
+            }
         }
         if (CAP_FULL_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
         {
@@ -445,23 +512,26 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
             if (test >= 0)
                 bus_slot = test;
 
-            midibus * m = new midibus(masterbus.m_midi_master, bus_slot);
-            m->is_virtual_port(false);
-            m->is_input_port(true);                  // was false BEWARE BREAKAGE
-            masterbus.m_inbus_array.add(m, false);
+            midibus * m = new (std::nothrow) midibus
+            (
+                masterbus.m_midi_master, bus_slot
+            );
+            if (not_nullptr(m))
+            {
+                m->is_virtual_port(false);
+                m->is_input_port(true);
+                masterbus.m_inbus_array.add(m, false);
+            }
         }
-    }                                           /* end loop for clients */
+    }                                               /* end loop for clients */
 
     /*
-     * Get the number of MIDI input poll file descriptors.
+     * Get the number of MIDI input poll file descriptors.  This is done in the
+     * constructor, too!
      */
 
-    m_num_poll_descriptors = snd_seq_poll_descriptors_count(m_alsa_seq, POLLIN);
-    m_poll_descriptors = new pollfd[m_num_poll_descriptors]; /* allocate info */
-    snd_seq_poll_descriptors                        /* get input descriptors */
-    (
-        m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
-    );
+    remove_poll_descriptors();
+    get_poll_descriptors();
 }
 
 /**
@@ -482,6 +552,8 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
  *  our processing?  At any rate, we catch the bug now, and don't crash, but
  *  eventually processing gets swamped until we kill VMPK.  And we now have a
  *  note sounding even though neither app is running.  Really screws up ALSA!
+ *
+ *  Note that there is currently no build-in mutex lock.
  *
  * Events:
  *
@@ -509,14 +581,8 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 bool
 midi_alsa_info::api_get_midi_event (event * inev)
 {
-    /*
-     * Currently no build-in mutex lock.
-     */
-
-    snd_seq_event_t * ev;
-    bool sysex = false;
     bool result = false;
-    midibyte buffer[0x1000];                /* temporary buffer for MIDI data */
+    snd_seq_event_t * ev;
     int remcount = snd_seq_event_input(m_alsa_seq, &ev);
     if (remcount < 0 || is_nullptr(ev))
     {
@@ -565,16 +631,47 @@ midi_alsa_info::api_get_midi_event (event * inev)
     if (result)
         return false;
 
+    midibyte buffer[0x1000];                        /* 4096 buffer for data  */
     snd_midi_event_t * midi_ev;                     /* make ALSA MIDI parser */
-    int rc = snd_midi_event_new(sizeof(buffer), &midi_ev);
+    int rc = snd_midi_event_new(sizeof buffer, &midi_ev);
     if (rc < 0 || is_nullptr(midi_ev))
     {
         errprint("snd_midi_event_new() failed");
         return false;
     }
 
-    long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
-    if (bytes <= 0)
+    /*
+     *  Note that ev->time.tick is always 0!  (Same in Seq32).
+     */
+
+    long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof buffer, ev);
+    if (bytes > 0)
+    {
+        result = inev->set_midi_event(ev->time.tick, buffer, bytes);
+        if (result)
+        {
+            bool sysex = inev->is_sysex();
+            while (sysex)       /* sysex might be more than one message */
+            {
+                int remcount = snd_seq_event_input(m_alsa_seq, &ev);
+                long bytes = snd_midi_event_decode
+                (
+                    midi_ev, buffer, sizeof buffer, ev
+                );
+                if (bytes > 0)
+                {
+                    sysex = inev->append_sysex(buffer, bytes);
+                    if (remcount == 0)
+                        sysex = false;
+                }
+                else
+                    sysex = false;
+            }
+        }
+        snd_midi_event_free(midi_ev);
+        return true;
+    }
+    else
     {
         /*
          * This happens even at startup, before anything is really happening.
@@ -583,23 +680,6 @@ midi_alsa_info::api_get_midi_event (event * inev)
         snd_midi_event_free(midi_ev);
         return false;
     }
-
-    /*
-     *  Note that ev->time.tick is always 0!  (Same in Seq32).
-     */
-
-    result = inev->set_midi_event(ev->time.tick, buffer, bytes);
-    while (sysex)       /* sysex messages might be more than one message */
-    {
-        snd_seq_event_input(m_alsa_seq, &ev);
-        long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
-        if (bytes > 0)
-            sysex = inev->append_sysex(buffer, bytes);
-        else
-            sysex = false;
-    }
-    snd_midi_event_free(midi_ev);
-    return true;
 }
 
 }           // namespace seq64

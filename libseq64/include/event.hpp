@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-05-25
+ * \updates       2020-06-03
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -782,6 +782,15 @@ public:
     {
         m_data[0] = d1 & 0x7F;
         m_data[1] = d2 & 0x7F;
+    }
+
+    /**
+     *  Clears the data, useful in reusing an event to hold incoming MIDI.
+     */
+
+    void clear_data ()
+    {
+        m_data[0] = m_data[1] = 0;
     }
 
     /**

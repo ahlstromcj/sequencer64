@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-06-10
+ * \updates       2020-06-20
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1090,9 +1090,8 @@ sequence::toggle_playing (midipulse tick, bool resumenoteons)
 {
     toggle_playing();
     if (get_playing() && resumenoteons)
-    {
         resume_note_ons(tick);
-    }
+
     m_off_from_snap = false;
 }
 
@@ -1156,7 +1155,7 @@ sequence::toggle_queued ()
  *      format.  False indicates that the playback is controlled by the main
  *      window, in live mode.
  *
- * \param resume_note_ons
+ * \param resumenoteons
  *      A song-recording parameter.
  *
  * \threadsafe
@@ -1167,7 +1166,7 @@ sequence::play
 (
     midipulse tick,
     bool playback_mode,
-    bool resume_note_ons
+    bool resumenoteons
 )
 {
     automutex locker(m_mutex);
@@ -1192,7 +1191,10 @@ sequence::play
         }
         if (playback_mode)                  /* song mode: on/off triggers   */
         {
-            trigger_turning_off = m_triggers.play(start_tick, end_tick);
+            trigger_turning_off = m_triggers.play
+            (
+                start_tick, end_tick, resumenoteons
+            );
         }
     }
     if (m_playing)                          /* play notes in frame          */

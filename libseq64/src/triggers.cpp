@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2019-02-05
+ * \updates       2020-06-20
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -231,7 +231,7 @@ triggers::pop_redo ()
  *      Provides the ending tick value, and returns the modified value as a
  *      side-effect.
  *
- * \param resume_note_ons
+ * \param resumenoteons
  *      Indicates what to do with notes when song-recording.
  *
  * \return
@@ -244,7 +244,7 @@ triggers::play
 (
     midipulse & start_tick,
     midipulse & end_tick,
-    bool resume_note_ons
+    bool resumenoteons
 )
 {
     midipulse tick = start_tick;            /* saved for later              */
@@ -301,7 +301,7 @@ triggers::play
              * If triggered between a Note On and a Note Off, then play it.
              */
 
-            if (resume_note_ons)
+            if (resumenoteons)
                 m_parent.resume_note_ons(tick);
         }
         else

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2020-02-19
+ * \updates       2020-06-15
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -1493,10 +1493,16 @@ qsmainwnd::remove_editor (int seqid)
     edit_container::iterator ei = m_open_editors.find(seqid);
     if (ei != m_open_editors.end())
     {
-        qseqeditex * qep = ei->second;      /* save the pointer             */
         m_open_editors.erase(ei);
-        if (not_nullptr(qep))
-            delete qep;                     /* delete the pointer           */
+
+        /*
+         * Deleting this pointer makes qseq66 segfault, and valgrind doesn't
+         * seem to show any leak.  Commented out. Backported from Seq66.
+         *
+         * qseqeditex * qep = ei->second;   // save the pointer
+         * if (not_nullptr(qep))
+         *     delete qep;                  // delete the pointer
+         */
     }
 }
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2019-12-16
+ * \updates       2020-06-21
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -890,6 +890,13 @@ private:
      */
 
     bool m_user_ui_seqedit_in_tab;
+
+    /**
+     *  Indicates to resume notes that are "in progress" upon a sequence
+     *  toggle. A Kepler34 adaptation.
+     */
+
+    bool m_resume_note_ons;
 
     /**
      *  [new-pattern-editor]
@@ -1865,6 +1872,11 @@ public:
         return m_user_ui_seqedit_in_tab;
     }
 
+    bool resume_note_ons () const
+    {
+        return m_resume_note_ons;
+    }
+
     bool new_pattern_armed () const
     {
         return m_new_pattern_armed;
@@ -2039,6 +2051,11 @@ public:         // used in main application module and the userfile class
     void use_new_seqedit (bool f)
     {
         m_user_ui_seqedit_in_tab = f;
+    }
+
+    void resume_note_ons (bool f)
+    {
+        m_resume_note_ons = f;
     }
 
     void new_pattern_armed (bool flag)

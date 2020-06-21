@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2019-08-31
+ * \updates       2020-06-21
  * \license       GNU GPLv2 or above
  *
  *      This version is located in Edit / Preferences.
@@ -299,6 +299,7 @@ qseditoptions::cancel ()
     rc().with_jack_master(backupTimeMaster);
     rc().with_jack_midi(backupJackMidi);
     usr().key_height(backupKeyHeight);
+    usr().resume_note_ons(backupNoteResume);
     perf().resume_note_ons(backupNoteResume);
     syncWithInternals();
     close();
@@ -359,8 +360,14 @@ qseditoptions::syncWithInternals ()
 void
 qseditoptions::update_note_resume ()
 {
-    perf().resume_note_ons(ui->chkNoteResume->isChecked());
-    syncWithInternals();
+    bool resumenotes = ui->chkNoteResume->isChecked();
+    if (/*m_is_initialized &&*/ perf().resume_note_ons() != resumenotes)
+    {
+        usr().save_user_config(true);
+        usr().resume_note_ons(resumenotes);
+        perf().resume_note_ons(resumenotes);
+        syncWithInternals();
+    }
 }
 
 /**

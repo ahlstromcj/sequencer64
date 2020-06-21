@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2020-06-06
+ * \updates       2020-06-20
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -354,7 +354,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_outputing                 (true),
     m_looping                   (false),
     m_song_recording            (false),
-    m_resume_note_ons           (false),
+    m_resume_note_ons           (usr().resume_note_ons()),
     m_current_tick              (0.0),
     m_playback_mode             (false),
     m_ppqn                      (choose_ppqn(ppqn)),    /* may change later */
@@ -2903,7 +2903,7 @@ perform::play (midipulse tick)
     {
         sequence * s = get_sequence(seq);
         if (not_nullptr(s))
-            s->play_queue(tick, m_playback_mode, m_resume_note_ons);
+            s->play_queue(tick, m_playback_mode, resume_note_ons());
     }
     if (not_nullptr(m_master_bus))
         m_master_bus->flush();                      /* flush MIDI buss  */

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-12-19
+ * \updates       2020-06-21
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -554,7 +554,8 @@ userfile::parse (perform & /* p */)
         }
 
         /*
-         * [user-ui-tweaks]
+         * [user-ui-tweaks].  The variables in this section are, in this order:
+         * key-height; use-new-seqedit; and resumenote-ons.
          */
 
         if (line_after(file, "[user-ui-tweaks]"))
@@ -566,6 +567,11 @@ userfile::parse (perform & /* p */)
             {
                 sscanf(m_line, "%d", &scratch);
                 usr().use_new_seqedit(scratch != 0);
+            }
+            if (next_data_line(file))
+            {
+                sscanf(m_line, "%d", &scratch);
+                usr().resume_note_ons(scratch != 0);
             }
         }
     }
@@ -1302,8 +1308,7 @@ userfile::write (const perform & /* a_perf */ )
             "\n"
             "# This first value specifies the height of the keys in the\n"
             "# sequence editor.  Defaults to 12 (pixels), but 8 is better.\n"
-            "# Currently used only in the Qt GUI.\n"
-            "\n"
+            "# Currently used only in the Qt GUI.\n\n"
             ;
 
         uscratch = usr().key_height();
@@ -1315,12 +1320,19 @@ userfile::write (const perform & /* a_perf */ )
             "# then the new, larger, more functional pattern editor can be\n"
             "# used in the 'Edit' tab.  This setting also has the side-effect\n"
             "# of making the whole Sequencer64 window larger.\n"
-            "# Currently used only in the Qt GUI.\n"
-            "\n"
+            "# Currently used only in the Qt GUI.\n\n"
             ;
 
-        uscratch = usr().use_new_seqedit();
+        uscratch = usr().use_new_seqedit() ? 1 : 0 ;
         file << uscratch << "       # (user_ui_) use_new_seqedit\n";
+
+        uscratch = usr().resume_note_ons() ? 1 : 0 ;
+        file << "\n"
+            "# The note-resume option, if active, causes any notes in progress\n"
+            "# to be resumed when the pattern is toggled back on.\n"
+            "\n"
+            << uscratch << "      # resume-note-ons\n"
+            ;
     }
 
     /*

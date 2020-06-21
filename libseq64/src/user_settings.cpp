@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2019-12-24
+ * \updates       2020-06-21
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -238,6 +238,7 @@ user_settings::user_settings ()
 
     m_user_ui_key_height        (10),
     m_user_ui_seqedit_in_tab    (true),
+    m_resume_note_ons           (false),
     m_new_pattern_armed         (false),
     m_new_pattern_thru          (false),
     m_new_pattern_record        (false),
@@ -353,6 +354,7 @@ user_settings::user_settings (const user_settings & rhs)
 
     m_user_ui_key_height        (rhs.m_user_ui_key_height),
     m_user_ui_seqedit_in_tab    (rhs.m_user_ui_seqedit_in_tab),
+    m_resume_note_ons           (rhs.m_resume_note_ons),
     m_new_pattern_armed         (rhs.m_new_pattern_armed),
     m_new_pattern_thru          (rhs.m_new_pattern_thru),
     m_new_pattern_record        (rhs.m_new_pattern_record),
@@ -468,6 +470,7 @@ user_settings::operator = (const user_settings & rhs)
 
         m_user_ui_key_height = rhs.m_user_ui_key_height;
         m_user_ui_seqedit_in_tab = rhs.m_user_ui_seqedit_in_tab;
+        m_resume_note_ons = rhs.m_resume_note_ons;
         m_new_pattern_armed = rhs.m_new_pattern_armed;
         m_new_pattern_thru = rhs.m_new_pattern_thru;
         m_new_pattern_record = rhs.m_new_pattern_record;
@@ -551,6 +554,7 @@ user_settings::set_defaults ()
     m_work_around_transpose_image = false;
     m_user_ui_key_height = 10;
     m_user_ui_seqedit_in_tab = true;
+    m_resume_note_ons = false;
     m_new_pattern_armed = false;
     m_new_pattern_thru = false;
     m_new_pattern_record = false;
@@ -578,19 +582,6 @@ user_settings::normalize ()
     m_max_sets = c_max_sequence / m_seqs_in_set;            /* 16 to 32...  */
     m_gmute_tracks = m_seqs_in_set * m_seqs_in_set;         /* TODO!        */
     m_total_seqs = m_seqs_in_set * m_max_sets;
-
-    /*
-     * This is probably a good idea to do this; still under investigation.
-     *
-     * m_max_sequence = m_seqs_in_set * m_max_sets;
-     */
-
-    /******
-     * EXPERIMENTAL!!!
-
-    m_text_x = scale_a_size(m_text_x);
-    m_text_y = scale_a_size(m_text_x);
-     */
 
     m_max_sequence = c_max_sequence;
     m_seqarea_x = m_text_x * m_seqchars_x;

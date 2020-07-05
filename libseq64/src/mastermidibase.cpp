@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2018-06-02
+ * \updates       2018-07-05
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -596,7 +596,6 @@ int
 mastermidibase::api_poll_for_midi ()
 {
     int result = m_inbus_array.poll_for_midi();
-printf("mastermidibase::api_poll_for_midi ()\n");
     if (result > 0)
     {
         if (result <= 2)

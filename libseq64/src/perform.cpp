@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2020-06-20
+ * \updates       2020-07-05
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -5783,7 +5783,9 @@ perform::poll_cycle ()
                     stop_playing();
                     start_playing(false);                       /* Live     */
                     if (rc().verbose_option())
+                    {
                         infoprint("MIDI Start");
+                    }
                 }
                 else if (ev.get_status() == EVENT_MIDI_CONTINUE)
                 {
@@ -5799,7 +5801,9 @@ perform::poll_cycle ()
                     pause_playing(false); start_playing(false);
                     pause_playing(false); start_playing(false);
                     if (rc().verbose_option())
+                    {
                         infoprint("MIDI Continue");
+                    }
                 }
                 else if (ev.get_status() == EVENT_MIDI_STOP)    /* pause    */
                 {
@@ -5809,7 +5813,9 @@ perform::poll_cycle ()
                     m_midiclockpos = get_tick();
                     stop_playing();                             /* flush?   */
                     if (rc().verbose_option())
+                    {
                         infoprint("MIDI Stop");
+                    }
                 }
                 else if (ev.get_status() == EVENT_MIDI_CLOCK)
                 {

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2020-06-15
+ * \updates       2020-07-05
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -34,11 +34,12 @@
  *  behavior of the pattern slots.
  */
 
-#include <QDesktopWidget>
 #include <QErrorMessage>
 #include <QFileDialog>
+#include <QGuiApplication>              /* used for QScreen geometry() call */
 #include <QMessageBox>
 #include <QResizeEvent>
+#include <QScreen>                      /* Qscreen                          */
 #include <QTimer>
 #include <utility>                      /* std::make_pair()                 */
 
@@ -99,6 +100,24 @@
 
 namespace seq64
 {
+
+/**
+ *  Given a display coordinate, looks up the screen and returns its geometry.
+ *
+ *  If no screen was found, return the primary screen's geometry
+ */
+
+static QRect
+desktop_rectangle (const QPoint & p)
+{
+    QList<QScreen *> screens = QGuiApplication::screens();
+    Q_FOREACH(const QScreen *screen, screens)
+    {
+        if (screen->geometry().contains(p))
+            return screen->geometry();
+    }
+    return QGuiApplication::primaryScreen()->geometry();
+}
 
 /**
  *  Provides the main window for the application.
@@ -163,8 +182,9 @@ qsmainwnd::qsmainwnd
 
     ui->setupUi(this);
 
-    QRect screen = QApplication::desktop()->screenGeometry();
-    int x = (screen.width() - width()) / 2;             // center on screen
+    QPoint pt;                                  /* default at (0, 0)        */
+    QRect screen = desktop_rectangle(pt);       /* avoids deprecated func   */
+    int x = (screen.width() - width()) / 2;     /* center on the screen     */
     int y = (screen.height() - height()) / 2;
     move(x, y);
 

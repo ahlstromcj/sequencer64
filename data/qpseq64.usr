@@ -61,6 +61,7 @@
 0       # grid_style
 
 # Specifies box style of an empty slot in the main-window grid.
+# for the GTK user-interface only.
 #
 # 0  = Draw a one-pixel box outline around the pattern slot.
 # 1  = Draw brackets on the sides of the pattern slot.
@@ -92,7 +93,8 @@
 
 0      # mainwid_border
 
-# Specifies the border spacing in the main window.
+# Specifies the border spacing in the main window. Normally 2, it
+# can range from 2 to 16.
 
 2      # mainwid_spacing
 
@@ -231,7 +233,7 @@
 # of the main window elements proportionately. Same as the
 # '-o scale=x.y' option.
 
-1.001      # window_scale (scales the main window upwards in size)
+1.0        # window_scale (scales the main window upwards in size)
 
 [user-midi-settings]
 

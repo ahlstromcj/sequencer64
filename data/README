@@ -1,10 +1,10 @@
 Data Directory for Sequencer64 0.96.8
 Chris Ahlstrom
-2018-01-02 to 2020-02-16
+2018-01-02 to 2020-07-05
 
 This directory contains files to be installed in the ${prefix}/share
 directory [e.g. /usr/share or /usr/local/share] on Linux, or in the
-installation directory [e.g.  C:/Program Files (x86)/Sequencer64/data] on
+installation directory [e.g. C:/Program Files (x86)/Sequencer64/data] on
 Windows.
 
 The files include alternate configuration files that the user can copy to

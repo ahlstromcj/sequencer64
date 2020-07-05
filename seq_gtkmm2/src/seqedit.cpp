@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-12-24
+ * \updates       2020-07-05
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -171,6 +171,8 @@
 #define SEQ64_ENTRY_SIZE_SEQNUMBER       4
 #define SEQ64_ENTRY_SIZE_SEQNAME        20
 #define SEQ64_ENTRY_SIZE_BUSNAME        32
+#define SEQ64_EDIT_PANEL_WIDTH         800          // 900
+#define SEQ64_EDIT_PANEL_HEIGHT        480
 
 /*
  * Saves some typing.  We could, like Stazed, limit the scope of this to
@@ -250,7 +252,10 @@ seqedit::seqedit
     sequence & seq,
     int pos
 ) :
-    gui_window_gtk2     (p, 900, 500),                  // size request
+    gui_window_gtk2                                     // size request
+    (
+        p, SEQ64_EDIT_PANEL_WIDTH, SEQ64_EDIT_PANEL_HEIGHT
+    ),
     m_initial_zoom      (SEQ64_DEFAULT_ZOOM),           // constant
     m_zoom              (SEQ64_DEFAULT_ZOOM),           // fixed below
     m_snap              (m_initial_snap),

@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.96.8 and above
 Chris Ahlstrom
-2015-09-10 to 2020-04-17
+2015-09-10 to 2020-07-04
 
 Getting Sequencer64 requires building the code or going to the
 sequencer64-packages site on GitHub.  The bootstrap setup is primarily
@@ -29,9 +29,20 @@ Different versions of the program can be built:
 Below are sections for various ways of installing this project by building
 from source code:
 
+    -   Linux Distro Package
     -   Quick Install
     -   Advanced Steps
     -   Qmake-based Install (Linux and Windows)
+
+Linux Distro Package:
+
+    Your favorite Linux distro may have put seq64/sequencer64 into a distro
+    package.  For example, Arch Linux and KXStudio have packages.  Here is a
+    pointer to how one user installs it on a Raspberry Pi 3b+ running Raspian:
+
+        Installed it from from KXStudio repo using Muon:
+
+        https://kde.org/applications/en/system/org.kde.muon
 
 Quick Install:
 

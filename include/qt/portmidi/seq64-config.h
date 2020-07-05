@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-04-08
- * \updates       2020-04-17
+ * \updates       2020-07-05
  * \license       GNU GPLv2 or above
  *
  *  Qt Portmidi Linux version.
@@ -43,7 +43,7 @@
 #endif
 
 #ifndef SEQ64_VERSION_DATE_SHORT
-#define SEQ64_VERSION_DATE_SHORT "2020-04-17"
+#define SEQ64_VERSION_DATE_SHORT "2020-07-05"
 #endif
 
 #ifndef SEQ64_VERSION

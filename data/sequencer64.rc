@@ -274,6 +274,13 @@
 30 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
 31 [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]
 
+# These control events are laid out in this order: 
+#
+#     enabled [ channel status d0 d1 ]
+#
+# where enabled is 1. Also, the order of the lines that follow must
+# must be preserved.
+
 # MIDI Control Out: play
 0 [0 0 0 0]
 
@@ -426,8 +433,10 @@
 # JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports
 # already running on one's computer, or to use the autoconnect
 # feature (Sequencer64 connects to existing JACK ports on startup.
+# A new feature is to change the number of ports; defaults to 16.
 
 0   # flag for manual ALSA ports
+16   # number of manual/virtual ports
 
 [reveal-alsa-ports]
 
@@ -616,7 +625,7 @@
 #     controls, regardless of which window was used to start the
 #     playback.
 
-1   # song_start_mode
+0   # song_start_mode
 
 # jack_midi - Enable JACK MIDI, which is a separate option from
 # JACK Transport.

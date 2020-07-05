@@ -203,9 +203,9 @@
 # Reserved 35
 99 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # Pattern edit
-100 [0 0   0   0   0   0] [1 0 144   8   1 127] [0 0   0   0   0   0]
+100 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # Event edit
-101 [0 0   0   0   0   0] [1 0 144   6   1 127] [0 0   0   0   0   0]
+101 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # Song mode
 102 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # Toggle JACK
@@ -419,8 +419,10 @@
 # JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports
 # already running on one's computer, or to use the autoconnect
 # feature (Sequencer64 connects to existing JACK ports on startup.
+# A new feature is to change the number of ports; defaults to 16.
 
 0   # flag for manual ALSA ports
+16   # number of manual/virtual ports
 
 [reveal-alsa-ports]
 
@@ -643,13 +645,15 @@
 
 # Last-used and currently-active directory:
 
-
+C:\Users\chris\Documents\Home\sequencer64\data\
 
 [recent-files]
 
 # Holds a list of the last few recently-loaded MIDI files.
 
 0
+
+C:/Users/chris/Documents/Home/sequencer64/data/b4uacuse-gm-patchless.midi
 
 [playlist]
 

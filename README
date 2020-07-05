@@ -1,6 +1,6 @@
 README for Sequencer64 0.96.8 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2020-06-13
+2015-09-10 to 2020-07-05
 
 Sequencer64 is a reboot of seq24, extending it greatly over the last four years.
 The heart of seq24 remains intact.  It is an old friend with a whole lot of
@@ -43,6 +43,8 @@ and using a conventional source tarball.
 Recent changes:
 
     -   Version 0.96.8:
+        -   Reduced the size of the pattern editor to 800x480 to fit on small
+            screens.
         -   Many many tweaks and optimizations.
         -   Fixed bug in event_list::link_new().
         -   Sped up the MIDI record code to try to avoid issues recording

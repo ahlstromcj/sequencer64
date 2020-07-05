@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>890</width>
-    <height>414</height>
+    <width>885</width>
+    <height>390</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -26,6 +26,21 @@
    <string>Frame</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>4</number>
+   </property>
+   <property name="topMargin">
+    <number>4</number>
+   </property>
+   <property name="rightMargin">
+    <number>4</number>
+   </property>
+   <property name="bottomMargin">
+    <number>4</number>
+   </property>
+   <property name="spacing">
+    <number>4</number>
+   </property>
    <item row="0" column="0">
     <layout class="QHBoxLayout" name="topBar1Layout">
      <property name="spacing">
@@ -778,7 +793,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>814</width>
+            <width>819</width>
             <height>24</height>
            </rect>
           </property>
@@ -824,7 +839,7 @@
             <x>0</x>
             <y>0</y>
             <width>48</width>
-            <height>72</height>
+            <height>64</height>
            </rect>
           </property>
          </widget>
@@ -861,8 +876,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>798</width>
-            <height>56</height>
+            <width>800</width>
+            <height>45</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -928,7 +943,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>814</width>
+            <width>819</width>
             <height>24</height>
            </rect>
           </property>
@@ -1004,7 +1019,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>808</width>
+            <width>813</width>
             <height>128</height>
            </rect>
           </property>

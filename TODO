@@ -1,6 +1,26 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2020-05-16
+2016-12-03 to 2020-05-23
+
+Using MIDI System Real Time messages to Start     
+(FAh) & Stop (FCh) Seq64 not working (#206)                                 
+
+I would like to use the MIDI Start (FAh) & Stop (FCh) messages to start and stop
+Seq64 but it is not working.
+
+I have correctly selected my MIDI input source in the Options -> MIDI Input
+window.  I have used      (Linux) amidi --port=hw:3,0,0 --dump to make sure I
+am sending the correct commands but no joy.
+
+ I cannot start Seq64 with the Start command and the Stop command does indeed
+stop Seq64 but it also resets the Seq64 patterns and I cannot restart the
+patterns until I manually click the stop button.
+
+Interestingly, the MIDI Start and Stop commands change the icons on the Play
+and Pause button correctly: I send Start and the icon changes to the pause icon
+and I Send Stop and the icon changes to the play icon - that works.
+
+Am I missing something or is this feature broken?
 
 Define usr-midi-bus and usr-instruments (#183)                                                                      
 I'm coming quite late, but I discovered yesterday that what is being passed in

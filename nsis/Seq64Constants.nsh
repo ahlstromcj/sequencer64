@@ -3,8 +3,8 @@
 ; File:         Seq64Constants.nsh
 ; Author:       Chris Ahlstrom
 ; Date:         2018-05-26
-; Updated:      2020-02-16
-; Version:      0.96.8
+; Updated:      2020-07-30
+; Version:      0.96.9
 ;
 ;   Provides constants commonly used by the installer for Sequencer64 for
 ;   Windows.
@@ -29,7 +29,7 @@
 
 !define VER_MAIN_PURPOSE    "Sequencer64 for Windows"
 !define VER_NUMBER          "0.96"
-!define VER_REVISION        "8"
+!define VER_REVISION        "9"
 !define VER_VARIANT         "Windows"
 !define PRODUCT_VERSION     "${VER_NUMBER} ${VER_VARIANT} (rev ${VER_REVISION})"
 !define PRODUCT_PUBLISHER   "Chris Ahlstrom"

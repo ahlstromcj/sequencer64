@@ -380,7 +380,8 @@ qsmainwnd::qsmainwnd
 
     connect
     (
-        ui->btnSongPlay, SIGNAL(clicked(bool)), this, SLOT(set_song_mode(bool))
+        ui->btnSongPlay, SIGNAL(clicked(bool)),
+        this, SLOT(set_song_mode(bool))
     );
     if (usr().use_more_icons())
         qt_set_icon(live_mode_xpm, ui->btnSongPlay);
@@ -717,22 +718,6 @@ qsmainwnd::set_song_mode (bool song_mode)
     }
     perf().playback_mode(song_mode);        // useful? not used in mainwnd!
     perf().song_start_mode(song_mode);
-}
-
-/**
- *  Toggles the song mode.  Note that calling this function will trigger the
- *  button signal callback, set_song_mode().  It only operates if the patterns
- *  are not playing.  This function must be in the cpp module, where the
- *  button header file is included.
- */
-
-void
-qsmainwnd::toggle_song_mode ()
-{
-    if (! perf().is_pattern_playing())
-    {
-        ui->btnSongPlay->setEnabled(perf().toggle_song_start_mode());
-    }
 }
 
 /**

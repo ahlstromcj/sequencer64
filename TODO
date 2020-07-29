@@ -141,9 +141,6 @@ And while I'm at it (but maybe I should open another ticket for that), is there
 any hope for the future to have the RC and USR files in any folder, e.g. a
 project or session's folder, rather than always in .config/sequencer64?
 
-
-
-
 MIDI Controls Issues (#205):
 
 I've been trying to set up more MIDI controls for my control surface, and I can't find any configuration that works, similarly to what I had in the end of the thread on #188.

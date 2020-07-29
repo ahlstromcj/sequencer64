@@ -254,16 +254,16 @@ main (int argc, char * argv [])
             seq64::session_setup();
 #endif
 
-        exit_status = app.exec();               /* run main window loop */
-        p.finish();                             /* tear down performer  */
-        if (seq64::rc().auto_option_save())
-            (void) seq64::write_options_files(p);
-        else
-            printf("[auto-option-save off, not saving config files]\n");
+            exit_status = app.exec();               /* run main window loop */
+            p.finish();                             /* tear down performer  */
+            if (seq64::rc().auto_option_save())
+                (void) seq64::write_options_files(p);
+            else
+                printf("[auto-option-save off, not saving config files]\n");
 
 #ifdef PLATFORM_LINUX
-        if (seq64::rc().lash_support())
-            seq64::delete_lash_driver();        /* deleted only exists  */
+            if (seq64::rc().lash_support())
+                seq64::delete_lash_driver();        /* deleted only exists  */
 #endif
         }
         else

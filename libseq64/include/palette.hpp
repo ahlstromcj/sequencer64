@@ -37,6 +37,7 @@
  */
 
 #include <map>                          /* std::map container class         */
+#include <string>
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

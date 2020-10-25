@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2018-08-03
+ * \updates       2020-10-25
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -760,29 +760,17 @@ jack_assistant::init ()
             return error_message("jack_set_process_callback() failed]");
         }
 
-        /*
-         * Some possible code:
-         *
-         * jackcode = jack_set_xrun_callback
-         * (
-         *      m_jack_client, jack_xrun_callback, (void *) this
-         * );
-         */
-
 #ifdef SEQ64_JACK_SESSION
-        if (jack_set_session_callback)
+        jackcode = jack_set_session_callback
+        (
+            m_jack_client, jack_session_callback, (void *) this
+        );
+        apiprint("jack_set_session_callback", "sync");
+        if (jackcode != 0)
         {
-            jackcode = jack_set_session_callback
-            (
-                m_jack_client, jack_session_callback, (void *) this
-            );
-            apiprint("jack_set_session_callback", "sync");
-            if (jackcode != 0)
-            {
-                m_jack_running = false;
-                m_jack_master = false;
-                return error_message("jack_set_session_callback() failed]");
-            }
+            m_jack_running = false;
+            m_jack_master = false;
+            return error_message("jack_set_session_callback() failed]");
         }
 #endif
 

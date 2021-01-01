@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2020-04-21
+ * \updates       2020-09-08
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -184,15 +184,13 @@ static struct option s_long_options [] =
  *
  *      Creates virtual ports '-m' and hides the native names for the ports '-R'
  *      in favor of the 'user' definition of the names of ports and channels.
- *
  *      The opposite (native) setting uses '-a' and '-r'.
- *
  *      Both modes turn on the --user-save (-u) option.
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNnoPpq:RrtSsU:uVvX:x:Zz#" /* modern args    */
-    "1234:5:67:89@"                                       /* legacy args    */
+    "AaB:b:Cc:dF:f:H:hi:JjKkLlM:mNnoPpq:RrtSsU:uVvX:x:Zz#" /* modern args    */
+    "1234:5:67:89@"                                        /* legacy args    */
     ;
 
 /**

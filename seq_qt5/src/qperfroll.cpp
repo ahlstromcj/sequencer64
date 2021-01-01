@@ -222,8 +222,8 @@ qperfroll::paintEvent (QPaintEvent *)
             if (perf().is_active(seqid))
             {
                 sequence * seq = perf().get_sequence(seqid);
-                midipulse seq_length = seq->get_length();
-                int length_w = seq_length / scale_zoom();
+                midipulse lens = seq->get_length();
+                int lenw = lens / scale_zoom();
                 seq->reset_draw_trigger_marker();
                 while (seq->get_next_trigger(tick_on, tick_off, selected, offset))
                 {
@@ -272,14 +272,13 @@ qperfroll::paintEvent (QPaintEvent *)
 
                         midipulse length_marker_first_tick =
                         (
-                            tick_on - (tick_on % seq_length) +
-                            (offset % seq_length) - seq_length
+                            tick_on - (tick_on % lens) +
+                            (offset % lens) - lens
                         );
-
                         midipulse tick_marker = length_marker_first_tick;
                         while (tick_marker < tick_off)
                         {
-                            midipulse tick_marker_x =
+                            midipulse marker_x =
                                 tick_marker / scale_zoom() - x_offset;
 
                             int lowest_note;  // = seq->get_lowest_note_event();
@@ -292,13 +291,6 @@ qperfroll::paintEvent (QPaintEvent *)
                             int height = highest_note - lowest_note;
                             height += 2;
 
-                            int length = seq->get_length();
-                            midipulse tick_s;
-                            midipulse tick_f;
-                            int note;
-                            bool selected;
-                            int velocity;
-                            draw_type_t dt;
                             seq->reset_draw_marker();
                             if (seq->get_transposable())
                                 pen.setColor(Qt::black);
@@ -306,8 +298,14 @@ qperfroll::paintEvent (QPaintEvent *)
                                 pen.setColor(Qt::red);
 
                             painter.setPen(pen);
-                            do
+                            for (;;)
                             {
+                                midipulse tick_s;
+                                midipulse tick_f;
+                                int note;
+                                bool selected;
+                                int velocity;
+                                draw_type_t dt;
                                 dt = seq->get_next_note_event
                                 (
                                     tick_s, tick_f, note, selected, velocity
@@ -316,19 +314,20 @@ qperfroll::paintEvent (QPaintEvent *)
                                     break;
 
                                 /*
-                                 * TODO:  handle DRAW_TEMPO
+                                 * This code breaks drawing the note lines!
+                                 *
+                                 * if (dt == DRAW_TEMPO)       // TODO
+                                 *     break;
                                  */
 
-                                int note_y = ((c_names_y - 6) -
-                                    ((c_names_y - 6)  * (note - lowest_note)) /
-                                    height) + 1;
-
-                                int tick_s_x = ((tick_s * length_w) / length) +
-                                    tick_marker_x;
-
-                                int tick_f_x = ((tick_f * length_w) / length) +
-                                    tick_marker_x;
-
+                                int note_y =
+                                (
+                                    (c_names_y - 6) -
+                                    ((c_names_y - 6) * (note - lowest_note)) /
+                                    height
+                                ) + 1 + y;
+                                int tick_s_x = tick_s * lenw / lens + marker_x;
+                                int tick_f_x = tick_f * lenw / lens + marker_x;
                                 if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
                                     tick_f_x = tick_s_x + 1;
 
@@ -345,21 +344,18 @@ qperfroll::paintEvent (QPaintEvent *)
                                 {
                                     painter.drawLine
                                     (
-                                        tick_s_x, y + note_y,
-                                        tick_f_x, y + note_y
+                                        tick_s_x, note_y, tick_f_x, note_y
                                     );
                                 }
-
-                            } while (dt != DRAW_FIN);
-
+                            }
                             if (tick_marker > tick_on)
                             {
                                 // lines to break up the seq at each tick
                                 pen.setColor(QColor(190, 190, 190, 220));
                                 painter.setPen(pen);
-                                painter.drawRect(tick_marker_x, y + 4, 1, h - 8);
+                                painter.drawRect(marker_x, y + 4, 1, h - 8);
                             }
-                            tick_marker += seq_length;
+                            tick_marker += lens;
                         }
                     }
                 }
@@ -408,209 +404,6 @@ qperfroll::paintEvent (QPaintEvent *)
     if (usr().progress_bar_thick())
         pen.setWidth(1);
 }
-
-#ifdef USE_THIS_CODE
-
-/**
- *
- */
-
-void
-qperfroll::draw_grid (QPainter & painter, const QRect &r)
-{
-    QBrush brush(Qt::NoBrush);
-    QPen pen(Qt::black);
-    pen.setStyle(Qt::SolidLine);
-    painter.setPen(pen);
-    painter.setBrush(brush);
-    painter.setFont(m_font);
-    painter.drawRect(0, 0, width(), height());
-    for (int i = 0; i < height(); i += c_names_y)
-    {
-        pen.setStyle(Qt::SolidLine);            /* draw horizontal lines    */
-        pen.setColor(Qt::lightGray);
-        painter.setPen(pen);
-        painter.drawLine(0, i, width(), i);
-    }
-    for (midipulse tick = tick0; tick < tick1; tick += tickstep)
-    {
-        if (tick % measure_length() == 0)                   /* measure  */
-        {
-            int x_pos = position_pixel(tick);
-            pen.setColor(Qt::black);
-            pen.setWidth(2);
-            painter.setPen(pen);
-            painter.drawLine(x_pos, 0, x_pos, height());
-        }
-        else if (tick % beat_length() == 0)                 /* measure  */
-        {
-            int x_pos = position_pixel(tick);
-            pen.setColor(Qt::lightGray);
-            pen.setWidth(1);
-            painter.setPen(pen);
-            painter.drawLine(x_pos, 0, x_pos, height());
-        }
-    }
-}
-
-/**
- *
- */
-
-void
-qperfroll::draw_sequences (QPainter & painter)
-{
-    int y_s = 0;                                        /* for background   */
-    int y_f = height() / c_names_y;
-    bool selected;
-    midipulse tick_on;                                  /* for seq block    */
-    midipulse tick_off;
-    midipulse offset;
-    midipulse tick_offset = 0;              // long tick_offset = c_ppqn * 16;
-    int x_offset = tick_offset / scale_zoom();
-    QPen pen(Qt::black);
-    QBrush brush(Qt::SolidPattern);         // (Qt::NoBrush);
-    for (int y = y_s; y <= y_f; ++y)
-    {
-        int seqid = y;
-        if (seqid < c_max_sequence)
-        {
-            if (perf().is_active(seqid))
-            {
-                sequence * seq = perf().get_sequence(seqid);
-                midipulse seq_length = seq->get_length();
-                int length_w = seq_length / scale_zoom();
-                seq->reset_draw_trigger_marker();
-                while (seq->get_next_trigger(tick_on, tick_off, selected, offset))
-                {
-                    if (tick_off > 0)
-                    {
-                        int x_on = tick_on / scale_zoom();
-                        int x_off = tick_off / scale_zoom();
-                        int w = x_off - x_on + 1;
-                        int x = x_on;
-                        int y = c_names_y * seqid + 1;
-                        int h = c_names_y - 2;
-                        x -= x_offset;      // adjust to screen coordinates
-                        if (selected)
-                            pen.setColor(selected ? "orange" : Qt::black);
-
-                        int c = perf().get_sequence_color(seqid);
-                        Color backcolor = get_color_fix(PaletteColor(c));
-                        pen.setStyle(Qt::SolidLine);  // main seq icon box
-                        brush.setColor(backcolor);
-                        brush.setStyle(Qt::SolidPattern);
-                        painter.setBrush(brush);
-                        painter.drawRect(x, y, w, h);
-                        brush.setStyle(Qt::NoBrush);  // seq grab handle left
-                        painter.setBrush(brush);
-                        pen.setColor(Qt::black);
-                        painter.drawRect
-                        (
-                            x, y, c_perfroll_size_box_w, c_perfroll_size_box_w
-                        );
-                        painter.drawRect              // seq grab handle right
-                        (
-                            x + w - c_perfroll_size_box_w,
-                            y + h - c_perfroll_size_box_w,
-                            c_perfroll_size_box_w, c_perfroll_size_box_w
-                        );
-                        pen.setColor(Qt::black);
-
-                        midipulse length_marker_first_tick =
-                        (
-                            tick_on - (tick_on % seq_length) +
-                            (offset % seq_length) - seq_length
-                        );
-                        midipulse tick_marker = length_marker_first_tick;
-                        while (tick_marker < tick_off)
-                        {
-                            midipulse tick_marker_x =
-                                tick_marker / scale_zoom() - x_offset;
-
-                            int lowest_note;  // = seq->get_lowest_note_event();
-                            int highest_note; // = seq->get_highest_note_event();
-                            (void) seq->get_minmax_note_events
-                            (
-                                lowest_note, highest_note
-                            );
-
-                            int height = highest_note - lowest_note;
-                            height += 2;
-
-                            int length = seq->get_length();
-                            midipulse tick_s, tick_f;
-                            int note, velocity;
-                            bool selected;
-                            draw_type_t dt;
-                            seq->reset_draw_marker();
-                            if (! seq->get_transposable())
-                                pen.setColor(Qt::red);
-
-                            painter.setPen(pen);
-                            do
-                            {
-                                dt = seq->get_next_note_event
-                                (
-                                    tick_s, tick_f, note, selected, velocity
-                                );
-                                if (dt == DRAW_FIN)
-                                    break;
-
-                                /*
-                                 * TODO:  handle DRAW_TEMPO
-                                 */
-
-                                int note_y = ((c_names_y - 6) -
-                                    ((c_names_y - 6)  * (note - lowest_note)) /
-                                    height) + 1;
-
-                                int tick_s_x = ((tick_s * length_w) / length) +
-                                    tick_marker_x;
-
-                                int tick_f_x = ((tick_f * length_w) / length) +
-                                    tick_marker_x;
-
-                                if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
-                                    tick_f_x = tick_s_x + 1;
-
-                                if (tick_f_x <= tick_s_x)
-                                    tick_f_x = tick_s_x + 1;
-
-                                if (tick_s_x < x)
-                                    tick_s_x = x;
-
-                                if (tick_f_x > x + w)
-                                    tick_f_x = x + w;
-
-                                if (tick_f_x >= x && tick_s_x <= x + w)
-                                {
-                                    painter.drawLine
-                                    (
-                                        tick_s_x, y + note_y,
-                                        tick_f_x, y + note_y
-                                    );
-                                }
-
-                            } while (dt != DRAW_FIN);
-
-                            if (tick_marker > tick_on)
-                            {
-                                // lines to break up the seq at each tick
-                                pen.setColor(QColor(190, 190, 190, 220));
-                                painter.setPen(pen);
-                                painter.drawRect(tick_marker_x, y + 4, 1, h - 8);
-                            }
-                            tick_marker += seq_length;
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-#endif  // USE_THIS_CODE
 
 /**
  *

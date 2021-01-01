@@ -2269,16 +2269,9 @@ sequence::grow_selected (midipulse delta)
                 if (er.is_marked() && er.is_note_on() && er.is_linked())
                 {
                     event * off = er.get_linked();
-                    event e = *off;                 /* original off-event   */
+                    event e = *off;                 /* copy off-event       */
                     midipulse offtime = off->get_timestamp();
-
-                    /*
-                     * midipulse ontime = er.get_timestamp();
-                     * midipulse newtime = clip_timestamp(ontime, offtime+delta);
-                     */
-
                     midipulse newtime = trim_timestamp(offtime + delta);
-
                     off->mark();                    /* kill old off event   */
                     er.unmark();                    /* keep old on event    */
                     e.unmark();                     /* keep new off event   */
@@ -3077,6 +3070,8 @@ sequence::change_event_data_lfo
  *
  *  Here, we could ignore events not on the sequence's channel, as an option.
  *  We have to be careful because this function can be used in painting notes.
+ *  If we care about the painted notes, we run though our events, and delete the
+ *  painted ones that overlap the one we want to add.
  *
  * Stazed:
  *
@@ -3292,7 +3287,13 @@ sequence::add_event (const event & er)
     bool result = m_events.add(er);     /* post/auto-sorts by time & rank   */
     if (result)
     {
-        verify_and_link();              /* ca 2020-05-25                    */
+        /*
+         * Do not do this!  We might be added a moved Note Off and will want
+         * to delete the original.  Github issue #207.
+         *
+         * verify_and_link();           // ca 2020-05-25
+         */
+
         reset_draw_marker();
         set_dirty();
     }

@@ -1,14 +1,23 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2020-05-16
+2016-12-03 to 2020-11-11
 
-Define usr-midi-bus and usr-instruments (#183)                                                                      
+Midi mute group learn fails with quotedbl, currency, slash, parentleft and
+semicolon (Finnish keyboard layout)       (#156)
+
+Just compiled the latest from midi_control branch and this is happening with
+(-er -rm). I was debugging this a while back but don't remember that much
+about it anymore. Pointed to my finnish keyboard layout(might happen with
+swedish, german etc). For example number two on top row has 2," and @ signs.
+Currency i think has 4,¤ and $ signs. Let me know if i can help on this.
+
+Define usr-midi-bus and usr-instruments (#183)
+
 I'm coming quite late, but I discovered yesterday that what is being passed in
-`[usr-midi-bus]` has an effect only when using Alsa Midi instead of Native Jack
-(`with_jack_midi` in the rc file), maybe that was your issue?
+`[usr-midi-bus]` has an effect only when using Alsa Midi instead of Native
+Jack (`with_jack_midi` in the rc file), maybe that was your issue?
 
 -------------------------
-
 ,
 My [midi-control-out] section looks as follows (using Akai APC Mini):
 ```
@@ -22,25 +31,24 @@ My [midi-control-out] section looks as follows (using Akai APC Mini):
 ...
 31 [1 0 144 3 1] [1 0 144 3 5] [1 0 144 3 2] [1 0 144 3 3]
 
-# MIDI Control Out: play                                                            
+# MIDI Control Out: play
 0 [0 144 82 1]
 
-# MIDI Control Out: stop                                                            
+# MIDI Control Out: stop
 0 [0 144 82 0]
 
-# MIDI Control Out: pause                                                           
+# MIDI Control Out: pause
 0 [0 144 82 0]
 ...
 ```
 It works fine for the sequence buttons (controls 0 to 31) so I can see the
 signal  coming out of Seq64 in aseqdump and the lights turn on on the
-controller. However no signal is detected by aseqdump for play/pause/stop.
-Is that a mistake in my configuration, or a real bug?
+controller. However no signal is detected by aseqdump for play/pause/stop.  Is
+that a mistake in my configuration, or a real bug?
 
+[Question/Feature request] Live midi pattern  recording (#188)
 
-[Question/Feature request] Live midi pattern  recording (#188)             
-
-Segfault at startup of both Seq64rtmidi and Seq64qt5 (#191)               
+Segfault at startup of both Seq64rtmidi and Seq64qt5 (#191)
 
 Using the midi-control branch of today, with the same CFLAGS options as before:
 
@@ -53,11 +61,10 @@ Now I notice a new strange thing. When moving a selection down, it jumps up 1
 note after the mouse is released. This problem does not occur when moving
 selections up.
 
-
-Performance recording incorrect note length (#199)                                                                      
+Performance recording incorrect note length (#199)
 I previously had set things up such that when notes were input via midi
 controller  as a pattern played live. These midi events could then be recorded
-at any obligatory length.  
+at any obligatory length.
 
 When I started qseq64 today (as packaged by kx.studio), midi note events from
 my hardware would only resolve as the note length specified by the pattern
@@ -66,8 +73,7 @@ to switch the note length midway through a sequence.
 
 Have I switched a setting somewhere?
 
-dh: Command not found (#200)                
-
+dh: Command not found (#200)
 
 Piano roll follows the progress bar Button have no effect (#202):
 
@@ -79,9 +85,6 @@ Watch the screencast for details, here please.
 built from source on linux mint 19.3
 seq64 0.96.7
 2020-02-16
-
-
-
 
 Reconnect to Midi input (and output?) ports (#204)
 
@@ -140,9 +143,6 @@ I'm using 0.96.8 from the midi_control branch btw.
 And while I'm at it (but maybe I should open another ticket for that), is there
 any hope for the future to have the RC and USR files in any folder, e.g. a
 project or session's folder, rather than always in .config/sequencer64?
-
-
-
 
 MIDI Controls Issues (#205):
 

@@ -210,8 +210,8 @@ am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(top_srcdir)/aux-files/ltmain.sh \
 	$(top_srcdir)/aux-files/missing \
 	$(top_srcdir)/aux-files/mkinstalldirs \
-	$(top_srcdir)/include/config.h.in ChangeLog INSTALL NEWS \
-	README TODO aux-files/compile aux-files/config.guess \
+	$(top_srcdir)/include/config.h.in ChangeLog INSTALL NEWS TODO \
+	aux-files/compile aux-files/config.guess \
 	aux-files/config.rpath aux-files/config.sub aux-files/depcomp \
 	aux-files/install-sh aux-files/ltmain.sh aux-files/missing \
 	aux-files/mkinstalldirs

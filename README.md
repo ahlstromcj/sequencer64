@@ -1,8 +1,9 @@
 # README for Sequencer64 0.96.8 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2020-07-30
+2015-09-10 to 2021-02-01
 
-Sequencer64 is a reboot of seq24, extending it greatly over the last four years.
+Sequencer64 is a live MIDI looper with a song-creation layout window.
+Sequencer64 is a reboot of seq24, extending it greatly over the last six years.
 The heart of seq24 remains intact.  It is an old friend with a whole lot of
 added equipment.  It has an extensive manual and Windows installers:
 
@@ -44,7 +45,9 @@ and using a conventional source tarball.
 
     -   Version 0.96.9:
         -   Fixed issue #207 where growing a note left two broken notes.
+        -   Quick fix to issue #216 for note on/off tweaking.
         -   Minor fixes.
+        -   User freddi converted README to markdown.
     -   Version 0.96.8:
         -   Reduced the size of the pattern editor to 800x480 to fit on small
             screens.
@@ -60,3 +63,5 @@ This package is oriented to developers and users who do not mind building from
 source, with a little help.  It is organized and well documented.
 Initial work/thought/documentation started in July of 2015, when I was laid
 up after some old-man surgery :-(.
+
+# vim: sw=4 ts=4 wm=4 et ft=markdown

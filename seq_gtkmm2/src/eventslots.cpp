@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2018-08-10
+ * \updates       2021-02-01
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -85,6 +85,7 @@ eventslots::eventslots
     m_parent                (parent),
     m_seq                   (seq),
     m_event_container       (seq, p.get_beats_per_minute()),
+    m_current_event         (m_event_container),                // NEW
     m_slots_chars           (64),
     m_char_w                (font_render().char_width()),
     m_setbox_w              (m_char_w),
@@ -139,6 +140,12 @@ eventslots::load_events ()
                 if (increment_bottom() == SEQ64_NULL_EVENT_INDEX)
                     break;
             }
+            /*
+             * Seq66:
+             *
+             * for (auto & ei : m_event_container)
+             *    ei.second.analyze();        // creates the event strings
+             */
         }
         else
             result = false;
@@ -374,6 +381,7 @@ eventslots::insert_event
     if (! edev.is_ex_data())
         edev.set_channel(m_seq.get_midi_channel());
 
+    m_current_event = edev;
     return insert_event(edev);
 }
 
@@ -521,9 +529,9 @@ eventslots::delete_current_event ()
         if (ok)
         {
             m_parent.set_dirty();
+            result = true;                  /* an event was deleted */
             m_event_count = newcount;
-            result = newcount > 0;
-            if (result)
+            if (newcount > 0)               // result = newcount > 0;
                 select_event(m_current_index);
             else
                 select_event(SEQ64_NULL_EVENT_INDEX);
@@ -574,6 +582,7 @@ eventslots::modify_current_event
 
     if (result)
     {
+#if defined USE_DELETE_INSERT_METHOD
         /*
          * We need to make a copy here, because the iterator will get
          * modified during the deletion-and-insertion process.
@@ -587,6 +596,13 @@ eventslots::modify_current_event
         result = delete_current_event();
         if (result)
             result = insert_event(ev);                  /* full karaoke add */
+#else
+        editable_event & ev = EEDREF(m_current_iterator);
+        if (! ev.is_ex_data())
+            ev.set_channel(m_seq.get_midi_channel());   /* just in case     */
+
+        ev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
+#endif
     }
     return result;
 }
@@ -713,7 +729,6 @@ eventslots::page_movement (int new_value)
              */
 
             m_top_index += movement;
-
             if (movement > 0)
             {
                 for (int i = 0; i < movement; ++i)
@@ -788,8 +803,7 @@ eventslots::page_topper (editable_events::iterator newcurrent)
         {
             if (ok)
             {
-                m_pager_index = 0;
-                m_top_index = 0;
+                m_pager_index = m_top_index = 0;
                 m_top_iterator = m_event_container.begin();
                 m_line_count = m_event_count;
                 m_current_iterator = newcurrent;

@@ -21,7 +21,7 @@
 # \library    	seq64cli application
 # \author     	Chris Ahlstrom
 # \date       	2017-04-07
-# \update      2017-11-12
+# \update      2021-01-29
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -135,6 +135,9 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+seq64cli_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(seq64cli_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -486,6 +489,7 @@ seq64cli_SOURCES = seq64rtcli.cpp
 seq64cli_DEPENDENCIES = $(dependencies)
 @BUILD_WINDOWS_FALSE@seq64cli_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
 @BUILD_WINDOWS_TRUE@seq64cli_LDADD = $(libraries) $(AM_LDFLAGS) $(PTHREAD_LIBS)
+@BUILD_WINDOWS_FALSE@seq64cli_LDFLAGS = -Wl,--copy-dt-needed-entries
 all: all-am
 
 .SUFFIXES:
@@ -571,7 +575,7 @@ clean-binPROGRAMS:
 
 seq64cli$(EXEEXT): $(seq64cli_OBJECTS) $(seq64cli_DEPENDENCIES) $(EXTRA_seq64cli_DEPENDENCIES) 
 	@rm -f seq64cli$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(seq64cli_OBJECTS) $(seq64cli_LDADD) $(LIBS)
+	$(AM_V_CXXLD)$(seq64cli_LINK) $(seq64cli_OBJECTS) $(seq64cli_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

@@ -96,6 +96,13 @@ private:
     editable_events m_event_container;
 
     /**
+     *  Holds the current event (i.e. most recently inserted) for usage by the
+     *  caller, the event-edit frame.  Copied from seq66.
+     */
+
+    editable_event m_current_event;
+
+    /**
      *  Provides the number of the characters in the name box.  Pretty much
      *  hardwired to 64 at present.  It helps determine the m_slots_x value
      *  (the width of the eventslots list).
@@ -185,7 +192,6 @@ private:
 
     /**
      *  Indicates the index of the current event within the frame.
-     *  This event will also be pointed to by the m_current_event iterator.
      *  Do not confuse it with m_top_index, which is relative to the
      *  container-beginning, not the frame.
      */
@@ -245,6 +251,11 @@ public:
     midipulse get_length () const
     {
         return m_event_container.get_length();
+    }
+
+    const editable_event & current_event () const
+    {
+        return m_current_event;
     }
 
     /**

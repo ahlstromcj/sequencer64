@@ -6,7 +6,7 @@
 # \library    	seq64cli application
 # \author     	Chris Ahlstrom
 # \date       	2017-04-07
-# \update      2017-11-12
+# \update      2021-01-29
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -168,6 +168,7 @@ if BUILD_WINDOWS
 seq64cli_LDADD = $(libraries) $(AM_LDFLAGS) $(PTHREAD_LIBS)
 else
 seq64cli_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
+seq64cli_LDFLAGS = -Wl,--copy-dt-needed-entries
 endif
 
 #******************************************************************************

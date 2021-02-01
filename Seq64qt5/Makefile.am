@@ -6,7 +6,7 @@
 # \library    	seq64qt5 application
 # \author     	Chris Ahlstrom
 # \date       	2017-09-05
-# \update      2018-09-26
+# \update      2021-01-29
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -163,8 +163,24 @@ bin_PROGRAMS = qseq64
 #******************************************************************************
 # seq64
 #----------------------------------------------------------------------------
+#
+#  Added a LDFLAGS line to avoid a "DSO missing" error on some systems when
+#  building in debug mode:
+#
+#     As a workaround it's possible to switch back to the more permissive
+#     view of what symbols are available by using the option
+#
+#        -Wl,--copy-dt-needed-entries
+#
+#  See this article:
+#
+#  https://flameeyes.blog/2010/11/26/
+#     it-s-not-all-gold-that-shines-why-underlinking-is-a-bad-thing/
+#
+#----------------------------------------------------------------------------
 
 qseq64_SOURCES = seq64qt5.cpp
+qseq66_LDFLAGS = -Wl,--copy-dt-needed-entries
 qseq64_DEPENDENCIES = $(dependencies)
 qseq64_LDADD = $(libraries) $(QT_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
 

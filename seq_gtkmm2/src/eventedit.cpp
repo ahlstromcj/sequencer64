@@ -724,6 +724,11 @@ eventedit::handle_insert ()
         set_seq_count();
         if (has_events)
         {
+            /*
+             * Seq66:
+             * std::string chan = m_eventslots->current_event().channel_string();
+             */
+
             m_button_del->set_sensitive(true);
             m_button_modify->set_sensitive(true);
             v_adjustment(m_eventslots->pager_index());
@@ -744,6 +749,11 @@ eventedit::handle_modify ()
 {
     if (not_nullptr(m_eventslots))
     {
+        /*
+         * Seq66:
+         * std::string chan = m_eventslots->current_event().channel_string();
+         */
+
         std::string ts = m_entry_ev_timestamp->get_text();
         std::string name = m_entry_ev_name->get_text();
         std::string data0 = m_entry_ev_data_0->get_text();

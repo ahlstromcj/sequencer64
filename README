@@ -1,6 +1,6 @@
 README for Sequencer64 0.96.8 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2020-07-30
+2015-09-10 to 2021-02-01
 
 Sequencer64 is a reboot of seq24, extending it greatly over the last four years.
 The heart of seq24 remains intact.  It is an old friend with a whole lot of
@@ -11,6 +11,9 @@ added equipment.  It has an extensive manual and Windows installers:
 
 Sequencer64 has build options for ALSA, PortMidi, JACK, Gtkmm 2.4, Qt 5, Windows,
 and a command-line/daemon.
+
+Sequencer64 is now in maintenance mode (bug fixes and minor backports only).
+It is superceded by Seq66.
 
 Native JACK support: Seq64rtmidi/seq64
 

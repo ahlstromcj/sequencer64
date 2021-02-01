@@ -338,9 +338,9 @@ editable_events::verify_and_link (midipulse slength)
         event & eon = dref(on);
         if (eon.is_note_on())               /* Note On, find its Note Off   */
         {
-            event_list::iterator off = on;  /* get next possible Note Off   */
-            off++;
             bool endfound = false;
+            event_list::iterator off = on;  /* get next possible Note Off   */
+            ++off;
             while (off != m_events.end())
             {
                 event & eoff = dref(off);
@@ -358,7 +358,7 @@ editable_events::verify_and_link (midipulse slength)
                     endfound = true;
                     break;
                 }
-                off++;
+                ++off;
             }
             if (! endfound)
             {

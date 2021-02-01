@@ -180,7 +180,7 @@ bin_PROGRAMS = qseq64
 #----------------------------------------------------------------------------
 
 qseq64_SOURCES = seq64qt5.cpp
-qseq66_LDFLAGS = -Wl,--copy-dt-needed-entries
+qseq64_LDFLAGS = -Wl,--copy-dt-needed-entries
 qseq64_DEPENDENCIES = $(dependencies)
 qseq64_LDADD = $(libraries) $(QT_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-06-20
+ * \updates       2021-05-05
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -508,7 +508,6 @@ sequence::unit_measure () const
 midipulse
 sequence::expand_threshold () const
 {
-    // return get_length() - unit_measure() / 16;
     return get_length() - unit_measure() / 4;
 }
 
@@ -524,7 +523,6 @@ sequence::expand_threshold () const
 midipulse
 sequence::progress_value () const
 {
-    // return get_length() - (unit_measure() + unit_measure() / 16);
     return expand_threshold() - (unit_measure() + unit_measure() / 4);
 }
 
@@ -1171,6 +1169,7 @@ sequence::play
 {
     automutex locker(m_mutex);
     bool trigger_turning_off = false;       /* turn off after in-frame play */
+    int trigtranspose = 0;                  /* used with c_trig_transpose   */
     midipulse start_tick = m_last_tick;     /* modified in triggers::play() */
     midipulse end_tick = tick;
     if (m_song_mute)
@@ -1193,7 +1192,7 @@ sequence::play
         {
             trigger_turning_off = m_triggers.play
             (
-                start_tick, end_tick, resumenoteons
+                start_tick, end_tick, trigtranspose, resumenoteons
             );
         }
     }
@@ -1204,7 +1203,10 @@ sequence::play
         midipulse end_tick_offset = end_tick + offset;
         midipulse times_played = m_last_tick / m_length;
         midipulse offset_base = times_played * m_length;
-        int transpose = get_transposable() ? m_parent->get_transpose() : 0 ;
+        int transpose = trigtranspose;
+        if (transpose == 0)
+            transpose = get_transposable() ? m_parent->get_transpose() : 0 ;
+
         event_list::iterator e = m_events.begin();
         while (e != m_events.end())
         {
@@ -3735,11 +3737,12 @@ sequence::clear_triggers ()
 void
 sequence::add_trigger
 (
-    midipulse tick, midipulse len, midipulse offset, bool fixoffset
+    midipulse tick, midipulse len, midipulse offset,
+    midibyte tpose, bool fixoffset
 )
 {
     automutex locker(m_mutex);
-    m_triggers.add(tick, len, offset, fixoffset);
+    m_triggers.add(tick, len, offset, tpose, fixoffset);
 }
 
 /**
@@ -3924,7 +3927,8 @@ sequence::intersect_events
 }
 
 /**
- *  Grows a trigger.  See triggers::grow() for more information.
+ *  Grows a trigger.  See triggers::grow() for more information.  We need to keep
+ *  the automutex here because the perfroll calls this function directly.
  *
  * \param tickfrom
  *      The desired from-value back which to expand the trigger, if necessary.
@@ -3942,13 +3946,6 @@ void
 sequence::grow_trigger (midipulse tickfrom, midipulse tickto, midipulse len)
 {
     automutex locker(m_mutex);
-
-    /*
-     * This check doesn't hurt, but doesn't prevent creating the new trigger.
-     *
-     * if (! get_queued())
-     */
-
     m_triggers.grow(tickfrom, tickto, len);
 }
 
@@ -4224,6 +4221,17 @@ sequence::get_trigger_state (midipulse tick) const
 {
     automutex locker(m_mutex);
     return m_triggers.get_state(tick);
+}
+
+bool
+sequence::transpose_trigger (midipulse tick, int transposition)
+{
+    automutex locker(m_mutex);
+    bool result = m_triggers.transpose(tick, transposition);
+    if (result)
+        modify();                               /* no easy way to undo this */
+
+    return result;
 }
 
 /**

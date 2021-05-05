@@ -135,6 +135,9 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+qseq64_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(qseq64_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -719,7 +722,7 @@ dependencies = \
 #
 #----------------------------------------------------------------------------
 qseq64_SOURCES = seq64qt5.cpp
-qseq66_LDFLAGS = -Wl,--copy-dt-needed-entries
+qseq64_LDFLAGS = -Wl,--copy-dt-needed-entries
 qseq64_DEPENDENCIES = $(dependencies)
 qseq64_LDADD = $(libraries) $(QT_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
 TESTS = test_script
@@ -808,7 +811,7 @@ clean-binPROGRAMS:
 
 qseq64$(EXEEXT): $(qseq64_OBJECTS) $(qseq64_DEPENDENCIES) $(EXTRA_qseq64_DEPENDENCIES) 
 	@rm -f qseq64$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(qseq64_OBJECTS) $(qseq64_LDADD) $(LIBS)
+	$(AM_V_CXXLD)$(qseq64_LINK) $(qseq64_OBJECTS) $(qseq64_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

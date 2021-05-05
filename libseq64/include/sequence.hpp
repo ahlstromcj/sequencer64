@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2019-12-16
+ * \updates       2021-05-05
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -734,6 +734,11 @@ public:
     int trigger_count () const
     {
         return int(m_triggers.count());
+    }
+
+    int trigger_datasize () const
+    {
+        return m_triggers.datasize();
     }
 
     /**
@@ -1448,7 +1453,9 @@ public:
     void add_trigger
     (
         midipulse tick, midipulse len,
-        midipulse offset = 0, bool adjust_offset = true
+        midipulse offset    = 0,
+        midibyte tpose      = 0,
+        bool adjust_offset  = true
     );
     void split_trigger (midipulse tick);
     void half_split_trigger (midipulse tick);
@@ -1456,6 +1463,7 @@ public:
     void grow_trigger (midipulse tick_from, midipulse tick_to, midipulse len);
     void delete_trigger (midipulse tick);
     bool get_trigger_state (midipulse tick) const;
+    bool transpose_trigger (midipulse tick, int transposition);
     bool select_trigger (midipulse tick);
     triggers::List get_triggers () const;
     bool unselect_trigger (midipulse tick);

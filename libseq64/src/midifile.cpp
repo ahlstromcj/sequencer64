@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2019-07-08
+ * \updates       2021-05-05
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -459,6 +459,7 @@ midifile::grab_input_stream (const std::string & tag)
     c_midibus:          SeqSpec FF 7F 05 24 24 00 01 00
     c_timesig:          SeqSpec FF 7F 06 24 24 00 06 04 04
     c_midich:           SeqSpec FF 7F 05 24 24 00 02 06
+    c_trig_transpose:   SeqSpec FF 7F 1C 24 24 00 20 00 00 ...
 \endverbatim
  *
  *  Note that only Sequencer64 adds "FF 7F len" to the SeqSpec data.
@@ -653,14 +654,24 @@ midifile::checklen (midilong len, midibyte type)
  * \param ppqn
  *      Provides the ppqn value to use to scale the tick values if
  *      m_use_scaled_ppqn is true.  If 0, the ppqn value is not used.
+ *
+ * \param transposable
+ *      If true, use the new style trigger, which adds a byte-long transpose
+ *      value.  In Seq66, the default is true; here, it is false, at least for now.
  */
 
 void
-midifile::add_trigger (sequence & seq, midishort ppqn)
+midifile::add_trigger (sequence & seq, midishort ppqn, bool transposable)
 {
     midilong on = read_long();
     midilong off = read_long();
     midilong offset = read_long();
+    midibyte tpose = 0x00;
+    if (transposable)
+    {
+        if (transposable)
+            tpose = read_byte();
+    }
     if (ppqn > 0)
     {
         on *= m_ppqn / ppqn;
@@ -668,7 +679,7 @@ midifile::add_trigger (sequence & seq, midishort ppqn)
         offset *= m_ppqn / ppqn;
     }
     midilong length = off - on + 1;
-    seq.add_trigger(on, length, offset, false);
+    seq.add_trigger(on, length, offset, tpose, false);
 }
 
 /**
@@ -910,24 +921,27 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                         case EVENT_META_TRACK_NAME:     /* FF 03 len text   */
 
-                            if (! checklen(len, mtype))
+                            if (checklen(len, mtype))
+                            {
+                                int count = 0;
+                                for (int i = 0; i < int(len); ++i)
+                                {
+                                    char ch = char(read_byte());
+                                    if (count < SEQ64_TRACKNAME_MAX)
+                                    {
+                                        TrackName[count] = ch;
+                                        ++count;
+                                    }
+                                }
+                                TrackName[count] = '\0';
+                                seq.set_name(TrackName);
+                            }
+                            else
                                 return false;
 
-                            if (len > SEQ64_TRACKNAME_MAX)
-                                len = SEQ64_TRACKNAME_MAX;
-
-                            for (int i = 0; i < int(len); ++i)
-                                TrackName[i] = char(read_byte());
-
-                            TrackName[len] = '\0';
-                            seq.set_name(TrackName);
                             break;
 
                         case EVENT_META_END_OF_TRACK:   /* FF 2F 00         */
-
-                            /*
-                             *  if (Delta == 0) ++CurrentTime;
-                             */
 
                             seq.set_length(CurrentTime, false);
                             seq.zero_markers();
@@ -1074,26 +1088,41 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             }
                             else if (seqspec == c_triggers)
                             {
-                                printf("Old-style triggers event encountered\n");
-                                int num_triggers = len / 4;
+                                int num_triggers = len / 8;
                                 for (int i = 0; i < num_triggers; i += 2)
                                 {
                                     midilong on = read_long();
                                     midilong length = read_long() - on;
-                                    len -= 8;
+                                    if (m_use_scaled_ppqn)
+                                    {
+                                        // TODO
+                                    }
                                     seq.add_trigger(on, length, 0, false);
+                                    len -= 8;
                                 }
                             }
                             else if (seqspec == c_triggers_new)
                             {
-                                int num_triggers = len / 12;
+                                int num_triggers = len / (3 * 4);
                                 midishort p = m_use_scaled_ppqn ?
                                     m_file_ppqn : 0 ;
 
                                 for (int i = 0; i < num_triggers; ++i)
                                 {
-                                    len -= 12;
                                     add_trigger(seq, p);
+                                    len -= (3 * 4);
+                                }
+                            }
+                            else if (seqspec == c_trig_transpose)
+                            {
+                                int num_triggers = len / (3 * 4 + 1);
+                                midishort p = m_use_scaled_ppqn ?
+                                    m_file_ppqn : 0 ;
+
+                                for (int i = 0; i < num_triggers; ++i)
+                                {
+                                    add_trigger(seq, p, true);
+                                    len -= (3 * 4 + 1);
                                 }
                             }
                             else if (seqspec == c_musickey)

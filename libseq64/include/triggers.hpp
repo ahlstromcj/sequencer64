@@ -28,11 +28,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2019-02-05
+ * \updates       2021-05-05
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
  *  a bit easier to understand.
+ *
+ *  Backported the c_trig_transpose SeqSpec to this module.
  */
 
 #include <string>
@@ -83,6 +85,17 @@ private:
     midipulse m_offset;
 
     /**
+     *  New feature.  An additional byte indicates to transpose this trigger,
+     *  to implement the new c_trig_transpose SeqSpec tag.  The values range
+     *  from 0 to 0x80.  0x00 indicates that transposition is not in effect.
+     *  0x40 indicates that it is in effect, but has a value of 0.  Values
+     *  from 0x41 to 0x80 indicate tranposition from +1 to +63.  Values from
+     *  0x3F to 0x01 indicate transposition from -1 to -63.
+     */
+
+    int m_transpose;
+
+    /**
      *  Indicates that the trigger is part of a selection.
      */
 
@@ -98,9 +111,20 @@ public:
         m_tick_start    (0),
         m_tick_end      (0),
         m_offset        (0),
+        m_transpose     (0),
         m_selected      (false)
     {
         // Empty body
+    }
+
+    trigger (midipulse tick, midipulse len, midipulse offset, midibyte tpose) :
+        m_tick_start    (tick),
+        m_tick_end      (tick + len - 1),
+        m_offset        (offset),
+        m_transpose     (0),
+        m_selected      (false)
+    {
+        transpose_byte(tpose);            /* convert byte to converted int  */
     }
 
     /**
@@ -256,6 +280,47 @@ public:
     void decrement_offset (midipulse s)
     {
         m_offset -= s;
+    }
+
+    /**
+     *  This function maps 0x00 to 0, values less than 0x40 to transposing
+     *  downward in semitones, and values greater than 0x40, but less than 0x80,
+     *  to transposing upward in semitones. Value 0x40 is not used.  We can
+     *  tranpose up and down by 63 semitones, or a little more than 5 octaves.
+     */
+
+    midibyte transpose_byte () const
+    {
+        return m_transpose == 0 ? 0 : midibyte(m_transpose + 0x40);
+    }
+
+    void transpose_byte (midibyte t)                /* when reading a file  */
+    {
+        if (t > 0x00 && t < 0x80)
+            m_transpose = t - 0x40;
+        else
+            m_transpose = 0;                        /* no transpose         */
+    }
+
+    int transpose () const
+    {
+        return m_transpose;
+    }
+
+    bool transposed () const
+    {
+        return m_transpose != 0;
+    }
+
+    int datasize () const
+    {
+        return transposed() ? (3 * 4 + 1) : (3 * 4) ;
+    }
+
+    void transpose (int t)                          /* to modify a trigger  */
+    {
+        if (t > (-64) && t < 64)                    /* -63 to 0 to +63      */
+            m_transpose = t;
     }
 
     /**
@@ -461,6 +526,8 @@ public:
         return int(m_triggers.size());
     }
 
+    int datasize () const;
+
     /**
      * \getter m_number_selected
      */
@@ -474,12 +541,22 @@ public:
     void pop_undo ();
     void pop_redo ();
     void print (const std::string & seqname) const;
-    bool play (midipulse & starttick, midipulse & endtick, bool resume = false);
+
+    bool play
+    (
+        midipulse & starttick, midipulse & endtick,
+        int & transpose,
+        bool resume = false
+    );
+
     void add
     (
         midipulse tick, midipulse len,
-        midipulse offset = 0, bool adjustoffset = true
+        midipulse offset = 0,
+        midibyte transpose = 0,
+        bool adjustoffset = true
     );
+
     void adjust_offsets_to_length (midipulse newlen);
     void split (midipulse tick);
     void half_split (midipulse tick);
@@ -488,6 +565,7 @@ public:
     void grow (midipulse tickfrom, midipulse tickto, midipulse length);
     void remove (midipulse tick);
     bool get_state (midipulse tick) const;
+    bool transpose (midipulse tick, int transposition);
     bool select (midipulse tick);
     bool unselect (midipulse tick);
     bool unselect ();

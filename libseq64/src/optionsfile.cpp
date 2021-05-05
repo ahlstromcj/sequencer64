@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-04-19
+ * \updates       2021-05-05
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -863,6 +863,11 @@ optionsfile::parse (perform & p)
         line_after(file, "[auto-option-save]");
         sscanf(m_line, "%ld", &method);
         rc().auto_option_save(method != 0);
+        if (next_data_line(file))                   /* a new option */
+        {
+            sscanf(m_line, "%ld", &method);
+            rc().save_old_triggers(method != 0);
+        }
     }
     file.close();           /* done parsing the "rc" configuration file */
     return true;
@@ -1742,6 +1747,8 @@ optionsfile::write (const perform & p)
         "\n"
         << (rc().auto_option_save() ? "1" : "0")
         << "     # auto-save-options-on-exit support flag\n"
+        << (rc().save_old_triggers() ? "1" : "0")
+        << "     # save triggers without the transpose byte (save-old-triggers)\n"
         ;
 
 

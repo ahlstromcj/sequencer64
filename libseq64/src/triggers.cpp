@@ -25,12 +25,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2020-06-20
+ * \updates       2021-05-05
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
  *  note is that the triggers are written to a MIDI file using the
- *  sequencer-specific code c_triggers_new.
+ *  sequencer-specific code c_triggers_new.  Updated now with c_trig_transpose
+ *  support.
  *
  * Stazed:
  *
@@ -244,6 +245,7 @@ triggers::play
 (
     midipulse & start_tick,
     midipulse & end_tick,
+    int & transpose,
     bool resumenoteons
 )
 {
@@ -252,6 +254,8 @@ triggers::play
     midipulse trigger_offset = 0;
     midipulse trigger_tick = 0;
     bool trigger_state = false;
+    int tp = 0;
+    transpose = 0;
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         if (i->at_trigger_transition(start_tick, end_tick))
@@ -271,6 +275,7 @@ triggers::play
             trigger_state = false;
             trigger_tick = trigend;
             trigger_offset = trigoffset;
+            tp = i->transpose();
         }
         if (trigstart > end_tick || trigend > end_tick)
             break;
@@ -317,6 +322,8 @@ triggers::play
 
     if (offplay)
         m_parent.set_playing(false);                    /* stop playing     */
+    else
+        transpose = tp;                                 /* side-effect      */
 
     m_parent.set_trigger_offset(trigger_offset);
     return result;
@@ -389,7 +396,9 @@ triggers::adjust_offset (midipulse offset)
 void
 triggers::add
 (
-    midipulse tick, midipulse len, midipulse offset, bool fixoffset
+    midipulse tick, midipulse len, midipulse offset,
+    midibyte transpose,
+    bool fixoffset
 )
 {
     trigger t;
@@ -397,6 +406,7 @@ triggers::add
     unselect(t, false);                 /* do not count this unselection    */
     t.tick_start(tick);
     t.tick_end(tick + len - 1);
+    t.transpose_byte(transpose);
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT
     printf
@@ -431,6 +441,24 @@ triggers::add
     }
     m_triggers.push_front(t);
     m_triggers.sort();                          /* hmmm, another sort       */
+}
+
+bool
+triggers::transpose (midipulse tick, int transposition)
+{
+    bool result = false;
+    for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
+    {
+        if (i->tick_start() <= tick && tick <= i->tick_end())
+        {
+            result = transposition != i->transpose();
+            if (result)
+                i->transpose(transposition);
+
+            break;
+        }
+    }
+    return result;
 }
 
 /**
@@ -1361,6 +1389,22 @@ triggers::unselect (trigger & t, bool count)
             }
         }
     }
+}
+
+/**
+ *  Gets the total number of bytes needed to store all the triggers in the
+ *  container.  Non-transposed triggers can save a byte, and also be backward
+ *  compatible to Seq24.
+ */
+
+int
+triggers::datasize () const
+{
+    int result = 0;
+    for (auto & t : m_triggers)
+        result += t.datasize();
+
+    return result;
 }
 
 /**

@@ -28,11 +28,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2018-03-24
+ * \updates       2021-05-05
  * \license       GNU GPLv2 or above
  *
  *  This class is meant to hold the bytes that represent MIDI events and other
  *  MIDI data, which can then be dumped to a MIDI file.
+ *
+ *  A new backport from Seq66 for Cinco de Mayo!  Added a new SeqSpec,
+ *  c_trig_transpose, so that Seq64 can read Seq66 files with this
+ *  extended trigger mechanism.
  */
 
 #include <cstddef>                      /* std::size_t          */
@@ -136,6 +140,7 @@ namespace seq64
             c_timesig
             c_triggers (deprecated)
             c_triggers_new
+            c_trig_transpose (c_triggers_new plus!)
             c_musickey (can be in footer, as well)
             c_musicscale (ditto)
             c_backsequence (ditto)
@@ -226,6 +231,10 @@ const midilong c_reserved_2  =  0x24240019; /**< Reserved for expansion.    */
 const midilong c_tempo_track =  0x2424001A; /**< Alternate tempo track no.  */
 const midilong c_seq_color   =  0x2424001B; /**< Future feature Kepler34. * */
 const midilong c_seq_edit_mode = 0x2424001C; /**< Future feature Kepler34.* */
+const midilong c_reserved_3     = 0x2424001D; /**< Reserved for expansion.   */
+const midilong c_reserved_4     = 0x2424001E; /**< Reserved for expansion.   */
+const midilong c_reserved_5     = 0x2424001F; /**< Reserved for expansion.   */
+const midilong c_trig_transpose = 0x24240020; /**< Triggers with transpose.  */
 
 /**
  *    This class is the abstract base class for a container of MIDI track

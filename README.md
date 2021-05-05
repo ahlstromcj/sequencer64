@@ -1,6 +1,6 @@
-# README for Sequencer64 0.96.9 (Native JACK, CLI, tempo, Linux/Windows, play-lists)
+# README for Sequencer64 0.97.0 (Native JACK, CLI, tempo, play-lists...)
 Chris Ahlstrom
-2015-09-10 to 2021-02-01
+2015-09-10 to 2021-05-05
 
 Sequencer64 is a live MIDI looper with a song-creation layout window.
 Sequencer64 is a reboot of seq24, extending it greatly over the last six years.
@@ -46,6 +46,9 @@ and using a conventional source tarball.
 
 ## Recent changes:
 
+    -   Version 0.97.0:
+        -   Fix an issue reading track names in the midifile class.
+        -   Back-ported the c_trig_transpose SeqSpec from Seq66.
     -   Version 0.96.9:
         -   Fixed issue #207 where growing a note left two broken notes.
         -   Quick fix to issue #216 for note on/off tweaking.

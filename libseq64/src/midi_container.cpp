@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2018-07-08
+ * \updates       2021-05-05
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -546,7 +546,7 @@ midi_container::song_fill_seq_event
         event_list::Events::iterator i;
         for (i = m_sequence.events().begin(); i != m_sequence.events().end(); ++i)
         {
-            const event & e = DREF(i);
+            event e = DREF(i);                      /* must use a copy      */
             midipulse timestamp = e.get_timestamp() + timestamp_adjust;
             if (timestamp >= trig.tick_start())     /* at/after trigger     */
             {
@@ -555,6 +555,9 @@ midi_container::song_fill_seq_event
                  */
 
                 midibyte note = e.get_note();
+                if (trig.transposed())
+                    e.transpose_note(trig.transpose());
+
                 if (e.is_note_on())
                 {
                     if (timestamp <= trig.tick_end())
@@ -628,8 +631,16 @@ midi_container::song_fill_seq_trigger
     add_variable(0);                            /* no delta time            */
     put(0xFF);                                  /* indicates a meta event   */
     put(0x7F);                                  /* sequencer-specific       */
-    add_variable((num_triggers * 3 * 4) + 4);   /* 3 long values + tag      */
-    add_long(c_triggers_new);                   /* Seq24 tag for triggers   */
+    if (rc().save_old_triggers())
+    {
+        add_variable((num_triggers * 3 * 4) + 4);
+        add_long(c_triggers_new);
+    }
+    else
+    {
+        add_variable((num_triggers * (3 * 4 + 1)) + 4);
+        add_long(c_trig_transpose);
+    }
 
     /*
      * Using all the trigger values seems to be the same as these values, but
@@ -644,6 +655,9 @@ midi_container::song_fill_seq_trigger
     add_long(0);                            // the start tick
     add_long(trig.tick_end());
     add_long(0);                            // offset is done in event
+    if (! rc().save_old_triggers())
+        put(trig.transpose_byte());
+
     fill_proprietary();
 
     midipulse delta_time = length - prev_timestamp;
@@ -682,6 +696,12 @@ midi_container::song_fill_seq_trigger
  *      Then 0xFF 0x7F is written, followed by the length value, which is the
  *      number of triggers at 3 long integers per trigger, plus the 4-byte
  *      code for triggers, c_triggers_new = 0x24240008.
+ *
+ *      However, we're now extending triggers (c_trig_transpose = 0x24240020)
+ *      to include a transposition byte which allows up to 5 octaves of
+ *      tranposition either way, as a way to re-use patterns.  Inspired by
+ *      Kraftwerk's "Europe Endless" background sequence, with patterns being
+ *      shifted up and down in pitch.
  *
  * Meta and SysEx Events:
  *
@@ -767,8 +787,16 @@ midi_container::fill (int track, const perform & p, bool doseqspec)
         add_variable(0);
         put(0xFF);
         put(0x7F);
-        add_variable((triggercount * 3 * 4) + 4);       /* 3 long ints plus...  */
-        add_long(c_triggers_new);                       /* ...the triggers code */
+        if (rc().save_old_triggers())
+        {
+            add_variable((triggercount * 3 * 4) + 4);
+            add_long(c_triggers_new);
+        }
+        else
+        {
+            add_variable((triggercount * (3 * 4 + 1)) + 4);
+            add_long(c_trig_transpose);
+        }
         for
         (
             triggers::List::iterator ti = triggerlist.begin();
@@ -782,6 +810,8 @@ midi_container::fill (int track, const perform & p, bool doseqspec)
             add_long(ti->tick_start());
             add_long(ti->tick_end());
             add_long(ti->offset());
+            if (! rc().save_old_triggers())
+                put(ti->transpose_byte());
         }
         fill_proprietary ();
     }

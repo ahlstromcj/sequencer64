@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2021-05-05
+ * \updates       2021-05-06
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -605,9 +605,10 @@ midi_container::song_fill_seq_event
 }
 
 /**
- *  Fills in the trigger for the whole sequence.  For a song-performance,
+ *  Fills in one trigger for the whole sequence.  For a song-performance,
  *  there will be only one trigger, covering the beginning to the end of the
- *  fully unlooped track.
+ *  fully unlooped track.  It is already full of transposed events, so the old
+ *  format (c_triggers_new) can be used.
  *
  * \param trig
  *      The current trigger to be processed.
@@ -616,7 +617,8 @@ midi_container::song_fill_seq_event
  *      Provides the total length of the sequence.
  *
  * \param prev_timestamp
- *      The time-stamp of the previous event, which is actually the first event.
+ *      The time-stamp of the previous event, which is actually the first
+ *      event.
  */
 
 void
@@ -631,16 +633,8 @@ midi_container::song_fill_seq_trigger
     add_variable(0);                            /* no delta time            */
     put(0xFF);                                  /* indicates a meta event   */
     put(0x7F);                                  /* sequencer-specific       */
-    if (rc().save_old_triggers())
-    {
-        add_variable((num_triggers * 3 * 4) + 4);
-        add_long(c_triggers_new);
-    }
-    else
-    {
-        add_variable((num_triggers * (3 * 4 + 1)) + 4);
-        add_long(c_trig_transpose);
-    }
+    add_variable((num_triggers * 3 * 4) + 4);
+    add_long(c_triggers_new);
 
     /*
      * Using all the trigger values seems to be the same as these values, but
@@ -655,13 +649,8 @@ midi_container::song_fill_seq_trigger
     add_long(0);                            // the start tick
     add_long(trig.tick_end());
     add_long(0);                            // offset is done in event
-    if (! rc().save_old_triggers())
-        put(trig.transpose_byte());
-
     fill_proprietary();
-
-    midipulse delta_time = length - prev_timestamp;
-    fill_meta_track_end(delta_time);
+    fill_meta_track_end(length - prev_timestamp);
 }
 
 /**
@@ -760,9 +749,8 @@ midi_container::fill (int track, const perform & p, bool doseqspec)
     midipulse prevtimestamp = 0;
     for (event_list::iterator i = evl.begin(); i != evl.end(); ++i)
     {
-        event & er = DREF(i);
-        const event & e = er;
-        timestamp = e.get_timestamp();
+        const event & er = DREF(i);
+        timestamp = er.get_timestamp();
         deltatime = timestamp - prevtimestamp;
         if (deltatime < 0)                          /* midipulse == long    */
         {
@@ -770,9 +758,8 @@ midi_container::fill (int track, const perform & p, bool doseqspec)
             break;
         }
         prevtimestamp = timestamp;
-        add_event(e, deltatime);
+        add_event(er, deltatime);
     }
-
     if (doseqspec)
     {
         /*
@@ -782,20 +769,31 @@ midi_container::fill (int track, const perform & p, bool doseqspec)
          * to only track 0?  No; seq24 saves these events with each sequence.
          */
 
+        bool transtriggers = ! rc().save_old_triggers();
         triggers::List & triggerlist = m_sequence.triggerlist();
         int triggercount = int(triggerlist.size());
         add_variable(0);
         put(0xFF);
         put(0x7F);
-        if (rc().save_old_triggers())
-        {
-            add_variable((triggercount * 3 * 4) + 4);
-            add_long(c_triggers_new);
-        }
-        else
+
+        /*
+         *  This seems to mung the file when saved.  DISABLED.
+         */
+
+#ifdef USE_THIS_DANGEROUS_FEATURE
+        if (transtriggers)
+            transtriggers = m_sequence.any_trigger_transposed();
+#endif
+
+        if (transtriggers)
         {
             add_variable((triggercount * (3 * 4 + 1)) + 4);
             add_long(c_trig_transpose);
+        }
+        else
+        {
+            add_variable((triggercount * 3 * 4) + 4);
+            add_long(c_triggers_new);
         }
         for
         (
@@ -810,7 +808,7 @@ midi_container::fill (int track, const perform & p, bool doseqspec)
             add_long(ti->tick_start());
             add_long(ti->tick_end());
             add_long(ti->offset());
-            if (! rc().save_old_triggers())
+            if (transtriggers)
                 put(ti->transpose_byte());
         }
         fill_proprietary ();

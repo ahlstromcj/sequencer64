@@ -378,9 +378,9 @@ qseventslots::insert_event (const editable_event & edev)
          * length.  We also need to account for any change in length.
          */
 
-        if (get_length() > m_last_max_timestamp)
+        if (max_length() > m_last_max_timestamp)
         {
-            m_last_max_timestamp = get_length();
+            m_last_max_timestamp = max_length();
         }
     }
     return result;
@@ -1080,7 +1080,7 @@ int
 qseventslots::calculate_measures () const
 {
     midipulse unitmeasure = seq().unit_measure();
-    return 1 + get_length() / unitmeasure;
+    return 1 + max_length() / unitmeasure;
 }
 
 }           // namespace seq64

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2021-05-05
+ * \updates       2021-05-06
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1172,6 +1172,7 @@ sequence::play
     int trigtranspose = 0;                  /* used with c_trig_transpose   */
     midipulse start_tick = m_last_tick;     /* modified in triggers::play() */
     midipulse end_tick = tick;
+    m_trigger_offset = 0;                   /* NEW from Seq24 2021-05-06    */
     if (m_song_mute)
     {
         set_playing(false);
@@ -1198,11 +1199,12 @@ sequence::play
     }
     if (m_playing)                          /* play notes in frame          */
     {
-        midipulse offset = m_length - m_trigger_offset;
+        midipulse length = m_length > 0 ? m_length : m_ppqn ;
+        midipulse offset = length - m_trigger_offset;
         midipulse start_tick_offset = start_tick + offset;
         midipulse end_tick_offset = end_tick + offset;
-        midipulse times_played = m_last_tick / m_length;
-        midipulse offset_base = times_played * m_length;
+        midipulse times_played = m_last_tick / length;
+        midipulse offset_base = times_played * length;
         int transpose = trigtranspose;
         if (transpose == 0)
             transpose = get_transposable() ? m_parent->get_transpose() : 0 ;
@@ -1238,7 +1240,7 @@ sequence::play
             if (e == m_events.end())                /* did we hit the end ? */
             {
                 e = m_events.begin();               /* yes, start over      */
-                offset_base += m_length;            /* for another go at it */
+                offset_base += length;              /* for another go at it */
             }
         }
     }
@@ -1260,16 +1262,7 @@ void
 sequence::verify_and_link ()
 {
     automutex locker(m_mutex);
-
-#ifdef PLATFORM_DEBUG_TMI
-    m_events.print_notes("before");
-#endif
-
     m_events.verify_and_link(m_length);
-
-#ifdef PLATFORM_DEBUG_TMI
-    m_events.print_notes("after");
-#endif
 }
 
 /**
@@ -4782,10 +4775,10 @@ bool
 sequence::get_next_trigger
 (
     midipulse & tick_on, midipulse & tick_off, bool & selected,
-    midipulse & offset
+    midipulse & offset, int & transposition
 )
 {
-    return m_triggers.next(tick_on, tick_off, selected, offset);
+    return m_triggers.next(tick_on, tick_off, selected, offset, transposition);
 }
 
 /**
@@ -4937,6 +4930,7 @@ sequence::set_length (midipulse len, bool adjust_triggers, bool verify)
      * We should set the measures count here.
      */
 
+    m_events.set_length(len);
     m_triggers.set_length(len);         /* must precede adjust call         */
     if (adjust_triggers)
         m_triggers.adjust_offsets_to_length(len);

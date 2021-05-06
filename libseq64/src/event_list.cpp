@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2020-06-11
+ * \updates       2021-05-06
  * \license       GNU GPLv2 or above
  *
  *  This container now can indicate if certain Meta events (time-signaure or
@@ -119,6 +119,7 @@ event_list::event_key::operator < (const event_key & rhs) const
 event_list::event_list ()
  :
     m_events                (),
+    m_length                (0),
     m_is_modified           (false),
     m_has_tempo             (false),
     m_has_time_signature    (false)
@@ -136,6 +137,7 @@ event_list::event_list ()
 event_list::event_list (const event_list & rhs)
  :
     m_events                (rhs.m_events),
+    m_length                (rhs.m_length),
     m_is_modified           (rhs.m_is_modified),
     m_has_tempo             (rhs.m_has_tempo),
     m_has_time_signature    (rhs.m_has_time_signature)
@@ -157,6 +159,7 @@ event_list::operator = (const event_list & rhs)
     if (this != &rhs)
     {
         m_events                = rhs.m_events;
+        m_length                = rhs.m_length;
         m_is_modified           = rhs.m_is_modified;
         m_has_tempo             = rhs.m_has_tempo;
         m_has_time_signature    = rhs.m_has_time_signature;
@@ -182,7 +185,7 @@ event_list::~event_list ()
  */
 
 midipulse
-event_list::get_length () const
+event_list::max_length () const
 {
     midipulse result = 0;
     if (count() > 0)
@@ -248,7 +251,16 @@ event_list::append (const event & e)
 
 #else   // SEQ64_USE_EVENT_MAP
 
-    m_events.push_front(e);             /* std::list operation      */
+    /*
+     * This causes weird sorting issue with the beginning notes of the "Chorus
+     * 1" track of the reconstructed Kraftwerk tune in the Seq66 project.
+     * Also and issue, though at the end of the track,
+     * when push_back() is used.
+     *
+     * m_events.push_front(e);          // std::list operation
+     */
+
+    push_back(e);
 
 #endif
 
@@ -351,23 +363,18 @@ event_list::link_new ()
         {
             Events::iterator off = on;              /* point to note on     */
             ++off;                                  /* get next element     */
-#ifdef SEQ64_USE_STAZED_NEW_LINK_EXTENSION
-            bool endfound = false;
-#endif
             while (off != m_events.end())
             {
                 event & eoff = dref(off);
                 if                          /* Off, == notes, not linked    */
                 (
                     eoff.is_note_off() &&
-                    eoff.get_note() == eon.get_note() && ! eoff.is_linked()
+                    (eoff.get_note() == eon.get_note()) &&
+                    ! eoff.is_linked()
                 )
                 {
                     eon.link(&eoff);                /* link backward        */
                     eoff.link(&eon);                /* link forward         */
-#ifdef SEQ64_USE_STAZED_NEW_LINK_EXTENSION
-                    endfound = true;                /* note on fulfilled    */
-#endif
                     break;
                 }
                 ++off;
@@ -423,6 +430,13 @@ event_list::link_new ()
  *  both modes, automatically adding the Note Off at the end of the loop and
  *  ignoring the next note off on the same note from the keyboard.  Careful!
  *
+ * SEQ64_USE_STAZED_LINK_NEW_EXTENSION: This is a Stazed addition; not in
+ * seq24.  Not sure that we need it, commmented out for testing.  It looks
+ * like it can handle cases where the Note Off comes before the Note On (i.e.
+ * the note wraps around to the beginning of the pattern).  However, it has
+ * some oddities, like unlinked notes.  We will enable this option if we can
+ * figure out what is going wrong.
+ *
  * \threadunsafe
  *      As in most case, the caller will use an automutex to call this
  *      function safely.
@@ -435,62 +449,16 @@ void
 event_list::verify_and_link (midipulse slength)
 {
     clear_links();
-    for (event_list::iterator on = m_events.begin(); on != m_events.end(); ++on)
+    link_new();
+    if (slength > 0)
     {
-        event & eon = dref(on);
-        if (eon.is_note_on())               /* Note On, find its Note Off   */
-        {
-            event_list::iterator off = on;  /* next possible Note Off...    */
-            ++off;                          /* ...starting here             */
-            bool endfound = false;
-            while (off != m_events.end())
-            {
-                event & eoff = dref(off);
-                if                          /* Off, == notes, not linked    */
-                (
-                    eoff.is_note_off() &&
-                    eoff.get_note() == eon.get_note() && ! eoff.is_linked()
-                )
-                {
-                    /*
-                     * See THINK ABOUT IT in the function banner.
-                     */
-
-                    eon.link(&eoff);                    /* link + mark */
-                    eoff.link(&eon);
-                    endfound = true;
-                    break;
-                }
-                ++off;
-            }
-            if (! endfound)
-            {
-                off = m_events.begin();
-                while (off != on)
-                {
-                    event & eoff = dref(off);
-                    if
-                    (
-                        eoff.is_note_off() &&
-                        eoff.get_note() == eon.get_note() && ! eoff.is_linked()
-                    )
-                    {
-                        eon.link(&eoff);                /* link + mark */
-                        eoff.link(&eon);
-                        endfound = true;
-                        break;
-                    }
-                    ++off;
-                }
-            }
-        }
+        mark_out_of_range(slength);
+        remove_marked();                    /* prune out-of-range events    */
     }
-    mark_out_of_range(slength);
-    remove_marked();                        /* prune out-of-range events    */
 
     /*
      *  Link the tempos in a separate pass (it makes the logic easier and the
-     *  amount of time should be unnoticeable to the user.
+     *  amount of time should be unnoticeable to the user).
      */
 
     link_tempos();
@@ -646,7 +614,9 @@ event_list::unmark_all ()
  *      This code was comparing the timestamp as greater than or equal to the
  *      sequence length.  However, being equal is fine.  This may explain why
  *      the midifile code would add one tick to the length of the last note
- *      when processing the end-of-track.
+ *      when processing the end-of-track.  The ">=" changed to ">" as a back-port
+ *      from Seq66 on 2021-05-06 due to dropping the last 4 note events from
+ *      the "Chorus 1" pattern of the Kraftwerk track from Seq66.
  *
  * \param slength
  *      Provides the length beyond which events will be pruned.
@@ -658,7 +628,7 @@ event_list::mark_out_of_range (midipulse slength)
     for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & e = dref(i);
-        bool prune = e.get_timestamp() >= slength;   /* WAS ">=", SEE BANNER */
+        bool prune = e.get_timestamp() > slength;   /* WAS ">=", SEE BANNER */
         if (! prune)
             prune = e.get_timestamp() < 0;          /* added back, seq24    */
 

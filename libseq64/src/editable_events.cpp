@@ -132,7 +132,7 @@ editable_events::operator = (const editable_events & rhs)
  */
 
 midipulse
-editable_events::get_length () const
+editable_events::max_length () const
 {
     midipulse result = 0;
     if (count() > 0)

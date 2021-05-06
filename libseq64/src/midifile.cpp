@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2021-05-05
+ * \updates       2021-05-06
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1272,7 +1272,6 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
             {
                 finalize_sequence(p, seq, seqnum, screenset);
             }
-
 #ifdef PLATFORM_DEBUG_TMI
             seq.print();
 #endif

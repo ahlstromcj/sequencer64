@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2020-05-25
+ * \updates       2021-05-06
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -158,6 +158,14 @@ private:
     Events m_events;
 
     /**
+     *  Holds the length of the sequence holding this event-list,
+     *  in pulses (ticks).  See sequence::m_length. From Seq66 on
+     *  2021-05-06.
+     */
+
+    midipulse m_length;
+
+    /**
      *  A flag to indicate if an event was added or removed.  We may need to
      *  give client code a way to reload the sequence.  This is currently an
      *  issue when a seqroll and an eventedit/eventslots are active for the
@@ -238,7 +246,7 @@ public:
         return int(m_events.size());
     }
 
-    midipulse get_length () const;
+    midipulse max_length () const;
 
     /**
      *  Returns true if there are no events.
@@ -304,6 +312,11 @@ public:
     }
 
 #endif
+
+    midipulse get_length () const
+    {
+        return m_length;
+    }
 
     /**
      * \getter m_is_modified
@@ -452,6 +465,11 @@ private:                                // functions for friend sequence
     const Events & events () const
     {
         return m_events;
+    }
+
+    void set_length (midipulse len)
+    {
+        m_length = len;
     }
 
 };          // class event_list

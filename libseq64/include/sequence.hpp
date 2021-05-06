@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2021-05-05
+ * \updates       2021-05-06
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -739,6 +739,11 @@ public:
     int trigger_datasize () const
     {
         return m_triggers.datasize();
+    }
+
+    int any_trigger_transposed () const
+    {
+        return m_triggers.any_transposed();
     }
 
     /**
@@ -1693,7 +1698,8 @@ public:
     bool get_next_trigger
     (
         midipulse & tick_on, midipulse & tick_off,
-        bool & selected, midipulse & tick_offset
+        bool & selected, midipulse & tick_offset,
+        int & transposition
     );
     void quantize_events
     (

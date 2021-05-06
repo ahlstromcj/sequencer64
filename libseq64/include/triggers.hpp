@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2021-05-05
+ * \updates       2021-05-06
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -312,11 +312,6 @@ public:
         return m_transpose != 0;
     }
 
-    int datasize () const
-    {
-        return transposed() ? (3 * 4 + 1) : (3 * 4) ;
-    }
-
     void transpose (int t)                          /* to modify a trigger  */
     {
         if (t > (-64) && t < 64)                    /* -63 to 0 to +63      */
@@ -527,6 +522,7 @@ public:
     }
 
     int datasize () const;
+    bool any_transposed () const;
 
     /**
      * \getter m_number_selected
@@ -599,7 +595,8 @@ public:
     bool next
     (
         midipulse & tick_on, midipulse & tick_off,
-        bool & selected, midipulse & tick_offset
+        bool & selected, midipulse & tick_offset,
+        int & transposition
     );
     trigger next_trigger ();
 

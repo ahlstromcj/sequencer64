@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-06-03
+ * \updates       2021-05-06
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -666,6 +666,9 @@ event::print_note (bool is_a_link) const
  *  pressure, and pitch wheel, control change, and program changes.  The lower
  *  the ranking the more upfront an item comes in the sort order.
  *
+ *  We also need to consider the note value.  Backported from Seq66 on
+ *  2021-05-06.
+ *
  * \return
  *      Returns the rank of the current m_status byte.
  */
@@ -676,10 +679,10 @@ event::get_rank () const
     switch (m_status)
     {
     case EVENT_NOTE_OFF:
-        return 0x100;
+        return 0x200 + get_note();
 
     case EVENT_NOTE_ON:
-        return 0x090;
+        return 0x100 + get_note();
 
     case EVENT_AFTERTOUCH:
     case EVENT_CHANNEL_PRESSURE:

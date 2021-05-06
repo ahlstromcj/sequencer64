@@ -253,7 +253,7 @@ public:
         return int(m_events.size());
     }
 
-    midipulse get_length () const;
+    midipulse max_length () const;
 
     bool add (const event & e);
     bool add (const editable_event & e);

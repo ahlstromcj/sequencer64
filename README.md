@@ -1,6 +1,6 @@
 # README for Sequencer64 0.97.0 (Native JACK, CLI, tempo, play-lists...)
 Chris Ahlstrom
-2015-09-10 to 2021-05-05
+2015-09-10 to 2021-05-06
 
 Sequencer64 is a live MIDI looper with a song-creation layout window.
 Sequencer64 is a reboot of seq24, extending it greatly over the last six years.
@@ -14,7 +14,14 @@ Sequencer64 has build options for ALSA, PortMidi, JACK, Gtkmm 2.4, Qt 5, Windows
 and a command-line/daemon.
 
 Sequencer64 is now in maintenance mode (bug fixes and minor backports only).
-It is superceded by Seq66.
+It is superceded by Seq66.  However, the new Seq66 "transposable trigger"
+feature has been back-port as of 2021-05-06 so that Seq64 can play tunes
+saved with transposed triggers.  Many related bug fixes as well.
+Try loading and playing the Kraftwerk tune from seq66/data/midi, which
+uses this feature.
+
+**WARNING** This feature can save old tunes with the new triggers, which are
+not supported by other forks of Seq24.
 
 ## Native JACK support: Seq64rtmidi/seq64
 
@@ -47,7 +54,8 @@ and using a conventional source tarball.
 ## Recent changes:
 
     -   Version 0.97.0:
-        -   Fix an issue reading track names in the midifile class.
+        -   Fixed an issue reading track names in the midifile class.
+        -   Fixed an issue with dropping note events at the edge of a measure.
         -   Back-ported the c_trig_transpose SeqSpec from Seq66.
     -   Version 0.96.9:
         -   Fixed issue #207 where growing a note left two broken notes.

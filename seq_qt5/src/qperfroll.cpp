@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2019-04-08
+ * \updates       2019-05-05
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -77,7 +77,7 @@ qperfroll::qperfroll
     ),
     m_parent_frame      (reinterpret_cast<qperfeditframe64 *>(frame)),
     m_timer             (nullptr),
-    m_font              (),
+    m_font              ("Monospace"),
     m_measure_length    (0),
     m_beat_length       (0),
     m_roll_length_ticks (0),
@@ -98,7 +98,10 @@ qperfroll::qperfroll
     m_roll_length_ticks  = perf().get_max_trigger();
     m_roll_length_ticks -= (m_roll_length_ticks % (ppqn() * 16));
     m_roll_length_ticks += ppqn() * 64;                     // ?????
-    m_font.setPointSize(6);
+    m_font.setStyleHint(QFont::Monospace);
+    m_font.setLetterSpacing(QFont::AbsoluteSpacing, 1);
+    m_font.setBold(true);
+    m_font.setPointSize(8);                                 // 6
     m_timer = new QTimer(this);                             // timer for redraws
     m_timer->setInterval(usr().window_redraw_rate());       // 50
     QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(conditional_update()));
@@ -213,6 +216,7 @@ qperfroll::paintEvent (QPaintEvent *)
     midipulse tick_off;
     midipulse offset;
     midipulse tick_offset = 0;              // long tick_offset = c_ppqn * 16;
+    int transposition = 0;
     int x_offset = tick_offset / scale_zoom();
     for (int y = y_s; y <= y_f; ++y)
     {
@@ -224,8 +228,15 @@ qperfroll::paintEvent (QPaintEvent *)
                 sequence * seq = perf().get_sequence(seqid);
                 midipulse lens = seq->get_length();
                 int lenw = lens / scale_zoom();
+                int cbw = c_perfroll_size_box_w;
                 seq->reset_draw_trigger_marker();
-                while (seq->get_next_trigger(tick_on, tick_off, selected, offset))
+                while
+                (
+                    seq->get_next_trigger
+                    (
+                        tick_on, tick_off, selected, offset, transposition
+                    )
+                )
                 {
                     if (tick_off > 0)
                     {
@@ -255,20 +266,25 @@ qperfroll::paintEvent (QPaintEvent *)
                         painter.setBrush(brush);
                         pen.setColor(Qt::black);
                         painter.setPen(pen);
-                        painter.drawRect
-                        (
-                            x, y, c_perfroll_size_box_w, c_perfroll_size_box_w
-                        );
-
+                        painter.drawRect(x, y, cbw, cbw);
                         painter.drawRect              // seq grab handle right
                         (
-                            x + w - c_perfroll_size_box_w,
-                            y + h - c_perfroll_size_box_w,
-                            c_perfroll_size_box_w, c_perfroll_size_box_w
+                            x + w - cbw, y + h - cbw, cbw, cbw
                         );
-
                         pen.setColor(Qt::black);
                         painter.setPen(pen);
+                        if (transposition != 0)
+                        {
+                            char temp[16];
+                            int t = transposition;
+                            if (t > 0)
+                                snprintf(temp, sizeof temp, "+%d", t);
+                            else
+                                snprintf(temp, sizeof temp, "-%d", -t);
+
+                            painter.setFont(m_font);
+                            painter.drawText(x + 2, y + cbw + h / 2, temp);
+                        }
 
                         midipulse length_marker_first_tick =
                         (

@@ -207,12 +207,12 @@ public:
     }
 
     /**
-     * \getter m_event_container.get_length()
+     * \getter m_event_container.max_length()
      */
 
-    midipulse get_length () const
+    midipulse max_length () const
     {
-        return m_event_container.get_length();
+        return m_event_container.max_length();
     }
 
     /**

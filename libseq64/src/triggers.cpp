@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2021-05-05
+ * \updates       2021-05-06
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -249,11 +249,11 @@ triggers::play
     bool resumenoteons
 )
 {
-    midipulse tick = start_tick;            /* saved for later              */
     bool result = false;                    /* turns off after frame play   */
+    bool trigger_state = false;
+    midipulse tick = start_tick;            /* saved for later              */
     midipulse trigger_offset = 0;
     midipulse trigger_tick = 0;
-    bool trigger_state = false;
     int tp = 0;
     transpose = 0;
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
@@ -269,13 +269,13 @@ triggers::play
             trigger_state = true;
             trigger_tick = trigstart;
             trigger_offset = trigoffset;
+            tp = i->transpose();
         }
         if (trigend <= end_tick)
         {
             trigger_state = false;
             trigger_tick = trigend;
             trigger_offset = trigoffset;
-            tp = i->transpose();
         }
         if (trigstart > end_tick || trigend > end_tick)
             break;
@@ -397,25 +397,11 @@ void
 triggers::add
 (
     midipulse tick, midipulse len, midipulse offset,
-    midibyte transpose,
-    bool fixoffset
+    midibyte transpose, bool fixoffset
 )
 {
-    trigger t;
-    t.offset(fixoffset ? adjust_offset(offset) : offset);
-    unselect(t, false);                 /* do not count this unselection    */
-    t.tick_start(tick);
-    t.tick_end(tick + len - 1);
-    t.transpose_byte(transpose);
-
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-    printf
-    (
-        "triggers::add(): tick = %ld; len = %ld; offset = %ld; fix = %s\n",
-        tick, len, offset, bool_string(fixoffset)
-    );
-#endif
-
+    midipulse adjusted_offset = fixoffset ? adjust_offset(offset) : offset;
+    trigger t(tick, len, adjusted_offset, transpose);
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         midipulse tickstart = i->tick_start();
@@ -1297,7 +1283,8 @@ triggers::next
     midipulse & tick_on,
     midipulse & tick_off,
     bool & selected,
-    midipulse & offset
+    midipulse & offset,
+    int & transposition
 )
 {
     while (m_iterator_draw_trigger != m_triggers.end())
@@ -1306,6 +1293,7 @@ triggers::next
         selected = m_iterator_draw_trigger->selected();
         offset = m_iterator_draw_trigger->offset();
         tick_off = m_iterator_draw_trigger->tick_end();
+        transposition = m_iterator_draw_trigger->transpose();
         ++m_iterator_draw_trigger;
         return true;
     }
@@ -1400,10 +1388,22 @@ triggers::unselect (trigger & t, bool count)
 int
 triggers::datasize () const
 {
-    int result = 0;
-    for (auto & t : m_triggers)
-        result += t.datasize();
+    int trigsize = rc().save_old_triggers() ? (3 * 4) : (3 * 4 + 1);
+    return count() * trigsize;
+}
 
+bool
+triggers::any_transposed () const
+{
+    bool result = false;
+    for (List::const_iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
+    {
+        if (i->transposed())
+        {
+            result = true;
+            break;
+        }
+    }
     return result;
 }
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2020-07-05
+ * \updates       2021-05-08
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1668,19 +1668,20 @@ seqedit::popup_sequence_menu ()
             snprintf(number, sizeof number, "[%d]", sset);
             menusset = manage(new Gtk::Menu());
             m_menu_sequences->items().push_back(MenuElem(number, *menusset));
-        }
-        for (int seq = 0; seq < seqsinset; ++seq)
-        {
-            char name[32];
-            int s = sset * seqsinset + seq;
-            sequence * sp = perf().get_sequence(s);
-            if (not_nullptr(sp))
+            for (int seq = 0; seq < seqsinset; ++seq)
             {
-                snprintf(name, sizeof name, "[%d] %.13s", s, sp->name().c_str());
-                menusset->items().push_back
-                (
-                    MenuElem(name, sigc::bind(SET_BG_SEQ, s))
-                );
+                char name[32];
+                int s = sset * seqsinset + seq;
+                sequence * sp = perf().get_sequence(s);
+                if (not_nullptr(sp))
+                {
+                    const char * nameptr = sp->name().c_str();
+                    snprintf(name, sizeof name, "[%d] %.13s", s, nameptr);
+                    menusset->items().push_back
+                    (
+                        MenuElem(name, sigc::bind(SET_BG_SEQ, s))
+                    );
+                }
             }
         }
     }

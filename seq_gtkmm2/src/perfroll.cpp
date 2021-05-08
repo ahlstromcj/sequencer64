@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-10-29
+ * \updates       2021-05-07
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -621,7 +621,14 @@ perfroll::draw_sequence_on (int seqnum)
         midipulse tick_off;
         midipulse offset;
         bool selected;
-        while (seq->get_next_trigger(tick_on, tick_off, selected, offset))
+        int transposition = 0;
+        while
+        (
+            seq->get_next_trigger
+            (
+                tick_on, tick_off, selected, offset, transposition
+            )
+        )
         {
             if (tick_off > 0)
             {
@@ -796,6 +803,21 @@ perfroll::draw_sequence_on (int seqnum)
                         } while (dt != DRAW_FIN);
                     }
                     tickmarker += sequence_length;
+
+                    if (transposition != 0)
+                    {
+                        char temp[16];
+                        int t = transposition;
+                        if (t > 0)
+                            snprintf(temp, sizeof temp, "+%d", t);
+                        else
+                            snprintf(temp, sizeof temp, "-%d", -t);
+
+                        render_string_on_pixmap
+                        (
+                            x + 2, y -4 + h / 2, temp, font::BLACK
+                        );
+                    }
                 }
             }
         }

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2020-06-15
+ * \updates       2021-05-08
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -1922,19 +1922,20 @@ qseqeditframe64::popup_sequence_menu ()
             char number[16];
             snprintf(number, sizeof number, "[%d]", sset);
             menusset = m_sequences_popup->addMenu(number);
-        }
-        for (int seq = 0; seq < seqsinset; ++seq)
-        {
-            char name[32];
-            int s = sset * seqsinset + seq;
-            sequence * sp = perf().get_sequence(s);
-            if (not_nullptr(sp))
+            for (int seq = 0; seq < seqsinset; ++seq)
             {
-                snprintf(name, sizeof name, "[%d] %.13s", s, sp->name().c_str());
+                char name[32];
+                int s = sset * seqsinset + seq;
+                sequence * sp = perf().get_sequence(s);
+                if (not_nullptr(sp))
+                {
+                    const char * nameptr = sp->name().c_str();
+                    snprintf(name, sizeof name, "[%d] %.13s", s, nameptr);
 
-                QAction * item = new QAction(tr(name), menusset);
-                menusset->addAction(item);
-                connect(item, &QAction::triggered, SET_BG_SEQ(s));
+                    QAction * item = new QAction(tr(name), menusset);
+                    menusset->addAction(item);
+                    connect(item, &QAction::triggered, SET_BG_SEQ(s));
+                }
             }
         }
     }

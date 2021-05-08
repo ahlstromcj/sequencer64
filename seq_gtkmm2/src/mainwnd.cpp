@@ -2395,32 +2395,30 @@ mainwnd::choose_file (bool openplaylist)
 bool
 mainwnd::save_file ()
 {
-    bool result = ! perf().is_modified();
-    if (! result)
+    bool result = true;
+    if (rc().filename().empty())
     {
-        if (rc().filename().empty())
+        file_save_as();
+        result = ! rc().filename().empty();
+    }
+    else
+    {
+        std::string errmsg;
+        result = save_midi_file(perf(), rc().filename(), errmsg);
+        if (result)
         {
-            file_save_as();
-            return ! rc().filename().empty();
+            update_recent_files_menu();
         }
         else
         {
-            std::string errmsg;
-            result = save_midi_file(perf(), rc().filename(), errmsg);
-            if (result)
-            {
-                update_recent_files_menu();
-            }
-            else
-            {
-                Gtk::MessageDialog errdialog
-                (
-                    *this, errmsg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
-                );
-                rc().filename("");
-                errdialog.set_title("Save");
-                errdialog.run();
-            }
+            Gtk::MessageDialog errdialog
+            (
+                *this, errmsg, false,
+                Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
+            );
+            rc().filename("");
+            errdialog.set_title("Save");
+            errdialog.run();
         }
     }
     return result;

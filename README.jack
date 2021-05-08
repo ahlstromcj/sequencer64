@@ -1,6 +1,6 @@
-README.jack for Sequencer64 0.96.9 (Native JACK)
+README.jack for Sequencer64 0.97.0 (Native JACK)
 Chris Ahlstrom
-2017-02-21 to 2020-07-30
+2017-02-21 to 2021-05-07
 
 This README file provides the things you need to know to run
 the new native JACK implmentation of sequencer64, an executable called seq64.

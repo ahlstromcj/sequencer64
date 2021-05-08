@@ -104,11 +104,11 @@ private:
 public:
 
     /**
-     *  Initializes the trigger structure.
+     *  Initializes the trigger structure.  Provides an invalid trigger.
      */
 
     trigger () :
-        m_tick_start    (0),
+        m_tick_start    (9999999L),
         m_tick_end      (0),
         m_offset        (0),
         m_transpose     (0),

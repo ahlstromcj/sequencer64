@@ -1,6 +1,6 @@
-readme.txt for Sequencer64 0.96.9
+readme.txt for Sequencer64 0.97.0
 Chris Ahlstrom
-2015-09-10 to 2020-07-30
+2015-09-10 to 2021-05-07
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 It is a "live performance" sequencer, with the musician creating and

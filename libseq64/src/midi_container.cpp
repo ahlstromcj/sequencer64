@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2021-05-06
+ * \updates       2021-05-09
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -629,11 +629,10 @@ midi_container::song_fill_seq_trigger
     midipulse prev_timestamp
 )
 {
-    const int num_triggers = 1;                 /* only one trigger here    */
     add_variable(0);                            /* no delta time            */
     put(0xFF);                                  /* indicates a meta event   */
     put(0x7F);                                  /* sequencer-specific       */
-    add_variable((num_triggers * 3 * 4) + 4);
+    add_variable(trigger::datasize(c_triggers_new) + 4);
     add_long(c_triggers_new);
 
     /*
@@ -729,6 +728,8 @@ midi_container::fill (int track, const perform & p, bool doseqspec)
 
     fill_seq_name(m_sequence.name());
 
+#ifdef USE_FILE_TIME_SIG_AND_TEMPO
+
     /**
      * To allow other sequencers to read Seq24/Sequencer64 files, we should
      * provide the Time Signature and Tempo meta events, in the 0th (first)
@@ -739,10 +740,10 @@ midi_container::fill (int track, const perform & p, bool doseqspec)
 
     if (track == 0 && ! rc().legacy_format())
     {
-#ifdef USE_FILE_TIME_SIG_AND_TEMPO
         fill_time_sig_and_tempo(p, evl.has_time_signature(), evl.has_tempo());
-#endif
     }
+
+#endif
 
     midipulse timestamp = 0;
     midipulse deltatime = 0;
@@ -769,30 +770,24 @@ midi_container::fill (int track, const perform & p, bool doseqspec)
          * to only track 0?  No; seq24 saves these events with each sequence.
          */
 
-        bool transtriggers = ! rc().save_old_triggers();
         triggers::List & triggerlist = m_sequence.triggerlist();
-        int triggercount = int(triggerlist.size());
+        bool transtriggers = ! rc().save_old_triggers();
+        if (transtriggers)
+            transtriggers = m_sequence.any_trigger_transposed();
+
         add_variable(0);
         put(0xFF);
         put(0x7F);
-
-        /*
-         *  This seems to mung the file when saved.  DISABLED.
-         */
-
-#ifdef USE_THIS_DANGEROUS_FEATURE
-        if (transtriggers)
-            transtriggers = m_sequence.any_trigger_transposed();
-#endif
-
         if (transtriggers)
         {
-            add_variable((triggercount * (3 * 4 + 1)) + 4);
+            int datasize = m_sequence.triggers_datasize(c_trig_transpose);
+            add_variable(datasize + 4);
             add_long(c_trig_transpose);
         }
         else
         {
-            add_variable((triggercount * 3 * 4) + 4);
+            int datasize = m_sequence.triggers_datasize(c_triggers_new);
+            add_variable(datasize + 4);
             add_long(c_triggers_new);
         }
         for

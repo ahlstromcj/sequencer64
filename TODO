@@ -1,6 +1,10 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2021-01-01
+2016-12-03 to 2021-05-09
+
+Question: Should we back-port the Seq66 handling of MIDI event channels?
+This allows multiple channels in the pattern, useful for a "initial program
+and volumne settings" track.
 
 Midi mute group learn fails with quotedbl, currency, slash, parentleft and
 semicolon (Finnish keyboard layout)       (#156)

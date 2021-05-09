@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2021-05-06
+ * \updates       2021-05-09
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -653,11 +653,12 @@ midifile::checklen (midilong len, midibyte type)
  *
  * \param ppqn
  *      Provides the ppqn value to use to scale the tick values if
- *      m_use_scaled_ppqn is true.  If 0, the ppqn value is not used.
+ *      scaled() is true.  If 0, the ppqn value is not used.
  *
  * \param transposable
  *      If true, use the new style trigger, which adds a byte-long transpose
- *      value.  In Seq66, the default is true; here, it is false, at least for now.
+ *      value.  In Seq66, the default is true; here, it is false, at least for
+ *      now.
  */
 
 void
@@ -666,20 +667,26 @@ midifile::add_trigger (sequence & seq, midishort ppqn, bool transposable)
     midilong on = read_long();
     midilong off = read_long();
     midilong offset = read_long();
-    midibyte tpose = 0x00;
+    midibyte tpose = 0;
     if (transposable)
-    {
-        if (transposable)
-            tpose = read_byte();
-    }
+        tpose = read_byte();
+
     if (ppqn > 0)
     {
-        on *= m_ppqn / ppqn;
-        off *= m_ppqn / ppqn;
-        offset *= m_ppqn / ppqn;
+        on = on * m_ppqn / ppqn;
+        off = off * m_ppqn / ppqn;
+        offset = offset * m_ppqn / ppqn;
     }
     midilong length = off - on + 1;
     seq.add_trigger(on, length, offset, tpose, false);
+}
+
+void
+midifile::add_old_trigger (sequence & seq)
+{
+    midilong on = read_long();
+    midilong off = read_long();
+    seq.add_trigger(on, off - on + 1, 0, false, false);
 }
 
 /**
@@ -783,7 +790,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
         m_use_scaled_ppqn = false;
     }
     else
-        m_use_scaled_ppqn = file_ppqn() > 0;
+        m_use_scaled_ppqn = file_ppqn() != SEQ64_DEFAULT_PPQN;
 
     p.set_ppqn(ppqn());
     for (int track = 0; track < NumTracks; ++track)
@@ -844,7 +851,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                  */
 
                 RunningTime += Delta;           /* add in the time          */
-                if (m_use_scaled_ppqn)         /* adjust time via ppqn     */
+                if (scaled())                   /* adjust time via ppqn     */
                 {
                     CurrentTime = RunningTime * m_ppqn / m_file_ppqn;
                     e.set_timestamp(CurrentTime);
@@ -1088,41 +1095,34 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             }
                             else if (seqspec == c_triggers)
                             {
-                                int num_triggers = len / 8;
-                                for (int i = 0; i < num_triggers; i += 2)
+                                int sz = trigger::datasize(c_triggers);
+                                int num_triggers = len / sz;
+                                for (int i = 0; i < num_triggers; ++i)
                                 {
-                                    midilong on = read_long();
-                                    midilong length = read_long() - on;
-                                    if (m_use_scaled_ppqn)
-                                    {
-                                        // TODO
-                                    }
-                                    seq.add_trigger(on, length, 0, false);
-                                    len -= 8;
+                                    add_old_trigger(seq);
+                                    len -= sz;
                                 }
                             }
                             else if (seqspec == c_triggers_new)
                             {
-                                int num_triggers = len / (3 * 4);
-                                midishort p = m_use_scaled_ppqn ?
-                                    m_file_ppqn : 0 ;
-
+                                int sz = trigger::datasize(c_triggers_new);
+                                int num_triggers = len / sz;
+                                midishort p = scaled() ?  m_file_ppqn : 0 ;
                                 for (int i = 0; i < num_triggers; ++i)
                                 {
-                                    add_trigger(seq, p);
-                                    len -= (3 * 4);
+                                    add_trigger(seq, p, false);
+                                    len -= sz;
                                 }
                             }
                             else if (seqspec == c_trig_transpose)
                             {
-                                int num_triggers = len / (3 * 4 + 1);
-                                midishort p = m_use_scaled_ppqn ?
-                                    m_file_ppqn : 0 ;
-
+                                int sz = trigger::datasize(c_trig_transpose);
+                                int num_triggers = len / sz;
+                                midishort p = scaled() ?  m_file_ppqn : 0 ;
                                 for (int i = 0; i < num_triggers; ++i)
                                 {
                                     add_trigger(seq, p, true);
-                                    len -= (3 * 4 + 1);
+                                    len -= sz;
                                 }
                             }
                             else if (seqspec == c_musickey)
@@ -2405,6 +2405,7 @@ midifile::write_song (perform & p)
 
                     /*
                      * Add each trigger as described in the function banner.
+                     * If any, then make one long trigger.
                      */
 
                     midipulse prev_ts = 0;
@@ -2415,20 +2416,18 @@ midifile::write_song (perform & p)
 
                     if (! trigs.empty())        /* adjust the sequence length */
                     {
-                        const trigger & end_trigger = trigs.back();
-
                         /*
-                         * This isn't really the trigger length.  It is off by 1.
-                         * But subtracting the tick_start() value can really screw
-                         * things up.
+                         * tick_end() isn't quite a trigger length, off by 1.
+                         * Subtracting tick_start() can really screw it up.
                          */
 
+                        const trigger & end_trigger = trigs.back();
                         midipulse seqend = end_trigger.tick_end();
                         midipulse measticks = seq.measures_to_ticks();
                         if (measticks > 0)
                         {
                             midipulse remainder = seqend % measticks;
-                            if (remainder != measticks - 1)
+                            if (remainder != (measticks - 1))
                                 seqend += measticks - remainder - 1;
                         }
                         lst.song_fill_seq_trigger(end_trigger, seqend, prev_ts);

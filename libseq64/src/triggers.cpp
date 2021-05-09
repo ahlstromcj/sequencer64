@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2021-05-06
+ * \updates       2021-05-09
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -445,6 +445,27 @@ triggers::transpose (midipulse tick, int transposition)
         }
     }
     return result;
+}
+
+/**
+ *  Gets the total number of bytes needed to store all the triggers in the
+ *  container.  Non-transposed triggers can save a byte, and also be backward
+ *  compatible to Seq24.  However, we're currently stuck with one size or the
+ *  other for all the triggers in one pattern/sequence, and so this is a
+ *  static function for now.
+ */
+
+int
+trigger::datasize (midilong seqspec)
+{
+    if (seqspec == c_trig_transpose)            /* adds a "transpose" byte  */
+        return 3 * 4 + 1;
+    else if (seqspec == c_triggers_new)
+        return 3 * 4;
+    else if (seqspec == c_triggers)             /* not seen in the wild     */
+        return 2 * 4;
+    else
+        return 0;
 }
 
 /**
@@ -1386,10 +1407,9 @@ triggers::unselect (trigger & t, bool count)
  */
 
 int
-triggers::datasize () const
+triggers::datasize (midilong seqspec) const
 {
-    int trigsize = rc().save_old_triggers() ? (3 * 4) : (3 * 4 + 1);
-    return count() * trigsize;
+    return count() * trigger::datasize(seqspec);
 }
 
 bool

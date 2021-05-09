@@ -229,12 +229,12 @@ const midilong c_tempo_map   =  0x24240017; /**< Reserve seq32 tempo map.   */
 const midilong c_reserved_1  =  0x24240018; /**< Reserved for expansion.    */
 const midilong c_reserved_2  =  0x24240019; /**< Reserved for expansion.    */
 const midilong c_tempo_track =  0x2424001A; /**< Alternate tempo track no.  */
-const midilong c_seq_color   =  0x2424001B; /**< Future feature Kepler34. * */
-const midilong c_seq_edit_mode = 0x2424001C; /**< Future feature Kepler34.* */
-const midilong c_reserved_3     = 0x2424001D; /**< Reserved for expansion.   */
-const midilong c_reserved_4     = 0x2424001E; /**< Reserved for expansion.   */
-const midilong c_reserved_5     = 0x2424001F; /**< Reserved for expansion.   */
-const midilong c_trig_transpose = 0x24240020; /**< Triggers with transpose.  */
+const midilong c_seq_color   =  0x2424001B;  /**< Kepler34.                 */
+const midilong c_seq_edit_mode = 0x2424001C; /**< Kepler34.                 */
+const midilong c_reserved_3     = 0x2424001D; /**< Reserved for expansion.  */
+const midilong c_reserved_4     = 0x2424001E; /**< Reserved for expansion.  */
+const midilong c_reserved_5     = 0x2424001F; /**< Reserved for expansion.  */
+const midilong c_trig_transpose = 0x24240020; /**< Triggers with transpose. */
 
 /**
  *    This class is the abstract base class for a container of MIDI track

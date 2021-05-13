@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2021-05-05
+ * \updates       2021-05-13
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -132,6 +132,7 @@ private:
     bool m_verbose_option;          /**< [auto-option-save] setting.        */
     bool m_auto_option_save;        /**< [auto-option-save] setting.        */
     bool m_save_old_triggers;       /**< Save c_triggers_new, no transpose. */
+    bool m_save_old_mutes;          /**< Save mutes as bytes, not longs.    */
     bool m_legacy_format;           /**< Write files in legacy format.      */
     bool m_lash_support;            /**< Enable LASH, if compiled in.       */
     bool m_allow_mod4_mode;         /**< Allow Mod4 to hold drawing mode.   */
@@ -339,6 +340,11 @@ public:
     bool save_old_triggers () const
     {
         return m_save_old_triggers;
+    }
+
+    bool save_old_mutes () const
+    {
+        return m_save_old_mutes;
     }
 
     /**
@@ -780,6 +786,11 @@ protected:
     void save_old_triggers (bool flag)
     {
         m_save_old_triggers = flag;
+    }
+
+    void save_old_mutes (bool flag)
+    {
+        m_save_old_mutes = flag;
     }
 
     /**

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2021-05-09
+ * \updates       2021-05-13
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -81,6 +81,32 @@
 
 namespace seq64
 {
+
+/**
+ *  Magic numbers for handling mute-group formats.
+ */
+
+const unsigned c_compact_mutes_shift    = 8;                /* 1 << 8 = 256 */
+const unsigned c_legacy_mute_group      = 1024;             /* 0x0400       */
+const unsigned c_compact_mute_group     = 256 << 16;
+
+static unsigned
+to_compact_byte (unsigned value)
+{
+    if (value > 0)
+        value <<= c_compact_mutes_shift;
+
+    return value;
+}
+
+static unsigned
+from_compact_byte (unsigned value)
+{
+    if (value > 0)
+        value >>= c_compact_mutes_shift;
+
+    return value;
+}
 
 /**
  *  Principal constructor.
@@ -223,6 +249,40 @@ midifile::read_long ()
     result += read_byte();
     return result;
 }
+
+midilong
+midifile::read_split_long (unsigned & highbytes, unsigned & lowbytes)
+{
+    midilong result = read_long();              /* amount of data           */
+    if (result == c_legacy_mute_group)
+    {
+        highbytes = 32U;
+        lowbytes = 32U;
+    }
+    else if (result == 0)
+    {
+        highbytes = 0;
+        lowbytes = 0;
+    }
+    else
+    {
+        if (result >= c_compact_mute_group)
+        {
+            highbytes = from_compact_byte(result & 0xFFFF0000 >> 16);
+            lowbytes = from_compact_byte(result & 0x0000FFFF);
+        }
+        else
+        {
+            highbytes = result & 0xFFFF0000 >> 16;      /* was 8, bug! */
+            lowbytes = result & 0x0000FFFF;
+        }
+    }
+    return result;
+}
+
+/**
+ *  See Seq66, this module, for details.
+ */
 
 /**
  *  Reads 2 bytes of data using read_byte().
@@ -1626,39 +1686,42 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         seqspec = parse_prop_header(file_size);
         if (seqspec == c_mutegroups)
         {
-            long len = read_long();                     /* always 1024      */
+            unsigned groupcount = c_max_groups;         /* 32 */
+            unsigned seqsinset = c_seqs_in_set;         /* 32 */
+            long len = long(read_split_long(groupcount, seqsinset));
             if (len > 0)
             {
-                if (c_max_sequence != len)              /* c_gmute_tracks   */
+                bool legacyformat = len == c_legacy_mute_group;
+                if (legacyformat)
                 {
-                    result = set_error_dump("Corrupt data in mute-group section");
-                }
-
-                /*
-                 * Determine if this is viable under variable seqs-in-set.
-                 * See user_settings::gmute_tracks().  For now, we get
-                 * warnings here because MIDI files can contain only 32x32
-                 * mutes.  And its not really seqs-in-set by segs-in-set, more
-                 * like groups-allowed by seqs-in-set.  We will likely stick
-                 * with the 32x32 paradigm and overlay it onto top of whatever
-                 * seqs-in-set size is in force.
-                 *
-                 * int seqsinset = usr().seqs_in_set();
-                 */
-
-                int groupcount = c_max_groups;          /* 32 */
-                int seqsinset = c_seqs_in_set;          /* 32 */
-                for (int i = 0; i < groupcount; ++i)
-                {
-                    midilong groupmute = read_long();
-                    p.select_group_mute(int(groupmute));
-                    for (int k = 0; k < seqsinset; ++k)
+                    for (unsigned i = 0; i < groupcount; ++i)
                     {
-                        midilong gmutestate = read_long();
-                        bool status = gmutestate != 0;
-                        p.set_group_mute_state(k, status);
-                        if (status)
-                            p.midi_mute_group_present(true);
+                        midilong groupmute = read_long();
+                        p.select_group_mute(int(groupmute));
+                        for (unsigned k = 0; k < seqsinset; ++k)
+                        {
+                            midilong gmutestate = read_long();
+                            bool status = gmutestate != 0;
+                            p.set_group_mute_state(k, status);
+                            if (status)
+                                p.midi_mute_group_present(true);
+                        }
+                    }
+                }
+                else
+                {
+                    for (unsigned g = 0; g < groupcount; ++g)
+                    {
+                        midibyte groupmute = read_byte();
+                        p.select_group_mute(int(groupmute));
+                        for (unsigned k = 0; k < seqsinset; ++k)
+                        {
+                            midibyte gmutestate = read_byte();
+                            bool status = gmutestate != 0;
+                            p.set_group_mute_state(k, status);
+                            if (status)
+                                p.midi_mute_group_present(true);
+                        }
                     }
                 }
             }
@@ -1827,6 +1890,26 @@ midifile::write_long (midilong x)
     write_byte((x & 0x00FF0000) >> 16);
     write_byte((x & 0x0000FF00) >> 8);
     write_byte((x & 0x000000FF));
+}
+
+/**
+ *  See Seq66, this module, for details.
+ */
+
+void
+midifile::write_split_long (unsigned highbytes, unsigned lowbytes)
+{
+    if (highbytes == 32U && lowbytes == 32U)
+    {
+        write_long(1024);               /* a long-standing legacy value */
+    }
+    else
+    {
+        write_byte((highbytes & 0x0000FF00) >> 8);
+        write_byte(highbytes & 0x000000FF);
+        write_byte((lowbytes & 0x0000FF00) >> 8);
+        write_byte(lowbytes & 0x000000FF);
+    }
 }
 
 /**
@@ -2526,6 +2609,12 @@ midifile::write_proprietary_track (perform & p)
         if (! p.any_group_unmutes())
             gmutesz = 0;
     }
+
+    if (rc().save_old_mutes())
+        gmutesz = 4 + groupcount * (4 + seqsinset * 4);     /* 4-->longs    */
+    else
+        gmutesz = 4 + groupcount * (1 + seqsinset);         /* 1-->bytes    */
+
     if (m_new_format)                           /* calculate track size     */
     {
         tracklength += seq_number_size();       /* bogus sequence number    */
@@ -2581,20 +2670,29 @@ midifile::write_proprietary_track (perform & p)
     if (gmutesz > 0)
     {
         write_prop_header(c_mutegroups, gmutesz);   /* mute groups tag etc. */
-
-        /*
-         * write_long(c_gmute_tracks);              // data, not a tag
-         *
-         * We could write p.sequence_high() here, perhaps.  Nahhhhh.
-         */
-
-        write_long(c_max_sequence);                 /* data, not a tag      */
-        for (int j = 0; j < seqsinset; ++j)         /* now is optional      */
+        if (rc().save_old_mutes())
         {
-            p.select_group_mute(j);
-            write_long(j);
-            for (int i = 0; i < seqsinset; ++i)
-                write_long(p.get_group_mute_state(i));
+            write_split_long(groupcount, seqsinset);
+            for (int j = 0; j < seqsinset; ++j)
+            {
+                p.select_group_mute(j);
+                write_long(j);
+                for (int i = 0; i < seqsinset; ++i)
+                    write_long(p.get_group_mute_state(i));
+            }
+        }
+        else
+        {
+            unsigned gcount = to_compact_byte(groupcount);
+            unsigned gsize = to_compact_byte(seqsinset);
+            write_split_long(gcount, gsize);
+            for (int j = 0; j < seqsinset; ++j)
+            {
+                p.select_group_mute(j);
+                write_byte(j);
+                for (int i = 0; i < seqsinset; ++i)
+                    write_byte(p.get_group_mute_state(i));
+            }
         }
     }
     if (m_new_format)                           /* write beginning of track */

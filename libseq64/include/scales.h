@@ -79,6 +79,7 @@ enum c_music_scales
     c_scale_blues,
     c_scale_major_pentatonic,
     c_scale_minor_pentatonic,
+    c_scale_phrygian,
     c_scale_size            // a "maximum" or "size of set" value.
 };
 
@@ -107,6 +108,7 @@ enum c_music_scales
     Minor Pentatonic    C  .  .  Eb .  F  .  G  .  .  Bb .
     Octatonic 1         C  .  D  Eb .  F  Gb .  Ab A  .  B   Unimplemented
     Octatonic 2         C  Db .  Eb E  F  F# G  .  A  Bb .   Unimplemented
+    Phrygian            C  Db .  Eb .  F  .  G  Ab .  Bb .
 \endverbatim
  */
 
@@ -148,6 +150,10 @@ const bool c_scales_policy[c_scale_size][SEQ64_OCTAVE_SIZE] =
         true, false, false, true, false, true,
         false, true, false, false, true, false
     },
+    {                                                   /* phrygian         */
+        true, true, false, true, false, true,
+        false, true, true, false, true, false
+    },   
 };
 
 /**
@@ -204,6 +210,12 @@ const bool c_scales_policy[c_scale_size][SEQ64_OCTAVE_SIZE] =
     Transpose up        3  .  .  2  .  2  .  3  .  .  2  .
     Result up           Eb .  .  F  .  G  .  Bb .  .  C  .
 \endverbatim
+ *
+ \verbatim
+    Phrygian            C  Db .  Eb .  F  .  G  Ab .  Bb .
+    Transpose up        2  2  .  2  .  2  .  1  2  .  2  .
+    Result up           D  Eb .  F  .  G  .  A  Bb .  C  .
+\endverbatim
  */
 
 const int c_scales_transpose_up[c_scale_size][SEQ64_OCTAVE_SIZE] =
@@ -217,6 +229,7 @@ const int c_scales_transpose_up[c_scale_size][SEQ64_OCTAVE_SIZE] =
     { 3, 0, 0, 2, 0, 1, 1, 3, 0, 0, 2, 0},              /* blues           */
     { 2, 0, 2, 0, 3, 0, 0, 2, 0, 3, 0, 0},              /* maj pentatonic  */
     { 3, 0, 0, 2, 0, 2, 0, 3, 0, 0, 2, 0},              /* min pentatonic  */
+    { 2, 2, 0, 2, 0, 2, 0, 1, 2, 0, 2, 0},              /* phrygian        */
 };
 
 /**
@@ -271,6 +284,12 @@ const int c_scales_transpose_up[c_scale_size][SEQ64_OCTAVE_SIZE] =
     Result down         Bb .  .  C  .  Eb .  F  .  .  G  .
 \endverbatim
  *
+  \verbatim
+    Phrygian            C  Db .  Eb .  F  .  G  Ab .  Bb .
+    Transpose down      1  1  .  1  .  1  .  1  1  .  1  .
+    Result down         B  C  .  D  .  E  .  Fb G  .  A  .
+\endverbatim
+ *
  */
 
 const int c_scales_transpose_dn[c_scale_size][SEQ64_OCTAVE_SIZE] =
@@ -284,6 +303,7 @@ const int c_scales_transpose_dn[c_scale_size][SEQ64_OCTAVE_SIZE] =
     { -2,  0,  0, -3,  0, -2, -1, -1,  0,  0, -3,  0},  /* blues           */
     { -3,  0, -2, -0,  2,  0,  0, -3,  0, -2,  0,  0},  /* maj pentatonic  */
     { -2,  0,  0, -3,  0, -2,  0, -2,  0,  0, -3,  0},  /* min pentatonic  */
+    { -1, -1,  0, -1,  0, -1,  0, -1, -1,  0, -1,  0},  /* phrygian        */
 };
 
 #ifdef USE_C_SCALES_TRANSPOSE_DN_NEG
@@ -322,6 +342,7 @@ const char c_scales_text[c_scale_size][20] =            /* careful!        */
     "Blues",
     "Pentatonic Major",
     "Pentatonic Minor",
+    "Phrygian",
 };
 
 /**

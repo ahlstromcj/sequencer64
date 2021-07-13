@@ -27,11 +27,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-06
- * \updates       2018-10-29
+ * \updates       2021-05-24
  * \license       GNU GPLv2 or above
  *
  *  These values were moved from the globals module.  Now includes the
  *  chord-generation data.
+ *
+ *  Phrygian scales added by user WinkoErades.  Thank you!
  */
 
 #include "easy_macros.h"                /* with platform_macros.h, too  */
@@ -153,7 +155,7 @@ const bool c_scales_policy[c_scale_size][SEQ64_OCTAVE_SIZE] =
     {                                                   /* phrygian         */
         true, true, false, true, false, true,
         false, true, true, false, true, false
-    },   
+    },
 };
 
 /**

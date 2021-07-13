@@ -1,7 +1,7 @@
 # README for Sequencer64 0.97.0 (Native JACK, CLI, tempo, play-lists...)
 
 Chris Ahlstrom
-2015-09-10 to 2021-05-13
+2015-09-10 to 2021-05-25
 
 __Sequencer64__ is a live MIDI looper with a song-creation layout window.
 Sequencer64 is a reboot of seq24, extending it greatly over the last six years.
@@ -55,6 +55,8 @@ and using a conventional source tarball.
 
 ## Recent changes:
 
+    *   Version 0.97.1:
+        *   Added Phrygian scale thanks to user WinkoErades.
     *   Version 0.97.0:
         *   Changed the mute-group format inside the MIDI file to use a much
             less disk space (about 3K less).  Can be set in the 'rc' file to

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2021-05-13
+ * \updates       2021-05-05
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -93,7 +93,6 @@ rc_settings::rc_settings ()
     m_verbose_option            (false),
     m_auto_option_save          (true),     /* legacy seq24 behavior */
     m_save_old_triggers         (false),
-    m_save_old_mutes            (false),
     m_legacy_format             (false),
     m_lash_support              (false),
     m_allow_mod4_mode           (false),
@@ -147,7 +146,6 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_verbose_option            (rhs.m_verbose_option),
     m_auto_option_save          (rhs.m_auto_option_save),
     m_save_old_triggers         (rhs.m_save_old_triggers),
-    m_save_old_mutes            (rhs.m_save_old_mutes),
     m_legacy_format             (rhs.m_legacy_format),
     m_lash_support              (rhs.m_lash_support),
     m_allow_mod4_mode           (rhs.m_allow_mod4_mode),
@@ -207,7 +205,6 @@ rc_settings::operator = (const rc_settings & rhs)
         m_verbose_option            = rhs.m_verbose_option;
         m_auto_option_save          = rhs.m_auto_option_save;
         m_save_old_triggers         = rhs.m_save_old_triggers;
-        m_save_old_mutes            = rhs.m_save_old_mutes;
         m_legacy_format             = rhs.m_legacy_format;
         m_lash_support              = rhs.m_lash_support;
         m_allow_mod4_mode           = rhs.m_allow_mod4_mode;
@@ -266,7 +263,6 @@ rc_settings::set_defaults ()
     m_verbose_option            = false;
     m_auto_option_save          = true;     /* legacy seq24 setting */
     m_save_old_triggers         = false;
-    m_save_old_mutes            = false;
     m_legacy_format             = false;
     m_lash_support              = false;
     m_allow_mod4_mode           = false;

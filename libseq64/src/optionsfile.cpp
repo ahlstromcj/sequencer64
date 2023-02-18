@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2021-05-13
+ * \updates       2021-05-05
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -867,11 +867,6 @@ optionsfile::parse (perform & p)
         {
             sscanf(m_line, "%ld", &method);
             rc().save_old_triggers(method != 0);
-            if (next_data_line(file))               /* a new option */
-            {
-                sscanf(m_line, "%ld", &method);
-                rc().save_old_mutes(method != 0);
-            }
         }
     }
     file.close();           /* done parsing the "rc" configuration file */
@@ -1754,8 +1749,6 @@ optionsfile::write (const perform & p)
         << "     # auto-save-options-on-exit support flag\n"
         << (rc().save_old_triggers() ? "1" : "0")
         << "     # save triggers without the transpose byte (save-old-triggers)\n"
-        << (rc().save_old_mutes() ? "1" : "0")
-        << "     # save mutes as long values, not bytes (save-old-mutes)\n"
         ;
 
 

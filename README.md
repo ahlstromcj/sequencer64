@@ -1,7 +1,7 @@
 # README for Sequencer64 0.97.0 (Native JACK, CLI, tempo, play-lists...)
 
 Chris Ahlstrom
-2015-09-10 to 2021-05-13
+2015-09-10 to 2021-05-08
 
 __Sequencer64__ is a live MIDI looper with a song-creation layout window.
 Sequencer64 is a reboot of seq24, extending it greatly over the last six years.
@@ -11,8 +11,8 @@ added equipment.  It has an extensive manual and Windows installers:
     https://github.com/ahlstromcj/sequencer64-doc.git
     https://github.com/ahlstromcj/sequencer64-packages.git
 
-__Sequencer64__ has build options for ALSA, PortMidi, JACK, Gtkmm 2.4, Qt 5,
-Windows, and a command-line/daemon.
+__Sequencer64__ has build options for ALSA, PortMidi, JACK, Gtkmm 2.4, Qt 5, Windows,
+and a command-line/daemon.
 
 Sequencer64 is now in maintenance mode (bug fixes and minor backports only).
 It is superceded by Seq66.  However, the new Seq66 "transposable trigger"
@@ -21,9 +21,8 @@ saved with transposed triggers.  Many related bug fixes as well.
 Try loading and playing the Kraftwerk tune from seq66/data/midi, which
 uses this feature.
 
-**WARNING** This feature can save old tunes with the new Seq66 triggers and
-mute-group byte format in MIDI files, which are not supported by other forks
-of Seq24.  Back-up your tunes!
+**WARNING** This feature can save old tunes with the new triggers, which are
+not supported by other forks of Seq24.  Back-up your tunes!
 
 ## Native JACK support: Seq64rtmidi/seq64
 
@@ -56,15 +55,11 @@ and using a conventional source tarball.
 ## Recent changes:
 
     *   Version 0.97.0:
-        *   Changed the mute-group format inside the MIDI file to use a much
-            less disk space (about 3K less).  Can be set in the 'rc' file to
-            write the old format.
         *   Fixed an issue reading track names in the midifile class.
         *   Fixed an issue with dropping note events at the edge of a measure.
         *   Back-ported the c_trig_transpose SeqSpec from Seq66, so that Seq64
             can read/write these newer files. Also updated the Song editor to
-            show the transposition values.  Can be set in the 'rc' file to
-            write the old format.
+            show the transposition values.
         *   Fixed a bug in the pattern editor that created unnecessary empty
             screen-sets.
         *   Fixed a bug in "Save As" for an unmodified file in the Gtk UI.

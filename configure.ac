@@ -741,7 +741,7 @@ dnl      seq64-config.h header file has "SEQ64_" prepended to these
 dnl      automatically for us.
 
 AH_TOP(
-#define VERSION_DATE_SHORT "2021-05-07"
+#define VERSION_DATE_SHORT "2023-02-18"
 #define VERSION "0.97.0"
 )
 

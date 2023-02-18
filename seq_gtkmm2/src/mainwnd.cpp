@@ -2645,7 +2645,7 @@ mainwnd::about_dialog ()
     (
         "(C) 2002-2006 Rob C. Buse (seq24)\n"
         "(C) 2008-2016 Seq24team (seq24)\n"
-        "(C) 2015-2021 Chris Ahlstrom (sequencer64/seq64)"
+        "(C) 2015-2023 Chris Ahlstrom (sequencer64/seq64)"
     );
     dialog.set_website
     (

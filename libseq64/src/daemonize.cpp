@@ -3,7 +3,7 @@
  * \library       sequencer64 application (from PSXC library)
  * \author        Chris Ahlstrom
  * \date          2005-07-03 to 2007-08-21 (pre-Sequencer24/64)
- * \updates       2020-07-05
+ * \updates       2023-02-18
  * \license       GNU GPLv2 or above
  *
  *  Daemonization module of the POSIX C Wrapper (PSXC) library
@@ -56,8 +56,11 @@
  *      There is a service wrapper available under Win32.  It is called
  *      "srvhost.exe".  At this time, we *still* don't know how to use it, but
  *      it is available, and Windows XP seems to use it quite a bit.
+ *
+ * Issue 222: Added the sched.h header file to declare sched_yield().
  */
 
+#include <sched.h>                      /* sched_yield(), _get_priority()   */
 #include <stdlib.h>                     /* EXIT_FAILURE for 32-bit builds   */
 #include <string.h>                     /* strlen() etc.                    */
 

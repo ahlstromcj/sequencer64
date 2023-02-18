@@ -30,7 +30,7 @@
  * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
- *  Copyright (C) 2015-2016 Chris Ahlstrom <ahlstromcj@gmail.com>
+ *  Copyright (C) 2015-2023 Chris Ahlstrom <ahlstromcj@gmail.com>
  *
  *  Currently, the only thing defined is the add_tooltip() macro.
  */

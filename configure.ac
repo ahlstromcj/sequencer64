@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2021-05-07
+dnl \update        2023-02-18
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -26,7 +26,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.96$)
-AC_INIT(Sequencer64, [0.97.0], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.97.1], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -169,7 +169,7 @@ build_os="'$(uname -srm)'"
 AC_DEFINE_UNQUOTED(APP_BUILD_OS, ["$build_os"], "Distro where build was done")
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 
-VERSION="0.97.0"
+VERSION="0.97.1"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -741,8 +741,8 @@ dnl      seq64-config.h header file has "SEQ64_" prepended to these
 dnl      automatically for us.
 
 AH_TOP(
-#define VERSION_DATE_SHORT "2021-05-07"
-#define VERSION "0.97.0"
+#define VERSION_DATE_SHORT "2023-02-18"
+#define VERSION "0.97.1"
 )
 
 dnl 7. Checks for build configuration.

@@ -43,7 +43,7 @@
 #endif
 
 #ifndef SEQ64_VERSION_DATE_SHORT
-#define SEQ64_VERSION_DATE_SHORT "2021-05-07"
+#define SEQ64_VERSION_DATE_SHORT "2023-02-18"
 #endif
 
 #ifndef SEQ64_VERSION
@@ -326,7 +326,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef SEQ64_PACKAGE_STRING
-#define SEQ64_PACKAGE_STRING "Sequencer64 0.97.0"
+#define SEQ64_PACKAGE_STRING "Sequencer64 0.97.1"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -341,7 +341,7 @@
 
 /* Define to the version of this package. */
 #ifndef SEQ64_PACKAGE_VERSION
-#define SEQ64_PACKAGE_VERSION "0.97.0"
+#define SEQ64_PACKAGE_VERSION "0.97.1"
 #endif
 
 /*
@@ -391,7 +391,7 @@
 
 /* Version number of package */
 #ifndef SEQ64_VERSION
-#define SEQ64_VERSION "0.97.0"
+#define SEQ64_VERSION "0.97.1"
 #endif
 
 /* Indicates limited Windows support */

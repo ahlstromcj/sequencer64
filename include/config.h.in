@@ -1,7 +1,7 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-#define VERSION_DATE_SHORT "2021-05-07"
-#define VERSION "0.97.0"
+#define VERSION_DATE_SHORT "2023-02-18"
+#define VERSION "0.97.1"
 
 
 /* Indicates if ALSA MIDI support is enabled */

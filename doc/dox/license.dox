@@ -34,7 +34,7 @@
    the latter language, while projects I have extended may specify the
    former license.
 
-   Copyright (C) 2015-2015 by Chris Ahlstrom
+   Copyright (C) 2015-2023 by Chris Ahlstrom
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@
 
    The <b>XPC</b> library license is the <b>GNU LGPLv3</b>.
 
-   Copyright (C) 2015-2015 by Chris Ahlstrom
+   Copyright (C) 2015-2023 by Chris Ahlstrom
 
    This library is free software; you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published
@@ -92,7 +92,7 @@
 
    The <b>XPC</b> documentation license is the <b>GNU FDLv1.3</b>.
 
-   Copyright (C) 2015-2015 by Chris Ahlstrom
+   Copyright (C) 2015-2023 by Chris Ahlstrom
 
    This documentation is free documentation; you can redistribute it and/or
    modify it under the terms of the GNU Free Documentation License as
@@ -121,7 +121,7 @@
 
    The <b>XPC</b> "Affero" license is the <b>GNU AGPLv3</b>.
 
-   Copyright (C) 2015-2015 by Chris Ahlstrom
+   Copyright (C) 2015-2023 by Chris Ahlstrom
 
    This server software is free server software; you can redistribute it and/or
    modify it under the terms of the GNU Affero General Public License as
